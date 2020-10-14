@@ -13,6 +13,6 @@ interface Question {
 export default {
   async getQuestions() {
     const { data }: { data: any } = await apiClient.get('/questions')
-    return data.questions as Question[]
+    return data as Question[]
   },
 }
