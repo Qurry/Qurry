@@ -1,48 +1,19 @@
 <template>
-  <v-row v-if="$fetchState.pending">
-    <v-progress-circular
-      :size="70"
-      :width="7"
-      color="primary"
-      indeterminate
-    ></v-progress-circular>
-  </v-row>
-  <v-row v-else-if="$fetchState.error">
-    <p>Error while fetching questions: {{ $fetchState.error.message }}</p>
-  </v-row>
-  <v-row v-else>
+  <v-row>
     <v-col>
-      <h1>Hello Qurry</h1>
-      <div v-for="question in questions" :key="question.id">
-        <h2>{{ question.title }}</h2>
-        <p>{{ question.body }}</p>
-      </div>
+      <h1>Dashboard</h1>
+      <p>Willkommen auf Qurry - dem StackOverflow für die Uni</p>
+      <h2>Heiße Fragen</h2>
+      <p>Es gibt noch keine heißen Fragen.</p>
+      <h2>Meine Fragen</h2>
+      <p>Du hast noch keine Frage gestellt.</p>
     </v-col>
   </v-row>
 </template>
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
-import QuestionService from './../services/QuestionService'
-
-interface Question {
-  id: number
-  title: string
-  body: string
-}
 
 @Component
-export default class QuestioList extends Vue {
-  questions: Question[] = []
-
-  fetch() {
-    return Promise.all([
-      QuestionService.getQuestions()
-        .then((questions) => {
-          this.questions = questions
-        })
-        .catch((error) => console.log(error)),
-    ])
-  }
-}
+export default class Dashboard extends Vue {}
 </script>
