@@ -10,7 +10,7 @@ from .managers import UserManager
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_('email address'), unique=True)
     name = models.CharField(_('name'), max_length=50, null=True)
-    points = models.IntegerField(_('points'), default=0)
+    score = models.IntegerField(_('points'), default=0)
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
