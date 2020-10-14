@@ -3,37 +3,61 @@
     {
       "id": 1,
       "title": "Tincidunt praesent semper feugiat nibh sed pulvinar proin?",
-      "body": "Orci eu lobortis elementum nibh tellus molestie. Sed euismod nisi porta lorem mollis aliquam ut. Eget nullam non nisi est sit. Est ultricies integer quis auctor elit sed vulputate mi. Augue ut lectus arcu bibendum at varius vel. Porttitor eget dolor morbi non arcu risus.",
-      "score": 6,
-      "dateTime": "20.10.2020"
+      "votes": 6,
+      "answers": 2,
+      "dateTime": "2020-10-14T13:50:48.187Z",
+      "user": {
+        "id": 23,
+        "name": "Max"
+      },
+      "tags": [
+        {
+          "id": 12,
+          "name": "technical"
+        },
+        {
+          "id": 7,
+          "name": "meinel"
+        }
+      ]
     },
     {
       "id": 2,
-      "title": "Ea molestias quasi exercitationem repellat qui ipsa sit aut?",
-      "body": "Facilisis magna etiam tempor orci. Tristique senectus et netus et. Neque laoreet suspendisse interdum consectetur libero id faucibus.",
-      "score": -1,
-      "dateTime": "21.10.2020"
-    },
-    {
-      "id": 6,
-      "title": "Dolorem dolore est ipsam?",
-      "body": "Lacus laoreet non curabitur gravida arcu ac tortor dignissim convallis. Metus vulputate eu scelerisque felis. Pellentesque diam volutpat commodo sed egestas egestas. Tortor consequat id porta nibh venenatis cras. Parturient montes nascetur ridiculus mus mauris vitae ultricies leo integer. Amet aliquam id diam maecenas. Praesent elementum facilisis leo vel fringilla est ullamcorper eget nulla. Ridiculus mus mauris vitae ultricies leo integer malesuada. Ac auctor augue mauris augue neque gravida in fermentum et. Vitae justo eget magna fermentum iaculis eu non diam. Senectus et netus et malesuada fames ac turpis egestas sed. Sed libero enim sed faucibus turpis in eu mi. Lacus laoreet non curabitur gravida arcu ac tortor. Aliquam ut porttitor leo a diam sollicitudin tempor id. Consectetur libero id faucibus nisl tincidunt eget nullam non nisi. Commodo sed egestas egestas fringilla phasellus faucibus scelerisque. In massa tempor nec feugiat nisl pretium fusce id velit. Phasellus egestas tellus rutrum tellus pellentesque.",
-      "score": 12,
-      "dateTime": "21.10.2020"
-    },
-    {
-      "id": 8,
       "title": "Optio molestias id quia eum?",
-      "body": " Viverra justo nec ultrices dui sapien eget mi proin. Integer eget aliquet nibh praesent tristique magna sit. ",
-      "score": 3,
-      "dateTime": "22.10.2020"
+      "votes": -2,
+      "answers": 1,
+      "dateTime": "2020-10-14T13:50:48.187Z",
+      "user": {
+        "id": 23,
+        "name": "Max"
+      },
+      "tags": [
+        {
+          "id": 12,
+          "name": "meinel"
+        },
+        {
+          "id": 7,
+          "name": "studienref"
+        }
+      ]
     },
     {
-      "id": 9,
-      "title": "Dolorum ut in voluptas mollitia et saepe quo animi?",
-      "body": "Ut tortor pretium viverra suspendisse potenti nullam ac tortor vitae. Tincidunt arcu non sodales neque sodales ut etiam. Pharetra massa massa ultricies mi. Pellentesque elit eget gravida cum sociis. Pretium nibh ipsum consequat nisl vel pretium lectus quam id. ",
-      "score": 0,
-      "dateTime": "25.10.2020"
+      "id": 3,
+      "title": "Ea molestias quasi exercitationem repellat qui ipsa sit aut?",
+      "votes": 0,
+      "answers": 0,
+      "dateTime": "2020-10-14T13:50:48.187Z",
+      "user": {
+        "id": 23,
+        "name": "Max"
+      },
+      "tags": [
+        {
+          "id": 12,
+          "name": "swa"
+        }
+      ]
     }
   ]
 }

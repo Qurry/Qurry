@@ -12,11 +12,12 @@
   </v-row>
   <v-row v-else>
     <v-col>
-      <h1>Alle Fragen</h1>
-      <div v-for="question in questions" :key="question.id">
-        <h2>{{ question.title }}</h2>
-        <p>{{ question.body }}</p>
-      </div>
+      <h1 class="mb-3">Alle Fragen</h1>
+      <QuestionListCard
+        v-for="question in questions"
+        :key="question.id"
+        :question="question"
+      />
     </v-col>
   </v-row>
 </template>
@@ -24,11 +25,11 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 import QuestionService from './../../services/QuestionService'
-import { Question } from './../../types/general'
+import { PreviewQuestion } from './question.model'
 
 @Component
-export default class QuestioList extends Vue {
-  questions: Question[] = []
+export default class QuestionList extends Vue {
+  questions: PreviewQuestion[] = []
 
   fetch() {
     return Promise.all([
@@ -41,3 +42,5 @@ export default class QuestioList extends Vue {
   }
 }
 </script>
+
+<style scoped></style>
