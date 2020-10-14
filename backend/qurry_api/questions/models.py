@@ -17,7 +17,7 @@ class Question(models.Model):
 
     title = models.CharField('Title', max_length=200)
     body = models.TextField('Body', max_length=500)
-    score = models.IntegerField('Score')
+    votes = models.IntegerField('Votes')
     tags = models.ManyToManyField(Tag, verbose_name='Tags')
 
     date_time = models.DateTimeField('Date & Time', auto_now=True)
@@ -32,7 +32,7 @@ class Answer(models.Model):
     id = models.IntegerField('Answer-ID', primary_key=True)
 
     body = models.TextField('Body', max_length=500)
-    score = models.IntegerField('Score')
+    votes = models.IntegerField('Vote')
 
     date_time = models.DateTimeField('Date & Time', auto_now=True)
 
