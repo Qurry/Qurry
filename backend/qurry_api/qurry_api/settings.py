@@ -31,6 +31,7 @@ INSTALLED_APPS = [
 
     'questions',
     'corsheaders',
+    'users'
 ]
 
 MIDDLEWARE = [
@@ -43,6 +44,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
+
+AUTH_USER_MODEL = 'users.User'
 
 ROOT_URLCONF = 'qurry_api.urls'
 
