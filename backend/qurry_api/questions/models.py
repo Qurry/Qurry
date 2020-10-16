@@ -2,8 +2,6 @@ from django.db import models
 
 class Tag(models.Model):
 
-    id = models.IntegerField('Tag-ID', primary_key=True)
-
     name = models.CharField('Name', max_length=20)
     description = models.TextField('Discription', blank=True, null=True)
 
@@ -13,14 +11,12 @@ class Tag(models.Model):
 
 class Question(models.Model):
 
-    id = models.IntegerField('Question-ID', primary_key=True)
-
     title = models.CharField('Title', max_length=200)
     body = models.TextField('Body', max_length=500)
     votes = models.IntegerField('Votes')
-    tags = models.ManyToManyField(Tag, verbose_name='Tags')
+    tags = models.ManyToManyField(Tag, verbose_name='Tags', null=True, blank=True)
 
-    date_time = models.DateTimeField('Date & Time', auto_now=True)
+    date_time = models.DateTimeField('Date & Time', auto_now=True, null=True)
     user = models.ForeignKey("users.User", verbose_name='Owner', on_delete=models.CASCADE)
 
 
@@ -28,8 +24,6 @@ class Question(models.Model):
         return self.title
 
 class Answer(models.Model):
-
-    id = models.IntegerField('Answer-ID', primary_key=True)
 
     body = models.TextField('Body', max_length=500)
     votes = models.IntegerField('Vote')
