@@ -3,6 +3,7 @@
     <v-app-bar app color="primary" dark>
       <v-btn to="/" text rounded>Qurry</v-btn>
       <v-spacer></v-spacer>
+      <v-btn to="/register" text rounded>Registrieren</v-btn>
       <v-btn to="/questions" text rounded>Fragen</v-btn>
       <v-btn to="/profile" text rounded>Profil</v-btn>
       <span>{{ points }} <v-icon color="orange"> mdi-trophy </v-icon></span>

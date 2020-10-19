@@ -1,3 +1,5 @@
 python-env
 *.pyc
 qurry-db
+migrations/
+__pycache__/

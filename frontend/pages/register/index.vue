@@ -63,6 +63,7 @@
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
+import UserService from './../../services/UserService'
 
 @Component
 export default class Register extends Vue {
@@ -92,7 +93,11 @@ export default class Register extends Vue {
   }
 
   onSubmit() {
-    console.log(this.username, this.password, this.email)
+    UserService.register(this.username, this.email, this.password)
+      .then((res: any) => {
+        console.log(res)
+      })
+      .catch((error) => console.log(error))
   }
 }
 </script>
