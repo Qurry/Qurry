@@ -3,6 +3,7 @@
     <v-app-bar app color="primary" dark>
       <v-btn to="/" text rounded>Qurry</v-btn>
       <v-spacer></v-spacer>
+      <span>loggedIn: {{ loggedIn }}</span>
       <v-btn to="/register" text rounded>Registrieren</v-btn>
       <v-btn to="/questions" text rounded>Fragen</v-btn>
       <v-btn to="/profile" text rounded>Profil</v-btn>
@@ -17,11 +18,16 @@
   </v-app>
 </template>
 
-<script lang="ts">
-import { Vue, Component } from 'nuxt-property-decorator'
-
-@Component
-export default class DefaultLayout extends Vue {
-  points = 145
+<script>
+import { mapState } from 'vuex'
+export default {
+  data() {
+    return {
+      points: 145,
+    }
+  },
+  computed: {
+    ...mapState('auth', ['loggedIn']),
+  },
 }
 </script>

@@ -36,14 +36,36 @@ export default {
     '@nuxtjs/vuetify',
   ],
 
-  // Modules (https://go.nuxtjs.dev/config-modules)
-  modules: [
-    // https://go.nuxtjs.dev/axios
-    '@nuxtjs/axios',
-  ],
+  modules: ['@nuxtjs/axios', '@nuxtjs/auth'],
+
+  auth: {
+    strategies: {
+      local: {
+        endpoints: {
+          login: {
+            url: '/api/token/',
+            method: 'post',
+            propertyName: 'access',
+            altProperty: 'refresh',
+          },
+          logout: {},
+          user: false,
+        },
+      },
+    },
+    redirect: {
+      login: '/login',
+    },
+  },
+
+  router: {
+    middleware: ['auth'],
+  },
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
-  axios: {},
+  axios: {
+    baseURL: 'http://localhost:8000',
+  },
 
   // Vuetify module configuration (https://go.nuxtjs.dev/config-vuetify)
   vuetify: {
