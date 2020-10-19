@@ -5,6 +5,6 @@ from .views import testView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/questions', include('questions.urls')),
+    path('api/', include('questions.urls')),
     path('api/', include('users.urls')),
 ]

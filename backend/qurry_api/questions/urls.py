@@ -1,8 +1,15 @@
 from django.urls import path, include
+from rest_framework import routers
 
-from .views import return_questions, view_question
+from .views import QuestionViewSet, TagViewSet, AnswerViewSet
+
+router = routers.DefaultRouter()
+
+router.register(r'questions', QuestionViewSet)
+router.register(r'tags', TagViewSet)
+router.register(r'answers', AnswerViewSet)
 
 urlpatterns = [
-    path('', return_questions, name='show-questions'),
-    path('/<int:qid>', view_question, name='view-question')
+    path('', include(router.urls)),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]
