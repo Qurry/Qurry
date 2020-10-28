@@ -1,12 +1,6 @@
-import axios from 'axios'
-
-const apiClient = axios.create({
-  baseURL: 'http://localhost:8000/api',
-})
-
 export default {
-  async getQuestions() {
-    const { data }: { data: any } = await apiClient.get('/questions')
+  async getQuestions($axios: any) {
+    const { data }: { data: any } = await $axios.get('/questions')
     return data
   },
 }

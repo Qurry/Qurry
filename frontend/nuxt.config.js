@@ -43,28 +43,24 @@ export default {
       local: {
         endpoints: {
           login: {
-            url: '/api/token/',
+            url: '/token/',
             method: 'post',
             propertyName: 'access',
-            altProperty: 'refresh',
           },
-          logout: {},
+          logout: false,
           user: false,
         },
       },
     },
-    redirect: {
-      login: '/login',
-    },
   },
 
-  router: {
-    middleware: ['auth'],
-  },
+  // router: {
+  //   middleware: ['auth'],
+  // },
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
   axios: {
-    baseURL: 'http://localhost:8000',
+    baseURL: 'http://localhost:8000/api',
   },
 
   // Vuetify module configuration (https://go.nuxtjs.dev/config-vuetify)
