@@ -44,9 +44,6 @@ def register(request):
                         'token': token,
                         'domain': current_site.domain,
                     })
-            
-            print(settings.EMAIL_HOST_USER)
-            print(settings.EMAIL_HOST_PASSWORD)
             to_email = form.cleaned_data.get('email')
             send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [to_email])
             
@@ -69,7 +66,7 @@ def activate(request, uidb64, token):
     if user is not None and is_token_right(user, token):
         user.is_active = True
         user.save()
-        return HttpResponse('Thank you for your email confirmation. Now you can login your account.')
+        return HttpResponse('Thank you for your email confirmation. Now you can <a href="localhost:3000/login">login</a> your account.')
     else:
         return HttpResponse('Activation link is invalid!')
 

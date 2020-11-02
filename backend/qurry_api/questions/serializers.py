@@ -40,6 +40,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 
     title = serializers.CharField(max_length=200)
     body = serializers.CharField(max_length=500)
+    dateTime = serializers.SerializerMethodField('data_time')
 
     tags = TagSerializer(
         many=True,
@@ -52,7 +53,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Question
-        fields = ['id', 'title', 'body', 'votes', 'tags', 'answers', 'votes', 'user']
+        fields = ['id', 'title', 'body', 'votes', 'dateTime', 'tags', 'answers', 'votes', 'user']
     
     def create(self, validated_data):
         validated_data['user'] = User.objects.first()
@@ -77,4 +78,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 
     def user_detail(self, obj):
         return {'id': obj.user.id, 'username': obj.user.username}
+    
+    def data_time(self, obj):
+        return obj.date_time
 
