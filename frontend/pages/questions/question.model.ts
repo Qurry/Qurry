@@ -3,7 +3,7 @@ export interface PreviewQuestion {
   title: string
   votes: number
   answers: number
-  dateTime: string
+  dateTime?: string
   user: {
     id: number
     name: string

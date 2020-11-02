@@ -22,3 +22,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+
+class Token(models.Model):
+
+    user = models.OneToOneField(User, verbose_name='user', on_delete=models.CASCADE)
+    token = models.TextField('token')

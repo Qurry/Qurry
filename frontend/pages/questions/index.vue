@@ -13,12 +13,12 @@
   <v-row v-else>
     <v-col>
       <h1 class="mb-3">Alle Fragen</h1>
-      <!-- <QuestionListCard
+      <QuestionListCard
         v-for="question in questions"
         :key="question.id"
         :question="question"
-      /> -->
-      {{ questions }}
+      />
+      <!-- {{ questions }} -->
     </v-col>
   </v-row>
 </template>

@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework import permissions
+from django.http import JsonResponse
 
 from .models import Question, Answer, Tag
 from users.models import User
@@ -21,5 +22,5 @@ class TagViewSet(viewsets.ModelViewSet):
 class AnswerViewSet(viewsets.ModelViewSet):
 
     queryset = Answer.objects.all()
-    serializer_class = TagSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    serializer_class = AnswerSerializer
+    permission_classes = [permissions.IsAuthenticated]

@@ -32,7 +32,7 @@
             {{ question.user.name }}
           </nuxt-link>
           am
-          {{ toPrettyDateTime(question.dateTime) }}
+          <!-- {{ toPrettyDateTime(question.dateTime) }} -->
         </p>
       </div>
     </div>
