@@ -38,7 +38,7 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 
-@Component
+@Component({ middleware: 'guest' })
 export default class Register extends Vue {
   isFormValid = false
   email = ''
