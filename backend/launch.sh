@@ -1,3 +1,5 @@
 source python-env/bin/activate
-cd qurry_api/
-python3 manage.py runserver
+pip3 install -r qurry_api/requirements.txt
+python3 qurry_api/manage.py makemigrations
+python3 qurry_api/manage.py migrate
+python3 qurry_api/manage.py runserver
