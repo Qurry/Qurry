@@ -3,7 +3,6 @@ from rest_framework import serializers
 from .models import Question, Tag, Answer
 from users.models import User
 
-
 class TagSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Tag
@@ -42,8 +41,9 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     body = serializers.CharField(max_length=500)
     dateTime = serializers.SerializerMethodField('data_time')
 
-    tags = TagSerializer(
-        many=True,
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True
     )
 
     user = serializers.SerializerMethodField('user_detail')
@@ -55,11 +55,21 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
         model = Question
         fields = ['id', 'title', 'body', 'votes', 'dateTime', 'tags', 'answers', 'votes', 'user']
     
+    def is_valid(self, raise_exception=False):
+        self.initial_data['tags'] = self.initial_data['tagIds']
+        super().is_valid(raise_exception)
+
+    
     def create(self, validated_data):
-        validated_data['user'] = User.objects.first()
+        validated_data['user'] = self.context['request'].user
         validated_data['votes'] = 0
 
         return super().create(validated_data)
+
+    def to_representation(self, instance):
+        representation = super(QuestionSerializer, self).to_representation(instance)
+        representation['tags'] = TagSerializer(instance.tags.all(), many=True).data
+        return representation
 
     """def upgrade(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
