@@ -35,7 +35,7 @@ export default class QuestionCreate extends Vue {
   question = {
     title: '',
     body: '',
-    tagIds: [1],
+    tagIds: [],
   }
 
   onSubmit() {
