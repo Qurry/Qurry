@@ -3,13 +3,15 @@ export interface PreviewQuestion {
   title: string
   votes: number
   answers: number
-  dateTime?: string
+  body: number
+  dateTime: string
   user: {
     id: number
-    name: string
+    username: string
   }
   tags: {
     id: number
     name: string
+    description: string
   }[]
 }
