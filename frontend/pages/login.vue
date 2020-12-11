@@ -2,6 +2,11 @@
   <v-row>
     <v-col>
       <h1>Anmelden</h1>
+      <ul>
+        <li v-for="(error, i) of errors" :key="i">
+          {{ error }}
+        </li>
+      </ul>
       <v-form v-model="isFormValid">
         <v-container>
           <v-row>
@@ -40,6 +45,7 @@ import { Vue, Component } from 'nuxt-property-decorator'
 
 @Component({ middleware: 'guest' })
 export default class Register extends Vue {
+  errors: string[] = []
   isFormValid = false
   email = ''
   password = ''
@@ -52,15 +58,50 @@ export default class Register extends Vue {
     },
   }
 
-  async login() {
-    try {
-      const res = await this.$auth.loginWith('local', {
+  // async (): Promise<Array<Employee> | string> =>
+
+  // async login() {
+  //   try {
+  //     const response: any = await this.$auth.loginWith('local', {
+  //       data: { email: this.email, password: this.password },
+  //     })
+  //     console.log("here")
+  //     console.log(response)
+  //     console.log(response.ok)
+  //     if (!response.ok) throw new Error(response.statusText)
+  //     const { data } = await response.json()
+  //     console.log(data)
+  //     // process body
+  //   } catch (err) {
+  //     console.log("hereerr")
+  //     console.log(err)
+  //     console.log(err.message)
+  //     const { data } = await err.json()
+  //     console.log(data)
+  //   }
+  //   // try {
+  //   //   const res = await this.$auth.loginWith('local', {
+  //   //     data: { email: this.email, password: this.password },
+  //   //   })
+  //   //   console.log(res.status)
+  //   // } catch (err) {
+  //   //   console.log(err)
+  //   // }
+  // }
+
+  login() {
+    this.errors = []
+    this.$auth
+      .loginWith('local', {
         data: { email: this.email, password: this.password },
       })
-      console.log(res)
-    } catch (err) {
-      console.log(err)
-    }
+      .then((response: any) => {
+        console.log(response)
+      })
+      .catch((error) => {
+        console.log(error.response.data.detail)
+        this.errors.push(error.response.data.detail)
+      })
   }
 }
 </script>

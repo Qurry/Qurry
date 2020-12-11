@@ -20,6 +20,7 @@
           {{ question.title }}
         </nuxt-link>
       </h1>
+      <p>{{ question.body | limit(100) }}</p>
       <div class="tags">
         <v-chip v-for="tag in question.tags" :key="tag.id" class="mr-2">
           {{ tag.name }}
@@ -29,10 +30,10 @@
         <p class="footer">
           von
           <nuxt-link :to="'/users/' + question.user.id" class="user-link">
-            {{ question.user.name }}
+            {{ question.user.username }}
           </nuxt-link>
           am
-          <!-- {{ toPrettyDateTime(question.dateTime) }} -->
+          {{ question.dateTime | prettyDateTime }}
         </p>
       </div>
     </div>
@@ -47,18 +48,6 @@ import { PreviewQuestion } from './../pages/questions/question.model'
 export default class QuestionListCard extends Vue {
   @Prop()
   question!: PreviewQuestion[]
-
-  toPrettyDateTime(rawDateTime: string): string {
-    const prettyDateTime =
-      rawDateTime.slice(8, 10) +
-      '.' +
-      rawDateTime.slice(5, 7) +
-      '.' +
-      rawDateTime.slice(0, 4) +
-      ' um ' +
-      rawDateTime.slice(11, 16)
-    return prettyDateTime
-  }
 }
 </script>
 
