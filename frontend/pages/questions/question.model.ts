@@ -15,3 +15,9 @@ export interface PreviewQuestion {
     description: string
   }[]
 }
+
+export interface CreateQuestion {
+  title: string
+  body: string
+  tagIds: number[]
+}

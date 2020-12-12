@@ -2,21 +2,52 @@
   <v-container>
     <v-row>
       <v-col>
-        <h1>New Question</h1>
-        <v-form>
-          <v-text-field
+        <h1 class="mb-5">New Question</h1>
+        <v-form v-model="isFormValid">
+          <v-textarea
             v-model.trim="question.title"
+            rows="1"
             label="Title"
+            :rules="[rules.required, rules.minLength]"
             required
-          ></v-text-field>
+            outlined
+          ></v-textarea>
 
           <v-textarea
             v-model.trim="question.body"
             rows="10"
             label="Body"
+            :rules="[rules.required, rules.minLength]"
+            required
+            outlined
           ></v-textarea>
 
-          <v-btn color="primary" @click="onSubmit">Ask Question</v-btn>
+          <v-autocomplete
+            v-model="question.tagIds"
+            :items="tags"
+            chips
+            deletable-chips
+            multiple
+            item-text="name"
+            item-value="id"
+            label="Select tags"
+          >
+            <template v-slot:selection="data">
+              <v-chip
+                close
+                @click:close="removeTagIdFromQuestionTagIds(data.item.id)"
+              >
+                <template> {{ data.item.name }} </template>
+              </v-chip>
+            </template>
+            <template v-slot:item="data">
+              <template> {{ data.item.name }} </template>
+            </template>
+          </v-autocomplete>
+
+          <v-btn color="orange" :disabled="!isFormValid" @click="onSubmit">
+            Ask Question
+          </v-btn>
         </v-form>
       </v-col>
     </v-row>
@@ -26,22 +57,47 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 import QuestionService from './../../services/QuestionService'
-// import { PreviewQuestion } from './question.model'
+import { CreateQuestion } from './question.model'
 
 @Component
 export default class QuestionCreate extends Vue {
   // Q: Preview, Create, Detail Question or one Question?
+  isFormValid = false
+  tags = [
+    {
+      id: 1,
+      name: 'isec',
+    },
+    {
+      id: 2,
+      name: 'ma2',
+    },
+    {
+      id: 3,
+      name: 'ti1',
+    },
+  ]
 
-  question = {
+  question: CreateQuestion = {
     title: '',
     body: '',
     tagIds: [],
   }
 
+  rules = {
+    required: (value: string) => !!value || 'Required.',
+    minLength: (value: string) => value.length >= 3 || 'Min 3 Chars',
+  }
+
+  removeTagIdFromQuestionTagIds(tagId: number) {
+    const index = this.question.tagIds.indexOf(tagId)
+    if (index >= 0) this.question.tagIds.splice(index, 1)
+  }
+
   onSubmit() {
     QuestionService.createQuestion(this.$axios, this.question)
-      .then((res) => {
-        console.log(res)
+      .then((_res) => {
+        this.$router.push('/questions')
       })
       .catch((e) => console.log(e))
   }

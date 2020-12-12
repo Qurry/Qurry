@@ -25,7 +25,7 @@ import { PreviewQuestion } from './question.model'
 
 @Component
 export default class QuestionDetail extends Vue {
-  question: PreviewQuestion = null
+  question?: PreviewQuestion
   id = this.$route.params.id
   fetch() {
     return Promise.all([
