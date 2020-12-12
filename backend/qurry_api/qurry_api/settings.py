@@ -19,6 +19,7 @@ ALLOWED_HOSTS = []
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
+    'http://127.0.0.1:3000',
 ]
 
 # Application definition
@@ -137,7 +138,7 @@ REST_FRAMEWORK = {
         ],
     'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.BrowsableAPIRenderer', 'rest_framework.renderers.JSONRenderer'],
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.DjangoModelPermissions', 'rest_framework.permissions.IsAuthenticated']
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated', 'rest_framework.permissions.DjangoModelPermissions']
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -34,6 +34,7 @@ def register(request):
             user = form.save(commit=False)
             user.is_active = False
             user.save()
+            
 
             token = make_token(user)
             mail_subject = 'Activate your account.'
