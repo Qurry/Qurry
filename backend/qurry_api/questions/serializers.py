@@ -56,7 +56,8 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'title', 'body', 'votes', 'dateTime', 'tags', 'answers', 'votes', 'user']
     
     def is_valid(self, raise_exception=False):
-        self.initial_data['tags'] = self.initial_data['tagIds']
+        if 'tagIds' in self.initial_data:
+            self.initial_data['tags'] = self.initial_data['tagIds']
         super().is_valid(raise_exception)
 
     
@@ -71,14 +72,13 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
         representation['tags'] = TagSerializer(instance.tags.all(), many=True).data
         return representation
 
-    """def upgrade(self, instance, validated_data):
+    def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.body = validated_data.get('body', instance.body)
-       
-        # instance.tags = validated_data.get('tags', instance.tags)
+        instance.tags.set(validated_data.get('tags', instance.tags.all()))
 
         instance.save()
-        return instance """
+        return instance 
 
     def answers_number(self, obj):
         return len(Answer.objects.filter(question=obj.id))
@@ -91,4 +91,3 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     
     def data_time(self, obj):
         return obj.date_time
-
