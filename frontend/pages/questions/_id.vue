@@ -11,10 +11,22 @@
     <p>Error while fetching question: {{ $fetchState.error.message }}</p>
   </v-row>
   <v-row v-else>
-    <v-col>
+    <div class="stats">
+      <v-icon class="vote-icon"> mdi-arrow-up-bold </v-icon><br />
+      <span>{{ question.votes }}</span> <br />
+      <v-icon class="vote-icon"> mdi-arrow-down-bold </v-icon>
+    </div>
+    <div class="body">
       <h1 class="mb-3">{{ question.title }}</h1>
       <p>{{ question.body }}</p>
-    </v-col>
+      <p class="question-info">
+        Asked by {{ question.user.username }} on
+        {{ question.dateTime | prettyDateTime }}
+      </p>
+      <h2>
+        {{ question.answers }} Answer{{ question.answers != 1 ? 's' : '' }}
+      </h2>
+    </div>
   </v-row>
 </template>
 
@@ -39,4 +51,21 @@ export default class QuestionDetail extends Vue {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.stats {
+  float: left;
+  width: 60px;
+}
+.body {
+  overflow: hidden;
+}
+.question-info {
+  text-align: right;
+  color: #888888;
+  margin-bottom: 5px;
+  margin-right: 10px;
+}
+.vote-icon {
+  font-size: 40px;
+}
+</style>
