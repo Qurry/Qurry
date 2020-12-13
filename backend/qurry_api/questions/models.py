@@ -29,7 +29,7 @@ class Question(models.Model):
 class Answer(models.Model):
 
     body = models.TextField('Body', max_length=500)
-    votes = models.IntegerField('Vote')
+    votes = models.IntegerField('Vote', default=0)
 
     date_time = models.DateTimeField('Date & Time', auto_now=True)
 
@@ -38,3 +38,6 @@ class Answer(models.Model):
 
     vote_up_users = models.ManyToManyField("users.User", verbose_name='Users who voted up this answer', related_name='answer_upvotes', blank=True)
     vote_down_users = models.ManyToManyField("users.User", verbose_name='Users who voted down this answer', related_name='answer_downvotes', blank=True)
+
+    def __str__(self):
+        return "Answer from %s"%self.user
