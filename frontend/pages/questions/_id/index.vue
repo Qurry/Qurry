@@ -19,6 +19,30 @@
     <div class="body">
       <h1 class="mb-3">{{ question.title }}</h1>
       <p>{{ question.body }}</p>
+
+      <v-btn color="warning" :to="'/questions/' + id + '/edit'" small>
+        <v-icon>mdi-pencil</v-icon> Edit
+      </v-btn>
+
+      <v-dialog v-model="dialog" persistent max-width="290">
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn color="error" small v-bind="attrs" v-on="on">
+            <v-icon>mdi-trash-can</v-icon> Delete
+          </v-btn>
+        </template>
+        <v-card>
+          <v-card-title class="headline">
+            Do you really want to delete this question?
+          </v-card-title>
+          <v-card-text>This action can't be undone.</v-card-text>
+          <v-card-actions>
+            <v-btn color="error" @click="onDelete(id)"> Delete </v-btn>
+            <v-spacer></v-spacer>
+            <v-btn color="#ddd" @click="dialog = false"> Cancel </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
       <p class="question-info">
         Asked by {{ question.user.username }} on
         {{ question.dateTime | prettyDateTime }}
@@ -32,13 +56,15 @@
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
-import QuestionService from './../../services/QuestionService'
-import { PreviewQuestion } from './question.model'
+import QuestionService from './../../../services/QuestionService'
+import { PreviewQuestion } from './../question.model'
 
 @Component
 export default class QuestionDetail extends Vue {
+  dialog = false
   question?: PreviewQuestion
-  id = this.$route.params.id
+  id = +this.$route.params.id
+
   fetch() {
     return Promise.all([
       QuestionService.getQuestion(this.$axios, this.id)
@@ -47,6 +73,14 @@ export default class QuestionDetail extends Vue {
         })
         .catch((error) => console.log(error)),
     ])
+  }
+
+  onDelete(questionId: number) {
+    QuestionService.deleteQuestion(this.$axios, questionId)
+      .then((_res) => {
+        this.$router.push('/questions')
+      })
+      .catch((error) => console.log(error))
   }
 }
 </script>
