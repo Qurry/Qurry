@@ -29,6 +29,8 @@ class User(AbstractBaseUser, PermissionsMixin):
                 'username': self.username
             }
 
+    def is_owner_of(self, obj):
+        return obj.user == self
 
 class Token(models.Model):
 
