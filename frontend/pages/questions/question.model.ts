@@ -1,19 +1,39 @@
 export interface PreviewQuestion {
-  id: number
+  id: string
   title: string
   votes: number
   answers: number
-  body: string
   dateTime: string
   user: {
     id: number
     username: string
   }
-  tags: {
+  tagIds: string[]
+}
+
+export interface Answer {
+  id: string
+  body: string
+  dateTime: string
+  votes: number
+  user: {
     id: number
-    name: string
-    description: string
-  }[]
+    username: string
+  }
+}
+
+export interface DetailQuestion {
+  id: string
+  title: string
+  body: string
+  votes: number
+  dateTime: string
+  user: {
+    id: number
+    username: string
+  }
+  tagIds: string[]
+  answers: Answer[]
 }
 
 export interface CreateQuestion {

@@ -58,24 +58,12 @@
 import { Vue, Component } from 'nuxt-property-decorator'
 import QuestionService from './../../services/QuestionService'
 import { CreateQuestion } from './question.model'
+import { Tag } from './../tags/tag.model'
 
 @Component
 export default class QuestionCreate extends Vue {
   isFormValid = false
-  tags = [
-    {
-      id: 1,
-      name: 'isec',
-    },
-    {
-      id: 2,
-      name: 'ma2',
-    },
-    {
-      id: 3,
-      name: 'ti1',
-    },
-  ]
+  tags: Tag[] = this.$store.state.tags
 
   question: CreateQuestion = {
     title: '',

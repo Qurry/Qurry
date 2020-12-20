@@ -34,5 +34,10 @@ export default {
   computed: {
     ...mapState('auth', ['loggedIn']),
   },
+  // beforeMount() {
+  //   this.$store.dispatch('fetchTags').then(() => {
+  //     console.log('done')
+  //   })
+  // },
 }
 </script>

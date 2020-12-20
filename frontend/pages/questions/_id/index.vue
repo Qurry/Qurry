@@ -63,7 +63,7 @@ import { PreviewQuestion } from './../question.model'
 export default class QuestionDetail extends Vue {
   dialog = false
   question?: PreviewQuestion
-  id = +this.$route.params.id
+  id = this.$route.params.id
 
   fetch() {
     return Promise.all([
@@ -75,7 +75,7 @@ export default class QuestionDetail extends Vue {
     ])
   }
 
-  onDelete(questionId: number) {
+  onDelete(questionId: string) {
     QuestionService.deleteQuestion(this.$axios, questionId)
       .then((_res) => {
         this.$router.push('/questions')

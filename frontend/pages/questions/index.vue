@@ -18,7 +18,7 @@
           <v-btn to="/questions/create" color="primary">Ask Question</v-btn>
         </v-col>
       </v-row>
-      <QuestionListCard
+      <PreviewQuestionCard
         v-for="question in questions"
         :key="question.id"
         :question="question"
