@@ -23,6 +23,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username
 
+    def as_preview(self):
+        return {
+                'id': self.id,
+                'username': self.username
+            }
+
 
 class Token(models.Model):
 
