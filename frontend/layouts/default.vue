@@ -5,6 +5,7 @@
       <v-spacer></v-spacer>
       <template v-if="loggedIn">
         <v-btn to="/questions" text rounded>Questions</v-btn>
+        <v-btn to="/tags" text rounded>Tags</v-btn>
         <v-btn to="/logout" text rounded>Logout</v-btn>
         <v-btn to="/profile" text rounded>Profile</v-btn>
         <span>{{ points }} <v-icon color="orange"> mdi-trophy </v-icon></span>
@@ -34,10 +35,10 @@ export default {
   computed: {
     ...mapState('auth', ['loggedIn']),
   },
-  // beforeMount() {
-  //   this.$store.dispatch('fetchTags').then(() => {
-  //     console.log('done')
-  //   })
-  // },
+  beforeMount() {
+    this.$store.dispatch('fetchTags').then(() => {
+      console.log('done')
+    })
+  },
 }
 </script>

@@ -85,6 +85,7 @@ export default class QuestionListCard extends Vue {
 }
 .tags {
   margin: 5px 0;
+  height: 24px;
 }
 .footer {
   text-align: right;

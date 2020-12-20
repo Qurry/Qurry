@@ -44,7 +44,7 @@
       </v-dialog>
 
       <p class="question-info">
-        Asked by {{ question.user.username }} on
+        by {{ question.user.username }} on
         {{ question.dateTime | prettyDateTime }}
       </p>
       <h2>

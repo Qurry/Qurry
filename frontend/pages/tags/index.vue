@@ -15,5 +15,8 @@ import { Tag } from './tag.model'
 @Component
 export default class Dashboard extends Vue {
   tags: Tag[] = this.$store.state.tags
+  created() {
+    console.log('in tags')
+  }
 }
 </script>

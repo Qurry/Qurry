@@ -55,8 +55,9 @@ class QuestionView(View):
             tags = self.parse_tags_from(body['tagIds'])
             del body['tagIds']
             new_question = Question(**body)
-            # when having problems use new_question.user = User.objects.first() 
-            new_question.user = self.user
+            # when having problems use 
+            new_question.user = User.objects.first() 
+            # new_question.user = self.user
             new_question.save()
             new_question.tags.set(tags)
             
