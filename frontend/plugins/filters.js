@@ -17,7 +17,7 @@ Vue.filter('prettyDateTime', (rawDateTime) => {
     rawDateTime.slice(5, 7) +
     '.' +
     rawDateTime.slice(0, 4) +
-    ' um ' +
+    ' at ' +
     rawDateTime.slice(11, 16)
   return prettyDateTime
 })

@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col>
-        <h1 class="mb-5">New Question</h1>
+        <h1 class="mb-5">Edit Question {{ id }}</h1>
         <v-form v-model="isFormValid">
           <v-textarea
             v-model.trim="question.title"
@@ -46,7 +46,7 @@
           </v-autocomplete>
 
           <v-btn color="orange" :disabled="!isFormValid" @click="onSubmit">
-            Ask Question
+            Save Changes
           </v-btn>
         </v-form>
       </v-col>
@@ -56,11 +56,12 @@
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
-import QuestionService from './../../services/QuestionService'
-import { CreateQuestion } from './question.model'
+import QuestionService from './../../../services/QuestionService'
+import { CreateQuestion } from './../question.model'
 
 @Component
 export default class QuestionCreate extends Vue {
+  // Q: Preview, Create, Detail Question or one Question?
   isFormValid = false
   tags = [
     {
@@ -76,6 +77,22 @@ export default class QuestionCreate extends Vue {
       name: 'ti1',
     },
   ]
+
+  id = +this.$route.params.id
+
+  fetch() {
+    return Promise.all([
+      QuestionService.getQuestion(this.$axios, this.id)
+        .then((question) => {
+          this.question = {
+            title: question.title,
+            body: question.body,
+            tagIds: question.tagIds,
+          }
+        })
+        .catch((error) => console.log(error)),
+    ])
+  }
 
   question: CreateQuestion = {
     title: '',
@@ -94,9 +111,9 @@ export default class QuestionCreate extends Vue {
   }
 
   onSubmit() {
-    QuestionService.createQuestion(this.$axios, this.question)
+    QuestionService.editQuestion(this.$axios, this.id, this.question)
       .then((_res) => {
-        this.$router.push('/questions')
+        this.$router.push('/questions/' + this.id)
       })
       .catch((e) => console.log(e))
   }
