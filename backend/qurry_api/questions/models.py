@@ -1,11 +1,7 @@
-import uuid
-
 from django.db import models
 
 
 class Tag(models.Model):
-
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     name = models.CharField('Name', max_length=20)
     description = models.TextField('Description', blank=True, null=True)
@@ -16,10 +12,8 @@ class Tag(models.Model):
 
 class Question(models.Model):
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
     title = models.CharField('Title', max_length=200)
-    body = models.TextField('Body', max_length=500)
+    body = models.TextField('Body', max_length=10000)
     tags = models.ManyToManyField(Tag, verbose_name='Tags', blank=True)
 
     date_time = models.DateTimeField('Date & Time', auto_now=True, blank=True, null=True)
@@ -29,7 +23,7 @@ class Question(models.Model):
     vote_down_users = models.ManyToManyField("users.User", verbose_name='Users who voted down this question', related_name='question_downvotes', blank=True)
 
     def __str__(self):
-        return '%s: %s' % (self.id, self.title)
+        return '%d: %s' % (self.id, self.title)
 
     def count_votes(self):
         return len(self.vote_up_users.all()) -len(self.vote_down_users.all())
@@ -42,7 +36,7 @@ class Question(models.Model):
     
     def as_preview(self):
         return {
-            'id': self.id,
+            'id': str(self.id),
             'title': self.title,
             'votes': self.count_votes(),
             'answers': self.count_answers(),
@@ -53,7 +47,7 @@ class Question(models.Model):
 
     def as_detailed(self):
         return {
-            'id': self.id,
+            'id': str(self.id),
             'title': self.title,
             'body': self.body,
             'votes': self.count_votes(),
@@ -64,10 +58,7 @@ class Question(models.Model):
         }
 
 class Answer(models.Model):
-
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
-    body = models.TextField('Body', max_length=500)
+    body = models.TextField('Body', max_length=10000)
 
     date_time = models.DateTimeField('Date & Time', auto_now=True)
 
@@ -85,7 +76,7 @@ class Answer(models.Model):
 
     def as_preview(self):
         return {
-            'id': self.id,
+            'id': str(self.id),
             'body': self.body,
             'votes': self.count_votes(),
             'user': self.user.as_preview()

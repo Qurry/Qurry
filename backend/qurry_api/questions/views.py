@@ -27,24 +27,8 @@ def login_required(func):
         return func(self, request, *args, **kwargs)
     return is_authenticated
 
-""" def is_owner_of(func):
-    def has_perm(self, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return JsonResponse({'not authenticated': 'you have to login to access questions'}, status=401)
-        return self.func(*args, **kwargs)
-    return is_authenticated """
-
-""" def to_string(error_dict):
-    error_string = ''
-    for field in error_dict:
-        error_string += ' %s(' % field
-        for message in error_dict[field]:
-            error_string += '%s, ' % message
-        error_string += ') '
-    return error_string """
-
 @method_decorator(csrf_exempt, name='dispatch')
-class QuestionView(View, LoginRequiredMixin):
+class QuestionView(View):
 
     # different HTTP requests
     @login_required
@@ -101,7 +85,7 @@ class QuestionView(View, LoginRequiredMixin):
             error_message = self.handle(exception)
             return JsonResponse({'bad request': error_message}, status=400)
  
-        return JsonResponse({'created': new_question.id}, status=201)
+        return JsonResponse({'created': str(new_question.id)}, status=201)
 
     # TODO add login_required and permission_required
     def change(self, id, body):
@@ -163,7 +147,7 @@ class QuestionView(View, LoginRequiredMixin):
     def tags_from(self, tag_ids):
         tags = []
         for tag_id in tag_ids:
-            tags.append(Tag.objects.get(id=tag_id))
+            tags.append(Tag.objects.get(id=int(tag_id)))
         return tags
 
     def handle(self, bad_request_exception): 
