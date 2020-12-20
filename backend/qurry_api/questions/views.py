@@ -19,7 +19,6 @@ def to_json(post_body):
 
 def login_required(func):
     def is_authenticated(self, request, *args, **kwargs):
-        print(request.user)
         if not request.user.is_authenticated:
             return JsonResponse({'errors': ['you have to login to access questions']}, status=401)
 
@@ -35,7 +34,7 @@ class QuestionView(View):
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
             return self.view_details(kwargs['id'])
-        return self.view_list()
+        return self.view_list(**request.GET.dict())
     
     @login_required
     def post(self, request, *args, **kwargs):
@@ -56,9 +55,12 @@ class QuestionView(View):
             return JsonResponse({'errors': ['you can not delete to questions, you have to add id to the url']}, status=405)
         return self.remove(kwargs['id'])
 
-    # TODO add limit + offset
-    def view_list(self): # in preview format
-        return JsonResponse(list(question.as_preview() for question in Question.objects.all()), safe=False)
+    def view_list(self, **kwargs): # in preview format
+        limit = int(kwargs.get('limit', Question.objects.count()))
+        offset = int(kwargs.get('offset', 0))
+        questions = Question.objects.all()[offset: offset + limit]
+        
+        return JsonResponse(list(question.as_preview() for question in questions), safe=False)
     
     def view_details(self, id):
         try:
@@ -83,7 +85,7 @@ class QuestionView(View):
         
         except Exception as exception:
             error_list = self.handle(exception)
-            return JsonResponse({'erros': error_list}, status=400)
+            return JsonResponse({'errors': error_list}, status=400)
  
         return JsonResponse({'questionId': str(new_question.id)}, status=201)
 
@@ -112,7 +114,7 @@ class QuestionView(View):
             return JsonResponse({'errors': [str(err)]}, status=404)
 
         except PermissionDenied as err:
-            return JsonResponse({'erros': ['you have to own the object to be able to change it']}, status=401)
+            return JsonResponse({'errors': ['you have to own the object to be able to change it']}, status=401)
 
         except Exception as exception:
             error_list = self.handle(exception)
@@ -167,3 +169,12 @@ class QuestionView(View):
             TypeError: 'tagIds should be a list of strings.',
         }
         return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
+
+
+class TagView(View):
+    @login_required
+    def get(self, request, *args, **kwargs):
+        return self.view_list()
+
+    def view_list(self):
+        return JsonResponse(list(tag.as_preview() for tag in Tag.objects.all()), safe=False)
