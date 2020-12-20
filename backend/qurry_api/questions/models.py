@@ -9,6 +9,13 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+    def as_preview(self):
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'description': self.description
+        }
+
 
 class Question(models.Model):
 
@@ -26,10 +33,10 @@ class Question(models.Model):
         return '%d: %s' % (self.id, self.title)
 
     def count_votes(self):
-        return len(self.vote_up_users.all()) -len(self.vote_down_users.all())
+        return self.vote_up_users.count() - self.vote_down_users.count()
 
     def count_answers(self):
-        return len(self.answer_set.all())
+        return self.answer_set.count()
 
     def get_tag_id_list(self):
         return list(str(id) for id in self.tags.values_list('id', flat=True))
@@ -72,7 +79,7 @@ class Answer(models.Model):
         return "Answer from %s"%self.user
 
     def count_votes(self):
-        return len(self.vote_up_users.all()) -len(self.vote_down_users.all())
+        return self.vote_up_users.count() - self.vote_down_users.count()
 
     def as_preview(self):
         return {
