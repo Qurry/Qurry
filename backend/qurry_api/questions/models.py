@@ -14,7 +14,6 @@ class Question(models.Model):
 
     title = models.CharField('Title', max_length=200)
     body = models.TextField('Body', max_length=500)
-    votes = models.IntegerField('Votes', blank=True, default=0)
     tags = models.ManyToManyField(Tag, verbose_name='Tags', blank=True)
 
     date_time = models.DateTimeField('Date & Time', auto_now=True, blank=True, null=True)
@@ -26,10 +25,42 @@ class Question(models.Model):
     def __str__(self):
         return self.title
 
+    def count_votes(self):
+        return len(self.vote_up_users.all()) -len(self.vote_down_users.all())
+
+    def count_answers(self):
+        return len(self.answer_set.all())
+
+    def get_tag_id_list(self):
+        return list(self.tags.values_list('id', flat=True))
+    
+    def as_preview(self):
+        return {
+            'id': str(self.id),
+            'title': self.title,
+            'body': self.body,
+            'votes': self.count_votes(),
+            'anwers': self.count_answers(),
+            'tagIds': self.get_tag_id_list(),
+            'user': self.user.as_preview(),
+            'dateTime': self.date_time
+        }
+
+    def as_detailed(self):
+        return {
+            'id': str(self.id),
+            'title': self.title,
+            'body': self.body,
+            'votes': self.count_votes(),
+            'anwers': list(answer.as_preview() for answer in self.answer_set.all()),
+            'tagIds': self.get_tag_id_list(),
+            'user': self.user.as_preview(),
+            'dateTime': self.date_time
+        }
+
 class Answer(models.Model):
 
     body = models.TextField('Body', max_length=500)
-    votes = models.IntegerField('Vote', default=0)
 
     date_time = models.DateTimeField('Date & Time', auto_now=True)
 
@@ -41,3 +72,14 @@ class Answer(models.Model):
 
     def __str__(self):
         return "Answer from %s"%self.user
+
+    def count_votes(self):
+        return len(self.vote_up_users.all()) -len(self.vote_down_users.all())
+
+    def as_preview(self):
+        return {
+            'id': str(self.id),
+            'body': self.body,
+            'votes': self.count_votes(),
+            'user': self.user.as_preview()
+        }
