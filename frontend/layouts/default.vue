@@ -18,7 +18,15 @@
 
     <v-main>
       <v-container>
-        <nuxt />
+        <div v-if="dataFetched"><nuxt /></div>
+        <div v-else>
+          <v-progress-circular
+            :size="70"
+            :width="7"
+            color="primary"
+            indeterminate
+          ></v-progress-circular>
+        </div>
       </v-container>
     </v-main>
   </v-app>
@@ -30,15 +38,15 @@ export default {
   data() {
     return {
       points: 145,
+      dataFetched: false,
     }
   },
   computed: {
     ...mapState('auth', ['loggedIn']),
   },
-  beforeMount() {
-    this.$store.dispatch('fetchTags').then(() => {
-      console.log('done')
-    })
+  async beforeMount() {
+    await this.$store.dispatch('fetchTags')
+    this.dataFetched = true
   },
 }
 </script>

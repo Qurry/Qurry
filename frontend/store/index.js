@@ -1,22 +1,4 @@
 export const state = () => ({
-  // tags: [
-  //   {
-  //     id: '1',
-  //     name: 'isec',
-  //   },
-  //   {
-  //     id: '2',
-  //     name: 'ma3',
-  //   },
-  //   {
-  //     id: '3',
-  //     name: 'ti1',
-  //   },
-  //   {
-  //     id: '4',
-  //     name: 'abc',
-  //   },
-  // ],
   tags: [],
 })
 
