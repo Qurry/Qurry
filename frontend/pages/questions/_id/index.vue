@@ -48,8 +48,14 @@
         {{ question.dateTime | prettyDateTime }}
       </p>
       <h2>
-        {{ question.answers }} Answer{{ question.answers != 1 ? 's' : '' }}
+        {{ question.answers.length }} Answer{{
+          question.answers.length != 1 ? 's' : ''
+        }}
       </h2>
+      <div v-for="answer in question.answers" :key="answer.id">
+        <p>{{ answer.body }} by {{ answer.user.username }}</p>
+        <hr />
+      </div>
     </div>
   </v-row>
 </template>
