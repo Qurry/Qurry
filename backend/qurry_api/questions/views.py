@@ -19,9 +19,8 @@ def to_json(post_body):
 
 def login_required(func):
     def is_authenticated(self, request, *args, **kwargs):
-        print(request.user)
         if not request.user.is_authenticated:
-            return JsonResponse({'not authenticated': 'you have to login to access questions'}, status=401)
+            return JsonResponse({'errors': ['you have to login to access questions']}, status=401)
 
         self.user = request.user
         return func(self, request, *args, **kwargs)
@@ -35,7 +34,7 @@ class QuestionView(View):
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
             return self.view_details(kwargs['id'])
-        return self.view_list()
+        return self.view_list(**request.GET.dict())
     
     @login_required
     def post(self, request, *args, **kwargs):
@@ -46,27 +45,30 @@ class QuestionView(View):
     def patch(self, request, *args, **kwargs):
         self.user = request.user
         if not 'id' in kwargs:
-            return JsonResponse({'methode not allowed': 'you can not patch to questions, you have to add id to the url'}, status=405)
+            return JsonResponse({'errors': ['you can not patch to questions, you have to add id to the url']}, status=405)
         return self.change(kwargs['id'], to_json(request.body))
 
     @login_required
     def delete(self, request, *args, **kwargs):
         self.user = request.user
         if not 'id' in kwargs:
-            return JsonResponse({'methode not acceptable': 'you can not delete to questions, you have to add id to the url'}, status=405)
+            return JsonResponse({'errors': ['you can not delete to questions, you have to add id to the url']}, status=405)
         return self.remove(kwargs['id'])
 
-    # TODO add limit + offset
-    def view_list(self): # in preview format
-        return JsonResponse(list(question.as_preview() for question in Question.objects.all()), safe=False)
+    def view_list(self, **kwargs): # in preview format
+        limit = int(kwargs.get('limit', Question.objects.count()))
+        offset = int(kwargs.get('offset', 0))
+        questions = Question.objects.all()[offset: offset + limit]
+        
+        return JsonResponse(list(question.as_preview() for question in questions), safe=False)
     
     def view_details(self, id):
         try:
             response = get_object_or_404(Question, id=id).as_detailed()
             return JsonResponse(response)
         except Exception as exception:
-            error_message = self.handle(exception)
-            return JsonResponse({'not found': error_message}, status=404)
+            error_list = self.handle(exception)
+            return JsonResponse({'errors': [error_list]}, status=404)
      
     # TODO add login_required
     def create(self, body):
@@ -82,10 +84,10 @@ class QuestionView(View):
             new_question.tags.set(tags)
         
         except Exception as exception:
-            error_message = self.handle(exception)
-            return JsonResponse({'bad request': error_message}, status=400)
+            error_list = self.handle(exception)
+            return JsonResponse({'errors': error_list}, status=400)
  
-        return JsonResponse({'created': str(new_question.id)}, status=201)
+        return JsonResponse({'questionId': str(new_question.id)}, status=201)
 
     # TODO add login_required and permission_required
     def change(self, id, body):
@@ -109,16 +111,16 @@ class QuestionView(View):
                 question.tags.set(tags)
 
         except Question.DoesNotExist as err:
-            return JsonResponse({'not found': str(err)}, status=404)
+            return JsonResponse({'errors': [str(err)]}, status=404)
 
         except PermissionDenied as err:
-            return JsonResponse({'unautherized': 'you have to own the object to be able to change it'}, status=401)
+            return JsonResponse({'errors': ['you have to own the object to be able to change it']}, status=401)
 
         except Exception as exception:
-            error_message = self.handle(exception)
-            return JsonResponse({'bad request': error_message}, status=400)
+            error_list = self.handle(exception)
+            return JsonResponse({'errors': error_list}, status=400)
 
-        return JsonResponse({'changed': id}, status=201)
+        return JsonResponse({'questionId': str(id)}, status=201)
 
     # TODO add login_required and permission_required
     def remove(self, id):
@@ -131,16 +133,16 @@ class QuestionView(View):
             question.delete()
 
         except Question.DoesNotExist as err:
-            return JsonResponse({'not found': str(err)}, status=404)
+            return JsonResponse({'errors': [str(err)]}, status=404)
 
         except PermissionDenied as err:
-            return JsonResponse({'unautherized': 'you have to own the object to be able to change it'}, status=401)
+            return JsonResponse({'errors': ['you have to own the object to be able to change it']}, status=401)
 
         except Exception as exception:
-            error_message = self.handle(exception)
-            return JsonResponse({'bad request': error_message}, status=400)
+            error_list = self.handle(exception)
+            return JsonResponse({'errors': error_list}, status=400)
 
-        return JsonResponse({'deleted': id}, status=200)
+        return JsonResponse({'questionId': str(id)}, status=200)
     
     # aux functions
 
@@ -153,7 +155,12 @@ class QuestionView(View):
     def handle(self, bad_request_exception): 
         # fields are not valid 
         if isinstance(bad_request_exception, ValidationError):
-            return eval(str(bad_request_exception))
+            error_list = []
+            error_dict = eval(str(bad_request_exception))
+            for field in error_dict:
+                for error in error_dict[field]:
+                    error_list.append('%s: %s' % (field, error))
+            return error_list
 
         message_dict = {
             # one argument is not given
@@ -161,4 +168,13 @@ class QuestionView(View):
             # tagIds is not a list
             TypeError: 'tagIds should be a list of strings.',
         }
-        return message_dict.get(type(bad_request_exception), str(bad_request_exception))
+        return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
+
+
+class TagView(View):
+    @login_required
+    def get(self, request, *args, **kwargs):
+        return self.view_list()
+
+    def view_list(self):
+        return JsonResponse(list(tag.as_preview() for tag in Tag.objects.all()), safe=False)

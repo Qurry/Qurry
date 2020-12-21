@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.http import JsonResponse
 
-from .views import QuestionView
+from .views import QuestionView, TagView
 
 def mockquestions(request):
     return JsonResponse(
@@ -65,4 +65,6 @@ urlpatterns = [
     # path('questions/', mockquestions),
     path('questions', QuestionView.as_view(), name='view-questions'),
     path('questions/<int:id>', QuestionView.as_view(), name='view-question-details'),
+
+    path('tags', TagView.as_view(), name='view-tags'),
 ]
