@@ -19,8 +19,8 @@
           <v-icon class="vote-icon"> mdi-arrow-down-bold </v-icon>
         </div>
         <div class="question-body-container">
-          <h1 class="mb-3">{{ question.title }}</h1>
-          <p>{{ question.body }}</p>
+          <h1 class="mb-3"><MathJax :data="question.title" /></h1>
+          <p><MathJax :data="question.body" /></p>
 
           <div class="question-footer">
             <v-btn

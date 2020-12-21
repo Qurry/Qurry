@@ -48,5 +48,13 @@ export default {
     await this.$store.dispatch('fetchTags')
     this.dataFetched = true
   },
+  head: {
+    script: [
+      {
+        src:
+          'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_HTML',
+      },
+    ],
+  },
 }
 </script>

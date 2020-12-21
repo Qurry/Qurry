@@ -17,7 +17,7 @@
     <div class="body">
       <h1 class="title">
         <nuxt-link :to="'/questions/' + question.id" class="question-link">
-          {{ question.title }}
+          <MathJax :data="question.title" />
         </nuxt-link>
       </h1>
       <div class="tags">
