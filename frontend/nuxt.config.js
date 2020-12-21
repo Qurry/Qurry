@@ -54,12 +54,27 @@ export default {
     },
   },
 
+  // auth: {
+  //   strategies: {
+  //     local: {
+  //       cookie: {
+  //         // (optional) If set we check this cookie exsistence for loggedIn check
+  //         name: 'sessionid',
+  //       },
+  //     },
+  //   },
+  // },
+
   // router: {
   //   middleware: ['auth'],
   // },
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
   axios: {
+    credentials: true,
+    init(axios) {
+      axios.defaults.withCredentials = true
+    },
     baseURL: 'http://localhost:8000/api',
   },
 
