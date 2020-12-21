@@ -3,4 +3,4 @@ python-env
 qurry-db
 migrations/
 __pycache__/
-*.bat
+records.json
