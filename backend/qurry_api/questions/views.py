@@ -36,7 +36,16 @@ class QuestionView(View):
     @login_required
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
-            return self.view_details(kwargs['id'])
+            try:
+                question = Question.objects.get(id=kwargs['id'])
+            except Question.DoesNotExist as err:
+                return JsonResponse({'errors': [str(err)]}, status=404)
+
+            if 'vote' in request.GET:
+                return self.vote(question, request.GET['vote'])
+
+            return self.view_detailed(question)
+
         return self.view_list(**dict(request.GET))
 
     @login_required
@@ -87,14 +96,8 @@ class QuestionView(View):
 
         return JsonResponse(list(question.as_preview() for question in questions[offset: offset + limit]), safe=False)
 
-    def view_details(self, id):
-        try:
-            response = get_object_or_404(Question, id=id).as_detailed()
-            return JsonResponse(response)
-        except Exception as exception:
-            error_list = self.handle(exception)
-            return JsonResponse({'errors': [error_list]}, status=404)
-
+    def view_detailed(self, question):
+        return JsonResponse(question.as_detailed())
     # TODO add login_required
     def create(self, body):
         try:
@@ -136,9 +139,6 @@ class QuestionView(View):
                 tags = self.tags_from(tagIds)
                 question.tags.set(tags)
 
-        except Question.DoesNotExist as err:
-            return JsonResponse({'errors': [str(err)]}, status=404)
-
         except PermissionDenied as err:
             return JsonResponse({'errors': ['you have to own the object to be able to change it']}, status=401)
 
@@ -169,6 +169,25 @@ class QuestionView(View):
             return JsonResponse({'errors': error_list}, status=400)
 
         return JsonResponse({'questionId': str(id)}, status=200)
+
+    def vote(self, question, action):
+        # remove user from voters
+        try:
+            question.vote_up_users.remove(self.user)
+        except:
+            pass
+
+        try:
+            question.vote_down_users.remove(self.user)
+        except:
+            pass
+        
+        if action == 'up':
+            question.vote_up_users.add(self.user)
+        if action == 'down':
+            question.vote_down_users.add(self.user)
+        
+        return JsonResponse({})
 
     # aux functions
 
