@@ -13,9 +13,11 @@ from users.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
+
 def to_json(post_body):
     body_unicode = post_body.decode('utf-8')
     return json.loads(body_unicode or '{}')
+
 
 def login_required(func):
     def is_authenticated(self, request, *args, **kwargs):
@@ -26,6 +28,7 @@ def login_required(func):
         return func(self, request, *args, **kwargs)
     return is_authenticated
 
+
 @method_decorator(csrf_exempt, name='dispatch')
 class QuestionView(View):
 
@@ -34,8 +37,8 @@ class QuestionView(View):
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
             return self.view_details(kwargs['id'])
-        return self.view_list(**request.GET.dict())
-    
+        return self.view_list(**dict(request.GET))
+
     @login_required
     def post(self, request, *args, **kwargs):
         self.user = request.user
@@ -55,13 +58,35 @@ class QuestionView(View):
             return JsonResponse({'errors': ['you can not delete to questions, you have to add id to the url']}, status=405)
         return self.remove(kwargs['id'])
 
-    def view_list(self, **kwargs): # in preview format
-        limit = int(kwargs.get('limit', Question.objects.count()))
-        offset = int(kwargs.get('offset', 0))
-        questions = Question.objects.all()[offset: offset + limit]
+    def view_list(self ,**kwargs):  # in preview format
+        # parse allowed arguments
+        limit = Question.objects.count()
+        offset = 0
+        search_words = None
+        try:
+            if 'limit' in kwargs:
+                limit = int(kwargs['limit'][0])
+            
+            if 'offset' in kwargs:
+                offset = int(kwargs['offset'][0])
+            
+            if 'search' in kwargs:
+                search_words = kwargs['search']
+        except:
+            return JsonResponse({'errors': ['get arguments are invalid']}, status=400)
         
-        return JsonResponse(list(question.as_preview() for question in questions), safe=False)
-    
+        questions = Question.objects.all()
+
+        search_result = Question.objects.none()
+        if search_words:
+            for word in search_words:
+                search_result |= questions.filter(title__icontains=word)
+                search_result |= questions.filter(body__icontains=word)
+
+            questions = search_result
+
+        return JsonResponse(list(question.as_preview() for question in questions[offset: offset + limit]), safe=False)
+
     def view_details(self, id):
         try:
             response = get_object_or_404(Question, id=id).as_detailed()
@@ -69,24 +94,25 @@ class QuestionView(View):
         except Exception as exception:
             error_list = self.handle(exception)
             return JsonResponse({'errors': [error_list]}, status=404)
-     
+
     # TODO add login_required
     def create(self, body):
         try:
             tagIds = body['tagIds']
             tags = self.tags_from(tagIds)
 
-            creation_data = {'title': body['title'], 'body': body['body'], 'user': self.user}
+            creation_data = {'title': body['title'],
+                             'body': body['body'], 'user': self.user}
 
             new_question = Question(**creation_data)
             new_question.full_clean()
             new_question.save()
             new_question.tags.set(tags)
-        
+
         except Exception as exception:
             error_list = self.handle(exception)
             return JsonResponse({'errors': error_list}, status=400)
- 
+
         return JsonResponse({'questionId': str(new_question.id)}, status=201)
 
     # TODO add login_required and permission_required
@@ -101,7 +127,7 @@ class QuestionView(View):
                 question.title = body['title']
             if 'body' in body:
                 question.body = body['body']
-            
+
             question.full_clean()
             question.save()
 
@@ -143,7 +169,7 @@ class QuestionView(View):
             return JsonResponse({'errors': error_list}, status=400)
 
         return JsonResponse({'questionId': str(id)}, status=200)
-    
+
     # aux functions
 
     def tags_from(self, tag_ids):
@@ -152,8 +178,8 @@ class QuestionView(View):
             tags.append(Tag.objects.get(id=int(tag_id)))
         return tags
 
-    def handle(self, bad_request_exception): 
-        # fields are not valid 
+    def handle(self, bad_request_exception):
+        # fields are not valid
         if isinstance(bad_request_exception, ValidationError):
             error_list = []
             error_dict = eval(str(bad_request_exception))
