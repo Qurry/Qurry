@@ -13,34 +13,50 @@ from users.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
-
-def to_json(post_body):
+# parse a post body and return json
+def json_from(post_body):
     body_unicode = post_body.decode('utf-8')
     return json.loads(body_unicode or '{}')
 
-
-def login_required(func):
-    def is_authenticated(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
+# decorators
+def login_required(function):
+    def is_authenticated(self, *args, **kwargs):
+        if not self.user.is_authenticated:
             return JsonResponse({'errors': ['you have to login to access questions']}, status=401)
-
-        self.user = request.user
-        return func(self, request, *args, **kwargs)
+        return function(self, *args, **kwargs)
     return is_authenticated
 
+def ownership_required(function):
+    def is_owner(self, obj, *args, **kwargs):
+        if not self.user.is_owner_of(obj):
+            return JsonResponse({'errors': ['you have to own the %s object to be able to do this action' % self.model.__name__]}, status=401)
+        return function(self, obj, *args, **kwargs)
+    return is_owner
+
+def object_existence_required(function):
+    def does_exist(self, *args, **kwargs):
+        if 'id' in kwargs:
+            try:
+                self.Model.objects.get(id=kwargs['id'])
+            except Exception as err:
+                return JsonResponse({'errors': [str(err)]}, status=404)
+        return function(self, *args, **kwargs)
+    return does_exist
 
 @method_decorator(csrf_exempt, name='dispatch')
 class QuestionView(View):
 
+    Model = Question
+
+    def setup(self, request, *args, **kwargs):
+        self.user = request.user
+        return super().setup(request, *args, **kwargs)
+
     # different HTTP requests
-    @login_required
+    @object_existence_required
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
-            try:
-                question = Question.objects.get(id=kwargs['id'])
-            except Question.DoesNotExist as err:
-                return JsonResponse({'errors': [str(err)]}, status=404)
-
+            question = self.Model.objects.get(id=kwargs['id'])
             if 'vote' in request.GET:
                 return self.vote(question, request.GET['vote'])
 
@@ -48,28 +64,26 @@ class QuestionView(View):
 
         return self.view_list(**dict(request.GET))
 
-    @login_required
     def post(self, request, *args, **kwargs):
-        self.user = request.user
-        return self.create(to_json(request.body))
+        return self.create(json_from(request.body))
 
-    @login_required
+    @object_existence_required
     def patch(self, request, *args, **kwargs):
-        self.user = request.user
         if not 'id' in kwargs:
             return JsonResponse({'errors': ['you can not patch to questions, you have to add id to the url']}, status=405)
-        return self.change(kwargs['id'], to_json(request.body))
+        question = self.Model.objects.get(id=kwargs['id'])
+        return self.change(question, json_from(request.body))
 
-    @login_required
+    @object_existence_required
     def delete(self, request, *args, **kwargs):
-        self.user = request.user
         if not 'id' in kwargs:
             return JsonResponse({'errors': ['you can not delete to questions, you have to add id to the url']}, status=405)
-        return self.remove(kwargs['id'])
+        question = self.Model.objects.get(id=kwargs['id'])
+        return self.remove(question)
 
     def view_list(self ,**kwargs):  # in preview format
-        # parse allowed arguments
-        limit = Question.objects.count()
+        # parse arguments
+        limit = self.Model.objects.count()
         offset = 0
         search_words = None
         try:
@@ -84,7 +98,7 @@ class QuestionView(View):
         except:
             return JsonResponse({'errors': ['get arguments are invalid']}, status=400)
         
-        questions = Question.objects.all()
+        questions = self.Model.objects.all()
 
         search_result = Question.objects.none()
         if search_words:
@@ -96,9 +110,11 @@ class QuestionView(View):
 
         return JsonResponse(list(question.as_preview() for question in questions[offset: offset + limit]), safe=False)
 
+    @login_required
     def view_detailed(self, question):
         return JsonResponse(question.as_detailed())
-    # TODO add login_required
+
+    @login_required
     def create(self, body):
         try:
             tagIds = body['tagIds']
@@ -107,7 +123,7 @@ class QuestionView(View):
             creation_data = {'title': body['title'],
                              'body': body['body'], 'user': self.user}
 
-            new_question = Question(**creation_data)
+            new_question = self.Model(**creation_data)
             new_question.full_clean()
             new_question.save()
             new_question.tags.set(tags)
@@ -118,14 +134,10 @@ class QuestionView(View):
 
         return JsonResponse({'questionId': str(new_question.id)}, status=201)
 
-    # TODO add login_required and permission_required
-    def change(self, id, body):
+    @login_required
+    @ownership_required
+    def change(self, question, body):
         try:
-            question = Question.objects.get(id=id)
-
-            if not self.user.is_owner_of(question):
-                raise PermissionDenied
-
             if 'title' in body:
                 question.title = body['title']
             if 'body' in body:
@@ -139,37 +151,24 @@ class QuestionView(View):
                 tags = self.tags_from(tagIds)
                 question.tags.set(tags)
 
-        except PermissionDenied as err:
-            return JsonResponse({'errors': ['you have to own the object to be able to change it']}, status=401)
-
         except Exception as exception:
             error_list = self.handle(exception)
             return JsonResponse({'errors': error_list}, status=400)
 
         return JsonResponse({'questionId': str(id)}, status=201)
 
-    # TODO add login_required and permission_required
-    def remove(self, id):
+    @login_required
+    @ownership_required
+    def remove(self, question):
         try:
-            question = Question.objects.get(id=id)
-
-            if not self.user.is_owner_of(question):
-                raise PermissionDenied
-
             question.delete()
-
-        except Question.DoesNotExist as err:
-            return JsonResponse({'errors': [str(err)]}, status=404)
-
-        except PermissionDenied as err:
-            return JsonResponse({'errors': ['you have to own the object to be able to change it']}, status=401)
-
         except Exception as exception:
             error_list = self.handle(exception)
             return JsonResponse({'errors': error_list}, status=400)
 
         return JsonResponse({'questionId': str(id)}, status=200)
 
+    @login_required
     def vote(self, question, action):
         # remove user from voters
         try:
@@ -188,8 +187,6 @@ class QuestionView(View):
             question.vote_down_users.add(self.user)
         
         return JsonResponse({})
-
-    # aux functions
 
     def tags_from(self, tag_ids):
         tags = []
