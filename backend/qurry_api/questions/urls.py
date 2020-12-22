@@ -63,8 +63,8 @@ def mockquestions(request):
 
 urlpatterns = [
     # path('questions/', mockquestions),
-    path('questions', QuestionView.as_view(), name='view-questions'),
-    path('questions/<int:id>', QuestionView.as_view(), name='view-question-details'),
+    path('questions/', QuestionView.as_view(), name='view-questions'),
+    path('questions/<int:id>/', QuestionView.as_view(), name='view-question-details'),
 
-    path('tags', TagView.as_view(), name='view-tags'),
+    path('tags/', TagView.as_view(), name='view-tags'),
 ]
