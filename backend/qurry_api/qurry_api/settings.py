@@ -79,7 +79,7 @@ DATABASES = {
 
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'qurry-db',
+        'NAME': BASE_DIR.parent / 'qurry-db',
     }
 
 }
