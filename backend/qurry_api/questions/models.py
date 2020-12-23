@@ -66,8 +66,15 @@ class Question(models.Model):
     def count_answers(self):
         return self.answer_set.count()
 
-    def get_tag_id_list(self):
+    def tag_id_list(self):
         return list(str(id) for id in self.tags.values_list('id', flat=True))
+
+    def vote_of(self, user):
+        if user in self.vote_up_users.all():
+            return 'up'
+        if user in self.vote_down_users.all():
+            return 'down'
+        return 'none'
 
     def as_preview(self):
         return {
@@ -75,7 +82,7 @@ class Question(models.Model):
             'title': self.title,
             'votes': self.count_votes(),
             'answers': self.count_answers(),
-            'tagIds': self.get_tag_id_list(),
+            'tagIds': self.tag_id_list(),
             'user': self.user.as_preview(),
             'dateTime': self.date_time
         }
@@ -87,7 +94,7 @@ class Question(models.Model):
             'body': self.body,
             'votes': self.count_votes(),
             'answers': list(answer.as_preview() for answer in self.answer_set.all()),
-            'tagIds': self.get_tag_id_list(),
+            'tagIds': self.tag_id_list(),
             'user': self.user.as_preview(),
             'dateTime': self.date_time
         }
@@ -113,6 +120,13 @@ class Answer(models.Model):
 
     def count_votes(self):
         return self.vote_up_users.count() - self.vote_down_users.count()
+
+    def vote_of(self, user):
+        if user in self.vote_up_users.all():
+            return 'up'
+        if user in self.vote_down_users.all():
+            return 'down'
+        return 'none'
 
     def as_preview(self):
         return {
