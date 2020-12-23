@@ -9,12 +9,16 @@ export default {
 
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
-    titleTemplate: '%s - qurry-frontend',
-    title: 'qurry-frontend',
+    title: 'Qurry',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' },
+      {
+        hid: 'description',
+        name: 'description',
+        content:
+          'Qurry is the place where students can ask their questions in an uncomplicated and informal way. The questions can be organisational or content-related. Together, the best approaches to solving assignments can be discussed.',
+      },
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
