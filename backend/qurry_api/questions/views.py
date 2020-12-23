@@ -3,10 +3,10 @@ import json
 from django.http import JsonResponse
 from django.views import View
 from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.exceptions import ValidationError, PermissionDenied, RequestAborted
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Question, Tag
+from .models import Question, Tag, Answer
 
 # remove us
 from users.models import User
@@ -19,6 +19,23 @@ from django.utils.decorators import method_decorator
 def json_from(post_body):
     body_unicode = post_body.decode('utf-8')
     return json.loads(body_unicode or '{}')
+
+
+def tags_from(tag_ids):
+    tags = []
+    for tag_id in tag_ids:
+        tags.append(Tag.objects.get(id=int(tag_id)))
+    return tags
+
+
+def extract_errors(validation_exception):
+    error_list = []
+    error_dict = eval(str(validation_exception))
+    for field in error_dict:
+        for error in error_dict[field]:
+            error_list.append('%s: %s' % (field, error))
+    return error_list
+
 
 # decorators
 
@@ -51,44 +68,79 @@ def object_existence_required(function):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class QuestionView(View):
-
-    Model = Question
+class AbstractView(View):
+    Model = None
 
     def setup(self, request, *args, **kwargs):
         self.user = request.user
         return super().setup(request, *args, **kwargs)
 
     # different HTTP requests
+    @login_required
     @object_existence_required
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
-            question = self.Model.objects.get(id=kwargs['id'])
+            obj = self.Model.objects.get(id=kwargs['id'])
             if 'vote' in request.GET:
-                return self.vote(question, request.GET['vote'])
+                return self.vote(obj, request.GET['vote'])
 
-            return self.view_detailed(question)
+            return self.view_detailed(obj)
 
-        return self.view_list(**dict(request.GET))
+        return self.view_list(**(dict(request.GET) | kwargs))
 
+    @login_required
     def post(self, request, *args, **kwargs):
-        return self.create(json_from(request.body))
+        try:
+            return self.create(json_from(request.body))
+        except ValidationError as exc:
+            return JsonResponse({'errors': extract_errors(exc)}, status=400)
+        except Exception as exc:
+            return JsonResponse({'errors': self.handle(exc)}, status=400)
 
+    @login_required
     @object_existence_required
     def patch(self, request, *args, **kwargs):
         if not 'id' in kwargs:
-            return JsonResponse({'errors': ['you can not patch to questions, you have to add id to the url']}, status=405)
-        question = self.Model.objects.get(id=kwargs['id'])
-        return self.change(question, json_from(request.body))
+            return JsonResponse({'errors': ['you can not patch to %ss, you have to add id to the url' % self.Model.__name__]}, status=405)
+        obj = self.Model.objects.get(id=kwargs['id'])
+        try:
+            return self.change(obj, json_from(request.body))
+        except ValidationError as exc:
+            return JsonResponse({'errors': extract_errors(exc)}, status=400)
+        except Exception as exc:
+            return JsonResponse({'errors': self.handle(exc)}, status=400)
 
+    @login_required
     @object_existence_required
     def delete(self, request, *args, **kwargs):
         if not 'id' in kwargs:
-            return JsonResponse({'errors': ['you can not delete to questions, you have to add id to the url']}, status=405)
-        question = self.Model.objects.get(id=kwargs['id'])
-        return self.remove(question)
+            return JsonResponse({'errors': ['you can not delete to %ss, you have to add id to the url' % self.Model.__name__]}, status=405)
+        obj = self.Model.objects.get(id=kwargs['id'])
+        return self.remove(obj)
 
-    @login_required
+    def view_list(self, **kwargs):  # in preview format
+        pass
+
+    def view_detailed(self, question):
+        pass
+
+    def create(self, body):
+        pass
+
+    def change(self, question, body):
+        pass
+
+    def remove(self, question):
+        pass
+
+    def vote(self, question, action):
+        pass
+
+
+class QuestionView(AbstractView):
+
+    Model = Question
+
     def view_list(self, **kwargs):  # in preview format
         # parse arguments
         limit = self.Model.objects.count()
@@ -118,54 +170,40 @@ class QuestionView(View):
 
         return JsonResponse(list(question.as_preview() | {'userVote': question.vote_of(self.user)} for question in questions[offset: offset + limit]), safe=False)
 
-    @login_required
     def view_detailed(self, question):
         return JsonResponse(question.as_detailed() | {'userVote': question.vote_of(self.user)})
 
-    @login_required
     def create(self, body):
-        try:
-            tagIds = body['tagIds']
-            tags = self.tags_from(tagIds)
+        tagIds = body['tagIds']
+        tags = tags_from(tagIds)
 
-            creation_data = {'title': body['title'],
-                             'body': body['body'], 'user': self.user}
+        creation_data = {'title': body['title'],
+                         'body': body['body'], 'user': self.user}
 
-            new_question = self.Model(**creation_data)
-            new_question.full_clean()
-            new_question.save()
-            new_question.tags.set(tags)
-
-        except Exception as exception:
-            error_list = self.handle(exception)
-            return JsonResponse({'errors': error_list}, status=400)
+        new_question = self.Model(**creation_data)
+        new_question.full_clean()
+        new_question.save()
+        new_question.tags.set(tags)
 
         return JsonResponse({'questionId': str(new_question.id)}, status=201)
 
-    @login_required
     @ownership_required
     def change(self, question, body):
-        try:
-            if 'title' in body:
-                question.title = body['title']
-            if 'body' in body:
-                question.body = body['body']
+        if 'title' in body:
+            question.title = body['title']
+        if 'body' in body:
+            question.body = body['body']
 
-            question.full_clean()
-            question.save()
+        question.full_clean()
+        question.save()
 
-            if 'tagIds' in body:
-                tagIds = body['tagIds']
-                tags = self.tags_from(tagIds)
-                question.tags.set(tags)
+        if 'tagIds' in body:
+            tagIds = body['tagIds']
+            tags = tags_from(tagIds)
+            question.tags.set(tags)
 
-        except Exception as exception:
-            error_list = self.handle(exception)
-            return JsonResponse({'errors': error_list}, status=400)
+        return JsonResponse({'questionId': str(id)}, status=200)
 
-        return JsonResponse({'questionId': str(id)}, status=201)
-
-    @login_required
     @ownership_required
     def remove(self, question):
         try:
@@ -176,7 +214,6 @@ class QuestionView(View):
 
         return JsonResponse({'questionId': str(id)}, status=200)
 
-    @login_required
     def vote(self, question, action):
         # remove user from voters
         try:
@@ -196,22 +233,8 @@ class QuestionView(View):
 
         return JsonResponse({})
 
-    def tags_from(self, tag_ids):
-        tags = []
-        for tag_id in tag_ids:
-            tags.append(Tag.objects.get(id=int(tag_id)))
-        return tags
-
     def handle(self, bad_request_exception):
         # fields are not valid
-        if isinstance(bad_request_exception, ValidationError):
-            error_list = []
-            error_dict = eval(str(bad_request_exception))
-            for field in error_dict:
-                for error in error_dict[field]:
-                    error_list.append('%s: %s' % (field, error))
-            return error_list
-
         message_dict = {
             # one argument is not given
             KeyError: 'request must contain title, body and tagIds, even it is blank.',
@@ -222,10 +245,97 @@ class QuestionView(View):
 
 
 class TagView(View):
-
+    @login_required
     def get(self, request, *args, **kwargs):
         return self.view_list()
 
-    @login_required
     def view_list(self):
         return JsonResponse(list(tag.as_preview() for tag in Tag.objects.all()), safe=False)
+
+
+class AnswerView(AbstractView):
+    Model = Answer
+    question = None
+
+    def setup(self, request, *args, **kwargs):
+        if 'qid' in kwargs:
+            try:
+                self.question = Question.objects.get(id=kwargs['qid'])
+            except:
+                pass
+        return super().setup(request, *args, **kwargs)
+
+    def view_list(self, **kwargs):  # in preview format
+        if self.question:
+            return JsonResponse(list(answer.as_preview() | {'userVote': answer.vote_of(self.user)} for answer in self.question.answer_set.all()), safe=False)
+        return JsonResponse(
+            list(answer.as_preview() | {'userVote': answer.vote_of(self.user), 'question': str(answer.question_id)}
+                 for answer in Answer.objects.all()),
+            safe=False)
+
+    def view_detailed(self, answer):
+        return JsonResponse(answer.as_preview() | {'userVote': answer.vote_of(self.user), 'question': str(answer.question_id)})
+
+    def create(self, body):
+
+        if not self.question:
+            raise RequestAborted(
+                'you can create an answer with questions/<id>/answers/')
+
+        creation_data = {
+            'body': body['body'], 'user': self.user, 'question': self.question}
+
+        new_answer = self.Model(**creation_data)
+        new_answer.full_clean()
+        new_answer.save()
+
+        return JsonResponse({'AnswerId': str(new_answer.id)}, status=201)
+
+    @ownership_required
+    def change(self, answer, body):
+
+        if 'body' in body:
+            answer.body = body['body']
+
+        answer.full_clean()
+        answer.save()
+
+        return JsonResponse({'answerId': str(id)}, status=200)
+
+    @ownership_required
+    def remove(self, answer):
+        try:
+            answer.delete()
+        except Exception as exception:
+            error_list = self.handle(exception)
+            return JsonResponse({'errors': error_list}, status=400)
+
+        return JsonResponse({'answerId': str(id)}, status=200)
+
+    def vote(self, answer, action):
+        # remove user from voters
+        try:
+            answer.vote_up_users.remove(self.user)
+        except:
+            pass
+
+        try:
+            answer.vote_down_users.remove(self.user)
+        except:
+            pass
+
+        if action == 'up':
+            answer.vote_up_users.add(self.user)
+        if action == 'down':
+            answer.vote_down_users.add(self.user)
+
+        return JsonResponse({'answerId': str(answer.id)})
+
+    def handle(self, bad_request_exception):
+        # fields are not vali
+
+        message_dict = {
+            # one argument is not given
+            KeyError: 'request must contain title',
+        }
+        return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
