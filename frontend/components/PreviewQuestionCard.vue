@@ -17,22 +17,19 @@
     <div class="body">
       <h1 class="title">
         <nuxt-link :to="'/questions/' + question.id" class="question-link">
-          {{ question.title }}
+          <MathJax :data="question.title" />
         </nuxt-link>
       </h1>
-      <p>{{ question.body | limit(100) }}</p>
       <div class="tags">
-        <v-chip v-for="tag in question.tags" :key="tag.id" class="mr-2">
-          {{ tag.name }}
+        <v-chip v-for="tagId in question.tagIds" :key="tagId" class="mr-2">
+          {{ getTagName(tagId) }}
         </v-chip>
       </div>
       <div>
         <p class="footer">
-          von
-          <nuxt-link :to="'/users/' + question.user.id" class="user-link">
-            {{ question.user.username }}
-          </nuxt-link>
-          am
+          by
+          {{ question.user.username }}
+          on
           {{ question.dateTime | prettyDateTime }}
         </p>
       </div>
@@ -43,11 +40,23 @@
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
 import { PreviewQuestion } from './../pages/questions/question.model'
+import { Tag } from './../pages/tags/tag.model'
 
 @Component
 export default class QuestionListCard extends Vue {
   @Prop()
   question!: PreviewQuestion[]
+
+  tags: Tag[] = this.$store.state.tags
+
+  getTagName(tagId: string): string {
+    for (const tag of this.tags) {
+      if (tag.id === tagId) {
+        return tag.name
+      }
+    }
+    return ''
+  }
 }
 </script>
 
@@ -74,6 +83,7 @@ export default class QuestionListCard extends Vue {
 }
 .tags {
   margin: 5px 0;
+  height: 24px;
 }
 .footer {
   text-align: right;

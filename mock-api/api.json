@@ -1,62 +1,58 @@
 {
   "questions": [
     {
-      "id": 1,
+      "id": "1",
       "title": "Wie kann ich mir die Borelalgebra anschaulich vorstellen?",
-      "body": "Dieses Konstrukt möchte einfach nicht in meinen Kopf rein. Was ist eine Algebra überhaupt?",
       "votes": 6,
       "answers": 2,
       "dateTime": "2020-10-14T13:50:48.187Z",
       "user": {
-        "id": 23,
+        "id": "23",
         "username": "Max"
       },
-      "tags": [
-        {
-          "id": 1,
-          "name": "ma3"
-        },
-        {
-          "id": 7,
-          "name": "stochastik"
-        }
-      ]
+      "tagIds": ["2", "1"]
     },
     {
-      "id": 2,
+      "id": "2",
       "title": "Was ist die Lösung für die TI Bonusaufgabe?",
-      "body": "Morbi vehicula commodo massa eget bibendum. Suspendisse mattis sem quis enim varius, sit amet tincidunt purus varius. Proin fringilla, dolor eu bibendum euismod, dolor quam varius mi, a feugiat erat est quis felis. Sed sed augue condimentum, sagittis justo vel, rutrum ipsum. Suspendisse faucibus nisl non orci efficitur, nec tempus nunc tincidunt. Suspendisse dignissim cursus semper. Nullam enim risus, mollis sed placerat eu, blandit sed elit. Nulla dignissim nunc quam. Nunc odio lorem, tempus sit amet libero vitae, sollicitudin convallis dolor. Praesent eleifend ac neque at condimentum. Duis suscipit, sem malesuada dapibus sollicitudin, quam turpis gravida nisi, ac faucibus turpis ante eget magna. Sed sit amet enim ut arcu tristique mattis at eu leo. Quisque sit amet ultrices nibh, at gravida metus. Nam id luctus justo. ",
       "votes": -2,
       "answers": 1,
       "dateTime": "2020-10-17T13:20:48.187Z",
       "user": {
-        "id": 1,
+        "id": "1",
         "username": "Peter"
       },
-      "tags": [
-        {
-          "id": 2,
-          "name": "ti1"
-        }
-      ]
+      "tagIds": ["2"]
     },
     {
-      "id": 3,
+      "id": "3",
       "title": "Wie kann ich die Frabe von einem Morph in Squeak ändern?",
-      "body": "Duis non ligula felis. Proin dictum congue nunc, ac congue risus consequat ut. Fusce pellentesque est lacus, eu auctor orci molestie id. Sed ut suscipit leo, et sollicitudin nulla. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; ",
       "votes": 0,
       "answers": 0,
       "dateTime": "2020-10-16T13:50:48.187Z",
       "user": {
-        "id": 12,
+        "id": "12",
         "username": "Tom"
       },
-      "tags": [
-        {
-          "id": 3,
-          "name": "swa"
-        }
-      ]
+      "tagIds": ["2", "3"]
+    }
+  ],
+  "tags": [
+    {
+      "id": "1",
+      "name": "isec"
+    },
+    {
+      "id": "2",
+      "name": "ma3"
+    },
+    {
+      "id": "3",
+      "name": "ti1"
+    },
+    {
+      "id": "4",
+      "name": "abc"
     }
   ]
 }

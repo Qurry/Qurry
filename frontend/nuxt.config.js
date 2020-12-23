@@ -9,12 +9,16 @@ export default {
 
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
-    titleTemplate: '%s - qurry-frontend',
-    title: 'qurry-frontend',
+    title: 'Qurry',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' },
+      {
+        hid: 'description',
+        name: 'description',
+        content:
+          'Qurry is the place where students can ask their questions in an uncomplicated and informal way. The questions can be organisational or content-related. Together, the best approaches to solving assignments can be discussed.',
+      },
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
@@ -54,12 +58,27 @@ export default {
     },
   },
 
+  // auth: {
+  //   strategies: {
+  //     local: {
+  //       cookie: {
+  //         // (optional) If set we check this cookie exsistence for loggedIn check
+  //         name: 'sessionid',
+  //       },
+  //     },
+  //   },
+  // },
+
   // router: {
   //   middleware: ['auth'],
   // },
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
   axios: {
+    credentials: true,
+    init(axios) {
+      axios.defaults.withCredentials = true
+    },
     baseURL: 'http://localhost:8000/api',
   },
 
@@ -67,12 +86,13 @@ export default {
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
     theme: {
-      dark: false,
+      light: true,
       themes: {
-        dark: {
-          primary: colors.blue.darken2,
-          accent: colors.grey.darken3,
-          secondary: colors.amber.darken3,
+        light: {
+          primary: '#e55c44', // orange
+          accent: '#f6ae2d', // yellow
+          secondary: '#33658a', // blue
+          darkblue: '#2f4858',
           info: colors.teal.lighten1,
           warning: colors.amber.base,
           error: colors.deepOrange.accent4,

@@ -12,13 +12,17 @@
   </v-row>
   <v-row v-else>
     <v-col>
-      <v-row>
-        <v-col><h1 class="mb-3">Questions</h1></v-col>
-        <v-col class="d-flex flex-row-reverse">
-          <v-btn to="/questions/create" color="primary">Ask Question</v-btn>
-        </v-col>
-      </v-row>
-      <QuestionListCard
+      <div class="question-header">
+        <h1>Questions</h1>
+        <v-btn
+          to="/questions/create"
+          color="secondary"
+          class="ask-question-btn"
+        >
+          Ask Question
+        </v-btn>
+      </div>
+      <PreviewQuestionCard
         v-for="question in questions"
         :key="question.id"
         :question="question"
@@ -48,4 +52,13 @@ export default class QuestionList extends Vue {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.question-header {
+  display: flex;
+  margin-bottom: 10px;
+}
+.ask-question-btn {
+  margin-left: auto;
+  margin-top: 7px;
+}
+</style>

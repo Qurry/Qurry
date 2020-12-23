@@ -2,53 +2,8 @@
   <v-container>
     <v-row>
       <v-col>
-        <h1 class="mb-5">Edit Question {{ id }}</h1>
-        <v-form v-model="isFormValid">
-          <v-textarea
-            v-model.trim="question.title"
-            rows="1"
-            label="Title"
-            :rules="[rules.required, rules.minLength]"
-            required
-            outlined
-          ></v-textarea>
-
-          <v-textarea
-            v-model.trim="question.body"
-            rows="10"
-            label="Body"
-            :rules="[rules.required, rules.minLength]"
-            required
-            outlined
-          ></v-textarea>
-
-          <v-autocomplete
-            v-model="question.tagIds"
-            :items="tags"
-            chips
-            deletable-chips
-            multiple
-            item-text="name"
-            item-value="id"
-            label="Select tags"
-          >
-            <template v-slot:selection="data">
-              <v-chip
-                close
-                @click:close="removeTagIdFromQuestionTagIds(data.item.id)"
-              >
-                <template> {{ data.item.name }} </template>
-              </v-chip>
-            </template>
-            <template v-slot:item="data">
-              <template> {{ data.item.name }} </template>
-            </template>
-          </v-autocomplete>
-
-          <v-btn color="orange" :disabled="!isFormValid" @click="onSubmit">
-            Save Changes
-          </v-btn>
-        </v-form>
+        <h1 class="mb-5">Edit Question {{ questionId }}</h1>
+        <QuestionForm :question="question" @submit="onSubmit" />
       </v-col>
     </v-row>
   </v-container>
@@ -57,32 +12,21 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 import QuestionService from './../../../services/QuestionService'
-import { CreateQuestion } from './../question.model'
+import { CreateEditQuestion } from './../question.model'
 
 @Component
 export default class QuestionCreate extends Vue {
-  // Q: Preview, Create, Detail Question or one Question?
-  isFormValid = false
-  tags = [
-    {
-      id: 1,
-      name: 'isec',
-    },
-    {
-      id: 2,
-      name: 'ma2',
-    },
-    {
-      id: 3,
-      name: 'ti1',
-    },
-  ]
+  questionId = this.$route.params.id
 
-  id = +this.$route.params.id
+  question: CreateEditQuestion = {
+    title: '',
+    body: '',
+    tagIds: [],
+  }
 
   fetch() {
     return Promise.all([
-      QuestionService.getQuestion(this.$axios, this.id)
+      QuestionService.getQuestion(this.$axios, this.questionId)
         .then((question) => {
           this.question = {
             title: question.title,
@@ -94,26 +38,14 @@ export default class QuestionCreate extends Vue {
     ])
   }
 
-  question: CreateQuestion = {
-    title: '',
-    body: '',
-    tagIds: [],
-  }
-
-  rules = {
-    required: (value: string) => !!value || 'Required.',
-    minLength: (value: string) => value.length >= 3 || 'Min 3 Chars',
-  }
-
-  removeTagIdFromQuestionTagIds(tagId: number) {
-    const index = this.question.tagIds.indexOf(tagId)
-    if (index >= 0) this.question.tagIds.splice(index, 1)
-  }
-
   onSubmit() {
-    QuestionService.editQuestion(this.$axios, this.id, this.question)
-      .then((_res) => {
-        this.$router.push('/questions/' + this.id)
+    QuestionService.editQuestion(this.$axios, this.questionId, this.question)
+      .then((res) => {
+        if (res.status === 201) {
+          this.$router.push('/questions/' + res.data.questionId)
+        } else {
+          console.log(res)
+        }
       })
       .catch((e) => console.log(e))
   }
