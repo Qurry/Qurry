@@ -23,7 +23,7 @@ export default {
   css: [],
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
-  plugins: [],
+  plugins: ['~plugins/filters.js'],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
   components: true,
@@ -36,25 +36,59 @@ export default {
     '@nuxtjs/vuetify',
   ],
 
-  // Modules (https://go.nuxtjs.dev/config-modules)
-  modules: [
-    // https://go.nuxtjs.dev/axios
-    '@nuxtjs/axios',
-  ],
+  modules: ['@nuxtjs/axios', '@nuxtjs/auth'],
+
+  auth: {
+    strategies: {
+      local: {
+        endpoints: {
+          login: {
+            url: '/token/',
+            method: 'post',
+            propertyName: 'access',
+          },
+          logout: false,
+          user: false,
+        },
+      },
+    },
+  },
+
+  // auth: {
+  //   strategies: {
+  //     local: {
+  //       cookie: {
+  //         // (optional) If set we check this cookie exsistence for loggedIn check
+  //         name: 'sessionid',
+  //       },
+  //     },
+  //   },
+  // },
+
+  // router: {
+  //   middleware: ['auth'],
+  // },
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
-  axios: {},
+  axios: {
+    credentials: true,
+    init(axios) {
+      axios.defaults.withCredentials = true
+    },
+    baseURL: 'http://localhost:8000/api',
+  },
 
   // Vuetify module configuration (https://go.nuxtjs.dev/config-vuetify)
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
     theme: {
-      dark: false,
+      light: true,
       themes: {
-        dark: {
-          primary: colors.blue.darken2,
-          accent: colors.grey.darken3,
-          secondary: colors.amber.darken3,
+        light: {
+          primary: '#e55c44', // orange
+          accent: '#f6ae2d', // yellow
+          secondary: '#33658a', // blue
+          darkblue: '#2f4858',
           info: colors.teal.lighten1,
           warning: colors.amber.base,
           error: colors.deepOrange.accent4,
