@@ -35,8 +35,10 @@ INSTALLED_APPS = [
 
     'rest_framework',
 
+    'users',
+    'media',
     'questions',
-    'users'
+
 ]
 
 MIDDLEWARE = [
@@ -146,7 +148,9 @@ LANGUAGES = (
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = 'qurry_api/static'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/uploads/')
+
+MEDIA_URL = 'api/media/'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

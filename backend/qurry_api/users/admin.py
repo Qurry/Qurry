@@ -9,18 +9,18 @@ class UserAdmin(UserAdmin):
     add_form = UserCreationForm
     form = UserChangeForm
     model = User
-    list_display = ('username', 'score', 'is_superuser', 'is_active',)
-    list_filter = ('email', 'username', 'score', 'is_superuser', 'is_active',)
+    list_display = ('username', 'is_superuser', 'is_active',)
+    list_filter = ('email', 'username', 'is_superuser', 'is_active',)
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
-        ('Permissions', {'fields': ('is_superuser', 'is_active', 'user_permissions')}),
-         ('Other', {'fields': ('score',)}),
+        ('Permissions', {
+         'fields': ('is_superuser', 'is_active', 'user_permissions')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
             'fields': ('username', 'email', 'password', 'is_superuser', 'is_active')}
-        ),
+         ),
     )
     search_fields = ('email', 'username')
     ordering = ('email',)
