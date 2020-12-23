@@ -116,11 +116,11 @@ class QuestionView(View):
 
             questions = search_result
 
-        return JsonResponse(list(question.as_preview() for question in questions[offset: offset + limit]), safe=False)
+        return JsonResponse(list(question.as_preview() | {'userVote': question.vote_of(self.user)} for question in questions[offset: offset + limit]), safe=False)
 
     @login_required
     def view_detailed(self, question):
-        return JsonResponse(question.as_detailed())
+        return JsonResponse(question.as_detailed() | {'userVote': question.vote_of(self.user)})
 
     @login_required
     def create(self, body):
