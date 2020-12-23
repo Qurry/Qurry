@@ -25,7 +25,7 @@
           <div class="question-footer">
             <v-btn
               color="secondary"
-              :to="'/questions/' + id + '/edit'"
+              :to="'/questions/' + questionId + '/edit'"
               small
               outlined
               class="mr-1"
@@ -52,7 +52,7 @@
                 </v-card-title>
                 <v-card-text>This action can't be undone.</v-card-text>
                 <v-card-actions>
-                  <v-btn color="error" @click="onDelete(id)"> Delete </v-btn>
+                  <v-btn color="error" @click="onDelete()"> Delete </v-btn>
                   <v-spacer></v-spacer>
                   <v-btn color="#ddd" @click="dialog = false"> Cancel </v-btn>
                 </v-card-actions>
@@ -88,11 +88,11 @@ import { PreviewQuestion } from './../question.model'
 export default class QuestionDetail extends Vue {
   dialog = false
   question?: PreviewQuestion
-  id = this.$route.params.id
+  questionId = this.$route.params.id
 
   fetch() {
     return Promise.all([
-      QuestionService.getQuestion(this.$axios, this.id)
+      QuestionService.getQuestion(this.$axios, this.questionId)
         .then((question) => {
           this.question = question
         })
@@ -100,10 +100,14 @@ export default class QuestionDetail extends Vue {
     ])
   }
 
-  onDelete(questionId: string) {
-    QuestionService.deleteQuestion(this.$axios, questionId)
-      .then((_res) => {
-        this.$router.push('/questions')
+  onDelete() {
+    QuestionService.deleteQuestion(this.$axios, this.questionId)
+      .then((res) => {
+        if (res.status === 200) {
+          this.$router.push('/questions')
+        } else {
+          console.log(res)
+        }
       })
       .catch((error) => console.log(error))
   }
