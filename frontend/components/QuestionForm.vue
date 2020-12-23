@@ -49,7 +49,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { CreateQuestion } from './../pages/questions/question.model'
+import { CreateEditQuestion } from './../pages/questions/question.model'
 import { Tag } from './../pages/tags/tag.model'
 
 @Component
@@ -58,7 +58,7 @@ export default class QuestionCreate extends Vue {
   tags: Tag[] = this.$store.state.tags
 
   @Prop()
-  question: CreateQuestion
+  question: CreateEditQuestion
 
   rules = {
     required: (value: string) => !!value || 'Required',

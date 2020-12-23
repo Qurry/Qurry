@@ -36,7 +36,7 @@ export interface DetailQuestion {
   answers: Answer[]
 }
 
-export interface CreateQuestion {
+export interface CreateEditQuestion {
   title: string
   body: string
   tagIds: number[]

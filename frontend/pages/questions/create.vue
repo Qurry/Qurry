@@ -12,11 +12,11 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 import QuestionService from './../../services/QuestionService'
-import { CreateQuestion } from './question.model'
+import { CreateEditQuestion } from './question.model'
 
 @Component
 export default class QuestionCreate extends Vue {
-  question: CreateQuestion = {
+  question: CreateEditQuestion = {
     title: '',
     body: '',
     tagIds: [],
