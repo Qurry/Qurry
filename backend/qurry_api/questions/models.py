@@ -71,10 +71,10 @@ class Question(models.Model):
 
     def vote_of(self, user):
         if user in self.vote_up_users.all():
-            return 'up'
+            return 1
         if user in self.vote_down_users.all():
-            return 'down'
-        return 'none'
+            return -1
+        return 0
 
     def as_preview(self):
         return {
@@ -123,10 +123,10 @@ class Answer(models.Model):
 
     def vote_of(self, user):
         if user in self.vote_up_users.all():
-            return 'up'
+            return 1
         if user in self.vote_down_users.all():
-            return 'down'
-        return 'none'
+            return -1
+        return 0
 
     def as_preview(self):
         return {
