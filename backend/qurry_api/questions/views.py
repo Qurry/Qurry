@@ -14,11 +14,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
 # parse a post body and return json
+
+
 def json_from(post_body):
     body_unicode = post_body.decode('utf-8')
     return json.loads(body_unicode or '{}')
 
 # decorators
+
+
 def login_required(function):
     def is_authenticated(self, *args, **kwargs):
         if not self.user.is_authenticated:
@@ -26,12 +30,14 @@ def login_required(function):
         return function(self, *args, **kwargs)
     return is_authenticated
 
+
 def ownership_required(function):
     def is_owner(self, obj, *args, **kwargs):
         if not self.user.is_owner_of(obj):
             return JsonResponse({'errors': ['you have to own the %s object to be able to do this action' % self.model.__name__]}, status=401)
         return function(self, obj, *args, **kwargs)
     return is_owner
+
 
 def object_existence_required(function):
     def does_exist(self, *args, **kwargs):
@@ -42,6 +48,7 @@ def object_existence_required(function):
                 return JsonResponse({'errors': [str(err)]}, status=404)
         return function(self, *args, **kwargs)
     return does_exist
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class QuestionView(View):
@@ -81,7 +88,8 @@ class QuestionView(View):
         question = self.Model.objects.get(id=kwargs['id'])
         return self.remove(question)
 
-    def view_list(self ,**kwargs):  # in preview format
+    @login_required
+    def view_list(self, **kwargs):  # in preview format
         # parse arguments
         limit = self.Model.objects.count()
         offset = 0
@@ -89,15 +97,15 @@ class QuestionView(View):
         try:
             if 'limit' in kwargs:
                 limit = int(kwargs['limit'][0])
-            
+
             if 'offset' in kwargs:
                 offset = int(kwargs['offset'][0])
-            
+
             if 'search' in kwargs:
                 search_words = kwargs['search']
         except:
             return JsonResponse({'errors': ['get arguments are invalid']}, status=400)
-        
+
         questions = self.Model.objects.all()
 
         search_result = Question.objects.none()
@@ -180,12 +188,12 @@ class QuestionView(View):
             question.vote_down_users.remove(self.user)
         except:
             pass
-        
+
         if action == 'up':
             question.vote_up_users.add(self.user)
         if action == 'down':
             question.vote_down_users.add(self.user)
-        
+
         return JsonResponse({})
 
     def tags_from(self, tag_ids):
@@ -214,9 +222,10 @@ class QuestionView(View):
 
 
 class TagView(View):
-    @login_required
+
     def get(self, request, *args, **kwargs):
         return self.view_list()
 
+    @login_required
     def view_list(self):
         return JsonResponse(list(tag.as_preview() for tag in Tag.objects.all()), safe=False)
