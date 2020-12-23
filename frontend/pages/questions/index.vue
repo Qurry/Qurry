@@ -14,7 +14,11 @@
     <v-col>
       <div class="question-header">
         <h1>Questions</h1>
-        <v-btn to="/questions/create" color="primary" class="ask-question-btn">
+        <v-btn
+          to="/questions/create"
+          color="secondary"
+          class="ask-question-btn"
+        >
           Ask Question
         </v-btn>
       </div>

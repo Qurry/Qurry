@@ -45,7 +45,7 @@
             </template>
           </v-autocomplete>
 
-          <v-btn color="orange" :disabled="!isFormValid" @click="onSubmit">
+          <v-btn color="secondary" :disabled="!isFormValid" @click="onSubmit">
             Ask Question
           </v-btn>
         </v-form>

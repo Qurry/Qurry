@@ -30,7 +30,7 @@
                 @click:append="showPassword = !showPassword"
               ></v-text-field>
             </v-col>
-            <v-btn :disabled="!isFormValid" color="orange" @click="login">
+            <v-btn :disabled="!isFormValid" color="secondary" @click="login">
               Anmelden
             </v-btn>
           </v-row>

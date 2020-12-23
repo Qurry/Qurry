@@ -51,7 +51,7 @@
                 @click:append="showPassword = !showPassword"
               ></v-text-field>
             </v-col>
-            <v-btn :disabled="!isFormValid" color="orange" @click="onSubmit">
+            <v-btn :disabled="!isFormValid" color="secondary" @click="onSubmit">
               Registrieren
             </v-btn>
           </v-row>

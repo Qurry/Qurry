@@ -24,7 +24,7 @@
 
           <div class="question-footer">
             <v-btn
-              color="primary"
+              color="secondary"
               :to="'/questions/' + id + '/edit'"
               small
               outlined
@@ -36,7 +36,7 @@
             <v-dialog v-model="dialog" persistent max-width="290">
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
-                  color="primary"
+                  color="secondary"
                   small
                   v-bind="attrs"
                   outlined

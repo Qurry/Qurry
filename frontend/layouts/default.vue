@@ -8,7 +8,7 @@
         <v-btn to="/tags" text rounded>Tags</v-btn>
         <v-btn to="/logout" text rounded>Logout</v-btn>
         <v-btn to="/profile" text rounded>Profile</v-btn>
-        <span>{{ points }} <v-icon color="orange"> mdi-trophy </v-icon></span>
+        <span>{{ points }} <v-icon color="accent"> mdi-trophy </v-icon></span>
       </template>
       <template v-else>
         <v-btn to="/login" text rounded>Login</v-btn>

@@ -28,9 +28,7 @@
       <div>
         <p class="footer">
           by
-          <nuxt-link :to="'/users/' + question.user.id" class="user-link">
-            {{ question.user.username }}
-          </nuxt-link>
+          {{ question.user.username }}
           on
           {{ question.dateTime | prettyDateTime }}
         </p>
