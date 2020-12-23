@@ -13,8 +13,6 @@ from users.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
-# parse a post body and return json
-
 
 def json_from(post_body):
     body_unicode = post_body.decode('utf-8')
@@ -38,8 +36,6 @@ def extract_errors(validation_exception):
 
 
 # decorators
-
-
 def login_required(function):
     def is_authenticated(self, *args, **kwargs):
         if not self.user.is_authenticated:
@@ -51,7 +47,7 @@ def login_required(function):
 def ownership_required(function):
     def is_owner(self, obj, *args, **kwargs):
         if not self.user.is_owner_of(obj):
-            return JsonResponse({'errors': ['you have to own the %s object to be able to do this action' % self.model.__name__]}, status=401)
+            return JsonResponse({'errors': ['you have to own the %s object to be able to do this action' % self.Model.__name__]}, status=401)
         return function(self, obj, *args, **kwargs)
     return is_owner
 
@@ -86,7 +82,7 @@ class AbstractView(View):
 
             return self.view_detailed(obj)
 
-        return self.view_list(**(dict(request.GET) | kwargs))
+        return self.view_list(**(request.GET.dict() | kwargs))
 
     @login_required
     def post(self, request, *args, **kwargs):
@@ -116,7 +112,10 @@ class AbstractView(View):
         if not 'id' in kwargs:
             return JsonResponse({'errors': ['you can not delete to %ss, you have to add id to the url' % self.Model.__name__]}, status=405)
         obj = self.Model.objects.get(id=kwargs['id'])
-        return self.remove(obj)
+        try:
+            return self.remove(obj)
+        except Exception as exc:
+            return JsonResponse({'errors': [str(exc)]}, status=500)
 
     def view_list(self, **kwargs):  # in preview format
         pass
@@ -148,15 +147,17 @@ class QuestionView(AbstractView):
         search_words = None
         try:
             if 'limit' in kwargs:
-                limit = int(kwargs['limit'][0])
+                limit = int(kwargs['limit'])
 
             if 'offset' in kwargs:
-                offset = int(kwargs['offset'][0])
+                offset = int(kwargs['offset'])
 
             if 'search' in kwargs:
-                search_words = kwargs['search']
+                search_words = kwargs['search'].split(' ')
         except:
             return JsonResponse({'errors': ['get arguments are invalid']}, status=400)
+
+        print(search_words, kwargs['search'])
 
         questions = self.Model.objects.all()
 
@@ -206,13 +207,9 @@ class QuestionView(AbstractView):
 
     @ownership_required
     def remove(self, question):
-        try:
-            question.delete()
-        except Exception as exception:
-            error_list = self.handle(exception)
-            return JsonResponse({'errors': error_list}, status=400)
+        question.delete()
 
-        return JsonResponse({'questionId': str(id)}, status=200)
+        return JsonResponse({'questionId': str(question.id)}, status=200)
 
     def vote(self, question, action):
         # remove user from voters
@@ -269,12 +266,12 @@ class AnswerView(AbstractView):
         if self.question:
             return JsonResponse(list(answer.as_preview() | {'userVote': answer.vote_of(self.user)} for answer in self.question.answer_set.all()), safe=False)
         return JsonResponse(
-            list(answer.as_preview() | {'userVote': answer.vote_of(self.user), 'question': str(answer.question_id)}
+            list(answer.as_preview() | {'userVote': answer.vote_of(self.user), 'questionId': str(answer.question_id)}
                  for answer in Answer.objects.all()),
             safe=False)
 
     def view_detailed(self, answer):
-        return JsonResponse(answer.as_preview() | {'userVote': answer.vote_of(self.user), 'question': str(answer.question_id)})
+        return JsonResponse(answer.as_preview() | {'userVote': answer.vote_of(self.user), 'questionId': str(answer.question_id)})
 
     def create(self, body):
 
@@ -304,13 +301,9 @@ class AnswerView(AbstractView):
 
     @ownership_required
     def remove(self, answer):
-        try:
-            answer.delete()
-        except Exception as exception:
-            error_list = self.handle(exception)
-            return JsonResponse({'errors': error_list}, status=400)
+        answer.delete()
 
-        return JsonResponse({'answerId': str(id)}, status=200)
+        return JsonResponse({'answerId': str(answer.id)}, status=200)
 
     def vote(self, answer, action):
         # remove user from voters
