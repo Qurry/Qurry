@@ -6,9 +6,22 @@ from django.contrib.contenttypes.models import ContentType
 class Comment(models.Model):
     body = models.TextField('Body', max_length=10000)
 
+    user = models.ForeignKey(
+        "users.User", verbose_name='Owner', on_delete=models.CASCADE)
+
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
+
+    def __str__(self):
+        return 'comment from %s' % self.user
+
+    def as_preview(self):
+        return {
+            'body': self.body,
+            '%sId' % self.content_type.model: self.object_id,
+            'user': self.user.as_preview()
+        }
 
 
 class TagCategory(models.Model):

@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError, PermissionDenied, RequestAborted
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Question, Tag, Answer
+from .models import Question, Tag, Answer, Comment
 
 # remove us
 from users.models import User
@@ -142,7 +142,7 @@ class QuestionView(AbstractView):
 
     def view_list(self, **kwargs):  # in preview format
         # parse arguments
-        limit = self.Model.objects.count()
+        limit = Question.objects.count()
         offset = 0
         search_words = None
         try:
@@ -159,7 +159,7 @@ class QuestionView(AbstractView):
 
         # print(search_words, kwargs['search']) throws error if no search parameter
 
-        questions = self.Model.objects.all()
+        questions = Question.objects.all()
 
         search_result = Question.objects.none()
         if search_words:
@@ -181,7 +181,7 @@ class QuestionView(AbstractView):
         creation_data = {'title': body['title'],
                          'body': body['body'], 'user': self.user}
 
-        new_question = self.Model(**creation_data)
+        new_question = Question(**creation_data)
         new_question.full_clean()
         new_question.save()
         new_question.tags.set(tags)
@@ -282,11 +282,11 @@ class AnswerView(AbstractView):
         creation_data = {
             'body': body['body'], 'user': self.user, 'question': self.question}
 
-        new_answer = self.Model(**creation_data)
+        new_answer = Answer(**creation_data)
         new_answer.full_clean()
         new_answer.save()
 
-        return JsonResponse({'AnswerId': str(new_answer.id)}, status=201)
+        return JsonResponse({'answerId': str(new_answer.id)}, status=201)
 
     @ownership_required
     def change(self, answer, body):
@@ -297,7 +297,7 @@ class AnswerView(AbstractView):
         answer.full_clean()
         answer.save()
 
-        return JsonResponse({'answerId': str(id)}, status=200)
+        return JsonResponse({'answerId': str(answer.id)}, status=200)
 
     @ownership_required
     def remove(self, answer):
@@ -329,6 +329,83 @@ class AnswerView(AbstractView):
 
         message_dict = {
             # one argument is not given
-            KeyError: 'request must contain title',
+            KeyError: 'request must contain body',
+        }
+        return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
+
+
+class CommentView(AbstractView):
+    Model = Comment
+    question = None
+    answer = None
+
+    def setup(self, request, *args, **kwargs):
+        if 'qid' in kwargs:
+            try:
+                self.question = Question.objects.get(id=kwargs['qid'])
+            except:
+                pass
+        if 'aid' in kwargs:
+            try:
+                self.answer = Answer.objects.get(id=kwargs['aid'])
+            except:
+                pass
+        return super().setup(request, *args, **kwargs)
+
+    def view_list(self, **kwargs):  # in preview format
+        if self.answer:
+            return JsonResponse(list(comment.as_preview() for comment in self.answer.comments.all()), safe=False)
+        if self.question:
+            return JsonResponse(list(comment.as_preview() for comment in self.question.comments.all()), safe=False)
+        return JsonResponse(list(comment.as_preview() for comment in Comment.objects.all()), safe=False)
+
+    def view_detailed(self, comment):
+        return JsonResponse(comment.as_preview())
+
+    def create(self, body):
+
+        if not self.question and not self.answer:
+            raise RequestAborted(
+                'you can create a comment with questions/<id>/comments/ or answers/<id>/comments')
+
+        if self.answer:
+            creation_data = {
+                'body': body['body'], 'user': self.user, 'content_object': self.answer}
+        else:
+            creation_data = {
+                'body': body['body'], 'user': self.user, 'content_object': self.question}
+
+        new_comment = Comment(**creation_data)
+        new_comment.full_clean()
+        new_comment.save()
+
+        return JsonResponse({'commentId': str(new_comment.id)}, status=201)
+
+    @ ownership_required
+    def change(self, comment, body):
+
+        if 'body' in body:
+            comment.body = body['body']
+
+        comment.full_clean()
+        comment.save()
+
+        return JsonResponse({'commentId': str(comment.id)}, status=200)
+
+    @ ownership_required
+    def remove(self, comment):
+        comment.delete()
+
+        return JsonResponse({'commentId': str(comment.id)}, status=200)
+
+    def vote(self, answer, action):
+        return JsonResponse({'error': ['you can not vote comments now']}, status=405)
+
+    def handle(self, bad_request_exception):
+        # fields are not vali
+
+        message_dict = {
+            # one argument is not given
+            KeyError: 'request must contain body',
         }
         return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
