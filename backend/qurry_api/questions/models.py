@@ -1,14 +1,29 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
 
-class Comment(models.Model):
+class Post(models.Model):
     body = models.TextField('Body', max_length=10000)
+
+    created_at = models.DateTimeField('Creation Date', auto_now_add=True)
+    updated_at = models.DateTimeField('Update Date', auto_now=True)
 
     user = models.ForeignKey(
         "users.User", verbose_name='Owner', on_delete=models.CASCADE)
 
+    class Meta:
+        abstract = True
+
+    def time_info(self):
+        return {
+            'createDate': timezone.localtime(self.created_at),
+            'editDate': timezone.localtime(self.updated_at),
+        }
+
+
+class Comment(Post):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
@@ -17,18 +32,15 @@ class Comment(models.Model):
         return 'comment from %s' % self.user
 
     def as_preview(self):
-        return {
+        return self.time_info() | {
             'id': str(self.id),
             'body': self.body,
             'user': self.user.as_preview()
         }
 
     def as_detailed(self):
-        return {
-            'id': str(self.id),
-            'body': self.body,
+        return self.as_preview() | {
             '%sId' % self.content_type.model: self.object_id,
-            'user': self.user.as_preview()
         }
 
 
@@ -72,18 +84,12 @@ class Tag(models.Model):
         }
 
 
-class Question(models.Model):
+class Question(Post):
 
     title = models.CharField('Title', max_length=200)
-    body = models.TextField('Body', max_length=10000)
     tags = models.ManyToManyField(Tag, verbose_name='Tags', blank=True)
 
     comments = GenericRelation(Comment)
-
-    date_time = models.DateTimeField(
-        'Date & Time', auto_now=True, blank=True, null=True)
-    user = models.ForeignKey(
-        "users.User", verbose_name='Owner', on_delete=models.CASCADE)
 
     vote_up_users = models.ManyToManyField(
         "users.User", verbose_name='Users who voted up this question', related_name='question_upvotes', blank=True)
@@ -113,7 +119,7 @@ class Question(models.Model):
         return 0
 
     def as_preview(self, user):
-        return {
+        return self.time_info() | {
             'id': str(self.id),
             'title': self.title,
             'votes': self.count_votes(),
@@ -121,34 +127,20 @@ class Question(models.Model):
             'comments': self.count_comments(),
             'tagIds': self.tag_id_list(),
             'user': self.user.as_preview(),
-            'dateTime': self.date_time,
             'userVote': self.vote_of(user)
         }
 
     def as_detailed(self, user):
-        return {
-            'id': str(self.id),
-            'title': self.title,
+        return self.as_preview(user) | {
             'body': self.body,
-            'votes': self.count_votes(),
-            'answers': list(answer.as_preview(user) for answer in self.answer_set.all()),
+            'answers': list(answer.as_detailed(user) for answer in self.answer_set.all()),
             'comments': list(comment.as_preview() for comment in self.comments.all()),
-            'tagIds': self.tag_id_list(),
-            'user': self.user.as_preview(),
-            'dateTime': self.date_time,
-            'userVote': self.vote_of(user)
         }
 
 
-class Answer(models.Model):
-    body = models.TextField('Body', max_length=10000)
-
-    date_time = models.DateTimeField('Date & Time', auto_now=True)
-
+class Answer(Post):
     question = models.ForeignKey(
         Question, verbose_name='Question', on_delete=models.CASCADE)
-    user = models.ForeignKey(
-        "users.User", verbose_name='Owner', on_delete=models.CASCADE)
 
     comments = GenericRelation(Comment)
 
@@ -171,7 +163,7 @@ class Answer(models.Model):
         return 0
 
     def as_preview(self, user):
-        return {
+        return self.time_info() | {
             'id': str(self.id),
             'body': self.body,
             'votes': self.count_votes(),
@@ -180,12 +172,6 @@ class Answer(models.Model):
         }
 
     def as_detailed(self, user):
-        return {
-            'id': str(self.id),
-            'body': self.body,
-            'votes': self.count_votes(),
-            'user': self.user.as_preview(),
-            'questionId': self.question.id,
-            'userVote': self.vote_of(user),
+        return self.as_preview(user) | {
             'comments': list(comment.as_preview() for comment in self.comments.all())
         }
