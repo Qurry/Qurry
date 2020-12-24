@@ -189,10 +189,10 @@ class QuestionView(AbstractView):
 
             questions = search_result
 
-        return JsonResponse(list(question.as_preview() | {'userVote': question.vote_of(self.user)} for question in questions[offset: offset + limit]), safe=False)
+        return JsonResponse(list(question.as_preview(self.user) for question in questions[offset: offset + limit]), safe=False)
 
     def view_detailed(self, question):
-        return JsonResponse(question.as_detailed() | {'userVote': question.vote_of(self.user)})
+        return JsonResponse(question.as_detailed(self.user))
 
     def create(self, body):
         tagIds = body['tagIds']
@@ -257,14 +257,14 @@ class AnswerView(AbstractView):
 
     def view_list(self, **kwargs):  # in preview format
         if self.question:
-            return JsonResponse(list(answer.as_preview() | {'userVote': answer.vote_of(self.user)} for answer in self.question.answer_set.all()), safe=False)
+            return JsonResponse(list(answer.as_preview(self.user) for answer in self.question.answer_set.all()), safe=False)
         return JsonResponse(
-            list(answer.as_preview() | {'userVote': answer.vote_of(self.user), 'questionId': str(answer.question_id)}
+            list(answer.as_preview(self.user) | {'questionId': str(answer.question_id)}
                  for answer in Answer.objects.all()),
             safe=False)
 
     def view_detailed(self, answer):
-        return JsonResponse(answer.as_preview() | {'userVote': answer.vote_of(self.user), 'questionId': str(answer.question_id)})
+        return JsonResponse(answer.as_preview(self.user) | {'questionId': str(answer.question_id)})
 
     def create(self, body):
 

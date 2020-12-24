@@ -101,7 +101,7 @@ class Question(models.Model):
             return -1
         return 0
 
-    def as_preview(self):
+    def as_preview(self, user):
         return {
             'id': str(self.id),
             'title': self.title,
@@ -109,19 +109,21 @@ class Question(models.Model):
             'answers': self.count_answers(),
             'tagIds': self.tag_id_list(),
             'user': self.user.as_preview(),
-            'dateTime': self.date_time
+            'dateTime': self.date_time,
+            'userVote': self.vote_of(user)
         }
 
-    def as_detailed(self):
+    def as_detailed(self, user):
         return {
             'id': str(self.id),
             'title': self.title,
             'body': self.body,
             'votes': self.count_votes(),
-            'answers': list(answer.as_preview() for answer in self.answer_set.all()),
+            'answers': list(answer.as_preview(user) for answer in self.answer_set.all()),
             'tagIds': self.tag_id_list(),
             'user': self.user.as_preview(),
-            'dateTime': self.date_time
+            'dateTime': self.date_time,
+            'userVote': self.vote_of(user)
         }
 
 
@@ -155,10 +157,11 @@ class Answer(models.Model):
             return -1
         return 0
 
-    def as_preview(self):
+    def as_preview(self, user):
         return {
             'id': str(self.id),
             'body': self.body,
             'votes': self.count_votes(),
-            'user': self.user.as_preview()
+            'user': self.user.as_preview(),
+            'userVote': self.vote_of(user)
         }
