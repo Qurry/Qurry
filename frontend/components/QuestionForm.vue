@@ -58,7 +58,7 @@ export default class QuestionCreate extends Vue {
   tags: Tag[] = this.$store.state.tags
 
   @Prop()
-  question: CreateEditQuestion
+  question!: CreateEditQuestion
 
   rules = {
     required: (value: string) => !!value || 'Required',

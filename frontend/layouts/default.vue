@@ -45,7 +45,9 @@ export default {
     ...mapState('auth', ['loggedIn']),
   },
   async beforeMount() {
-    await this.$store.dispatch('fetchTags')
+    if (this.loggedIn) {
+      await this.$store.dispatch('fetchTags')
+    }
     this.dataFetched = true
   },
   head: {

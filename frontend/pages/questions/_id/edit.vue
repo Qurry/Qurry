@@ -41,7 +41,7 @@ export default class QuestionCreate extends Vue {
   onSubmit() {
     QuestionService.editQuestion(this.$axios, this.questionId, this.question)
       .then((res) => {
-        if (res.status === 201) {
+        if (res.status === 200) {
           this.$router.push('/questions/' + res.data.questionId)
         } else {
           console.log(res)
