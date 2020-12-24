@@ -132,8 +132,24 @@ class AbstractView(View):
     def remove(self, question):
         pass
 
-    def vote(self, question, action):
-        pass
+    def vote(self, obj, action):
+        # remove user from voters
+        try:
+            obj.vote_up_users.remove(self.user)
+        except:
+            pass
+
+        try:
+            obj.vote_down_users.remove(self.user)
+        except:
+            pass
+
+        if action == '1':
+            obj.vote_up_users.add(self.user)
+        if action == '-1':
+            obj.vote_down_users.add(self.user)
+
+        return JsonResponse({'%sId' % self.Model.__name__.lower(): str(obj.id)})
 
 
 class QuestionView(AbstractView):
@@ -211,25 +227,6 @@ class QuestionView(AbstractView):
 
         return JsonResponse({'questionId': str(question.id)}, status=200)
 
-    def vote(self, question, action):
-        # remove user from voters
-        try:
-            question.vote_up_users.remove(self.user)
-        except:
-            pass
-
-        try:
-            question.vote_down_users.remove(self.user)
-        except:
-            pass
-
-        if action == '1':
-            question.vote_up_users.add(self.user)
-        if action == '-1':
-            question.vote_down_users.add(self.user)
-
-        return JsonResponse({})
-
     def handle(self, bad_request_exception):
         # fields are not valid
         message_dict = {
@@ -304,25 +301,6 @@ class AnswerView(AbstractView):
         answer.delete()
 
         return JsonResponse({'answerId': str(answer.id)}, status=200)
-
-    def vote(self, answer, action):
-        # remove user from voters
-        try:
-            answer.vote_up_users.remove(self.user)
-        except:
-            pass
-
-        try:
-            answer.vote_down_users.remove(self.user)
-        except:
-            pass
-
-        if action == 'up':
-            answer.vote_up_users.add(self.user)
-        if action == 'down':
-            answer.vote_down_users.add(self.user)
-
-        return JsonResponse({'answerId': str(answer.id)})
 
     def handle(self, bad_request_exception):
         # fields are not vali
