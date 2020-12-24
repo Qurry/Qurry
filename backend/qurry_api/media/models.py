@@ -10,4 +10,4 @@ class Image(models.Model):
     description = models.TextField('Description', blank=True, null=True)
 
     def __str__(self):
-        return self.src
+        return str(self.src)
