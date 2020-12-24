@@ -18,6 +18,14 @@ class Comment(models.Model):
 
     def as_preview(self):
         return {
+            'id': str(self.id),
+            'body': self.body,
+            'user': self.user.as_preview()
+        }
+
+    def as_detailed(self):
+        return {
+            'id': str(self.id),
             'body': self.body,
             '%sId' % self.content_type.model: self.object_id,
             'user': self.user.as_preview()
@@ -91,6 +99,9 @@ class Question(models.Model):
     def count_answers(self):
         return self.answer_set.count()
 
+    def count_comments(self):
+        return self.comments.count()
+
     def tag_id_list(self):
         return list(str(id) for id in self.tags.values_list('id', flat=True))
 
@@ -107,6 +118,7 @@ class Question(models.Model):
             'title': self.title,
             'votes': self.count_votes(),
             'answers': self.count_answers(),
+            'comments': self.count_comments(),
             'tagIds': self.tag_id_list(),
             'user': self.user.as_preview(),
             'dateTime': self.date_time,
@@ -120,6 +132,7 @@ class Question(models.Model):
             'body': self.body,
             'votes': self.count_votes(),
             'answers': list(answer.as_preview(user) for answer in self.answer_set.all()),
+            'comments': list(comment.as_preview() for comment in self.comments.all()),
             'tagIds': self.tag_id_list(),
             'user': self.user.as_preview(),
             'dateTime': self.date_time,
@@ -164,4 +177,15 @@ class Answer(models.Model):
             'votes': self.count_votes(),
             'user': self.user.as_preview(),
             'userVote': self.vote_of(user)
+        }
+
+    def as_detailed(self, user):
+        return {
+            'id': str(self.id),
+            'body': self.body,
+            'votes': self.count_votes(),
+            'user': self.user.as_preview(),
+            'questionId': self.question.id,
+            'userVote': self.vote_of(user),
+            'comments': list(comment.as_preview() for comment in self.comments.all())
         }
