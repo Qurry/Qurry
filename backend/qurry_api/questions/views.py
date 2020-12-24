@@ -157,7 +157,7 @@ class QuestionView(AbstractView):
         except:
             return JsonResponse({'errors': ['get arguments are invalid']}, status=400)
 
-        print(search_words, kwargs['search'])
+        # print(search_words, kwargs['search']) throws error if no search parameter
 
         questions = self.Model.objects.all()
 
@@ -203,7 +203,7 @@ class QuestionView(AbstractView):
             tags = tags_from(tagIds)
             question.tags.set(tags)
 
-        return JsonResponse({'questionId': str(id)}, status=200)
+        return JsonResponse({'questionId': str(question.id)}, status=200)
 
     @ownership_required
     def remove(self, question):
@@ -223,9 +223,9 @@ class QuestionView(AbstractView):
         except:
             pass
 
-        if action == 'up':
+        if action == '1':
             question.vote_up_users.add(self.user)
-        if action == 'down':
+        if action == '-1':
             question.vote_down_users.add(self.user)
 
         return JsonResponse({})
@@ -242,7 +242,7 @@ class QuestionView(AbstractView):
 
 
 class TagView(View):
-    @login_required
+    # @login_required throws AttributeError at /api/tags/ 'TagView' object has no attribute 'user'
     def get(self, request, *args, **kwargs):
         return self.view_list()
 
