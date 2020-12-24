@@ -1,4 +1,14 @@
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
+
+
+class Comment(models.Model):
+    body = models.TextField('Body', max_length=10000)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
 
 
 class TagCategory(models.Model):
@@ -46,6 +56,8 @@ class Question(models.Model):
     title = models.CharField('Title', max_length=200)
     body = models.TextField('Body', max_length=10000)
     tags = models.ManyToManyField(Tag, verbose_name='Tags', blank=True)
+
+    comments = GenericRelation(Comment)
 
     date_time = models.DateTimeField(
         'Date & Time', auto_now=True, blank=True, null=True)
@@ -109,6 +121,8 @@ class Answer(models.Model):
         Question, verbose_name='Question', on_delete=models.CASCADE)
     user = models.ForeignKey(
         "users.User", verbose_name='Owner', on_delete=models.CASCADE)
+
+    comments = GenericRelation(Comment)
 
     vote_up_users = models.ManyToManyField(
         "users.User", verbose_name='Users who voted up this answer', related_name='answer_upvotes', blank=True)
