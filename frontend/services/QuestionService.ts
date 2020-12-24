@@ -24,4 +24,10 @@ export default {
     const response = await $axios.delete('/questions/' + questionId + '/')
     return response
   },
+  async voteQuestion($axios: any, questionId: string, userVote: number) {
+    const { data }: { data: any } = await $axios.get(
+      '/questions/' + questionId + '/?vote=' + userVote
+    )
+    return data
+  },
 }

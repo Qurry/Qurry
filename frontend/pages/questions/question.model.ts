@@ -27,6 +27,7 @@ export interface DetailQuestion {
   title: string
   body: string
   votes: number
+  userVote: number
   dateTime: string
   user: {
     id: number

@@ -223,9 +223,9 @@ class QuestionView(AbstractView):
         except:
             pass
 
-        if action == 'up':
+        if action == '1':
             question.vote_up_users.add(self.user)
-        if action == 'down':
+        if action == '-1':
             question.vote_down_users.add(self.user)
 
         return JsonResponse({})
