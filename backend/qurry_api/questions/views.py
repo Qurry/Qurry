@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError, PermissionDenied, RequestAborted
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Question, Tag, Answer
+from .models import Question, Tag, Answer, Comment
 
 # remove us
 from users.models import User
@@ -87,7 +87,8 @@ class AbstractView(View):
     @login_required
     def post(self, request, *args, **kwargs):
         try:
-            return self.create(json_from(request.body))
+            id = self.create(json_from(request.body))
+            return JsonResponse({'%sId' % self.Model.__name__.lower(): str(id)}, status=201)
         except ValidationError as exc:
             return JsonResponse({'errors': extract_errors(exc)}, status=400)
         except Exception as exc:
@@ -100,7 +101,8 @@ class AbstractView(View):
             return JsonResponse({'errors': ['you can not patch to %ss, you have to add id to the url' % self.Model.__name__]}, status=405)
         obj = self.Model.objects.get(id=kwargs['id'])
         try:
-            return self.change(obj, json_from(request.body))
+            self.change(obj, json_from(request.body))
+            return JsonResponse({'%sId' % self.Model.__name__.lower(): str(kwargs['id'])}, status=200)
         except ValidationError as exc:
             return JsonResponse({'errors': extract_errors(exc)}, status=400)
         except Exception as exc:
@@ -113,27 +115,45 @@ class AbstractView(View):
             return JsonResponse({'errors': ['you can not delete to %ss, you have to add id to the url' % self.Model.__name__]}, status=405)
         obj = self.Model.objects.get(id=kwargs['id'])
         try:
-            return self.remove(obj)
+            self.remove(obj)
+            return JsonResponse({'%sId' % self.Model.__name__.lower(): str(kwargs['id'])}, status=200)
         except Exception as exc:
             return JsonResponse({'errors': [str(exc)]}, status=500)
 
     def view_list(self, **kwargs):  # in preview format
         pass
 
-    def view_detailed(self, question):
+    def view_detailed(self, obj):
         pass
 
     def create(self, body):
         pass
 
-    def change(self, question, body):
+    def change(self, obj, body):
         pass
 
-    def remove(self, question):
-        pass
+    @ ownership_required
+    def remove(self, obj):
+        obj.delete()
 
-    def vote(self, question, action):
-        pass
+    def vote(self, obj, action):
+        # remove user from voters
+        try:
+            obj.vote_up_users.remove(self.user)
+        except:
+            pass
+
+        try:
+            obj.vote_down_users.remove(self.user)
+        except:
+            pass
+
+        if action == '1':
+            obj.vote_up_users.add(self.user)
+        if action == '-1':
+            obj.vote_down_users.add(self.user)
+
+        return JsonResponse({'%sId' % self.Model.__name__.lower(): str(obj.id)})
 
 
 class QuestionView(AbstractView):
@@ -142,7 +162,7 @@ class QuestionView(AbstractView):
 
     def view_list(self, **kwargs):  # in preview format
         # parse arguments
-        limit = self.Model.objects.count()
+        limit = Question.objects.count()
         offset = 0
         search_words = None
         try:
@@ -159,7 +179,7 @@ class QuestionView(AbstractView):
 
         # print(search_words, kwargs['search']) throws error if no search parameter
 
-        questions = self.Model.objects.all()
+        questions = Question.objects.all()
 
         search_result = Question.objects.none()
         if search_words:
@@ -181,12 +201,12 @@ class QuestionView(AbstractView):
         creation_data = {'title': body['title'],
                          'body': body['body'], 'user': self.user}
 
-        new_question = self.Model(**creation_data)
+        new_question = Question(**creation_data)
         new_question.full_clean()
         new_question.save()
         new_question.tags.set(tags)
 
-        return JsonResponse({'questionId': str(new_question.id)}, status=201)
+        return new_question.id
 
     @ownership_required
     def change(self, question, body):
@@ -202,33 +222,6 @@ class QuestionView(AbstractView):
             tagIds = body['tagIds']
             tags = tags_from(tagIds)
             question.tags.set(tags)
-
-        return JsonResponse({'questionId': str(question.id)}, status=200)
-
-    @ownership_required
-    def remove(self, question):
-        question.delete()
-
-        return JsonResponse({'questionId': str(question.id)}, status=200)
-
-    def vote(self, question, action):
-        # remove user from voters
-        try:
-            question.vote_up_users.remove(self.user)
-        except:
-            pass
-
-        try:
-            question.vote_down_users.remove(self.user)
-        except:
-            pass
-
-        if action == '1':
-            question.vote_up_users.add(self.user)
-        if action == '-1':
-            question.vote_down_users.add(self.user)
-
-        return JsonResponse({})
 
     def handle(self, bad_request_exception):
         # fields are not valid
@@ -282,11 +275,11 @@ class AnswerView(AbstractView):
         creation_data = {
             'body': body['body'], 'user': self.user, 'question': self.question}
 
-        new_answer = self.Model(**creation_data)
+        new_answer = Answer(**creation_data)
         new_answer.full_clean()
         new_answer.save()
 
-        return JsonResponse({'AnswerId': str(new_answer.id)}, status=201)
+        return new_answer.id
 
     @ownership_required
     def change(self, answer, body):
@@ -297,38 +290,73 @@ class AnswerView(AbstractView):
         answer.full_clean()
         answer.save()
 
-        return JsonResponse({'answerId': str(id)}, status=200)
+    def handle(self, bad_request_exception):
+        # fields are not vali
 
-    @ownership_required
-    def remove(self, answer):
-        answer.delete()
+        message_dict = {
+            # one argument is not given
+            KeyError: 'request must contain body',
+        }
+        return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
 
-        return JsonResponse({'answerId': str(answer.id)}, status=200)
+
+class CommentView(AbstractView):
+    Model = Comment
+    reference = None
+
+    def setup(self, request, *args, **kwargs):
+        if 'qid' in kwargs:
+            try:
+                self.reference = Question.objects.get(id=kwargs['qid'])
+            except:
+                pass
+        if 'aid' in kwargs:
+            try:
+                self.reference = Answer.objects.get(id=kwargs['aid'])
+            except:
+                pass
+        return super().setup(request, *args, **kwargs)
+
+    def view_list(self, **kwargs):  # in preview format
+        if self.reference:
+            return JsonResponse(list(comment.as_preview() for comment in self.reference.comments.all()), safe=False)
+        return JsonResponse(list(comment.as_preview() for comment in Comment.objects.all()), safe=False)
+
+    def view_detailed(self, comment):
+        return JsonResponse(comment.as_preview())
+
+    def create(self, body):
+
+        if not self.reference:
+            raise RequestAborted(
+                'you can create a comment with questions/<id>/comments/ or answers/<id>/comments')
+
+        creation_data = {
+            'body': body['body'], 'user': self.user, 'content_object': self.reference}
+
+        new_comment = Comment(**creation_data)
+        new_comment.full_clean()
+        new_comment.save()
+
+        return new_comment.id
+
+    @ ownership_required
+    def change(self, comment, body):
+
+        if 'body' in body:
+            comment.body = body['body']
+
+        comment.full_clean()
+        comment.save()
 
     def vote(self, answer, action):
-        # remove user from voters
-        try:
-            answer.vote_up_users.remove(self.user)
-        except:
-            pass
-
-        try:
-            answer.vote_down_users.remove(self.user)
-        except:
-            pass
-
-        if action == 'up':
-            answer.vote_up_users.add(self.user)
-        if action == 'down':
-            answer.vote_down_users.add(self.user)
-
-        return JsonResponse({'answerId': str(answer.id)})
+        return JsonResponse({'error': ['you can not vote comments now']}, status=405)
 
     def handle(self, bad_request_exception):
         # fields are not vali
 
         message_dict = {
             # one argument is not given
-            KeyError: 'request must contain title',
+            KeyError: 'request must contain body',
         }
         return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]

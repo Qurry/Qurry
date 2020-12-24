@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.http import JsonResponse
 
-from .views import QuestionView, TagView, AnswerView
+from .views import QuestionView, TagView, AnswerView, CommentView
 
 
 urlpatterns = [
@@ -11,11 +11,19 @@ urlpatterns = [
 
     path('questions/<int:qid>/answers/',
          AnswerView.as_view(), name='view-answers-of-question'),
-
     path('answers/',
          AnswerView.as_view(), name='view-answers'),
     path('answers/<int:id>/',
          AnswerView.as_view(), name='view-answer-details'),
+
+    path('comments/',
+         CommentView.as_view(), name='view-comments'),
+    path('comments/<int:id>/',
+         CommentView.as_view(), name='view-comment-details'),
+    path('answers/<int:aid>/comments/',
+         CommentView.as_view(), name='view-comments-of-answer'),
+    path('questions/<int:qid>/comments/',
+         CommentView.as_view(), name='view-answer-details'),
 
     path('tags/', TagView.as_view(), name='view-tags'),
 ]
