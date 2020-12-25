@@ -1,31 +1,53 @@
 import secrets
+from django.core.exceptions import ValidationError
 
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
+from django.views import View
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.utils.encoding import force_bytes, force_text
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode 
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils import timezone
 from django.contrib.sites.shortcuts import get_current_site
 
 from qurry_api import settings
-from .models import User, Token
+from .models import User, Token, Profile
 from .forms import UserCreationForm
+from questions.views import login_required, json_from, extract_errors
+
+# remove us
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+
+def active_user_exists(function):
+    def does_active_exist(self, *args, **kwargs):
+        if 'id' in kwargs:
+            try:
+                user = User.objects.get(id=kwargs['id'], is_active=True)
+            except Exception as err:
+                return JsonResponse({'errors': [str(err)]}, status=404)
+        return function(self, *args, **kwargs)
+    return does_active_exist
+
 
 def make_token(user):
     token = secrets.token_urlsafe(30)
     Token(user=user, token=token).save()
     return token
 
-def is_token_right(user, token):
+
+def is_valid(user, token):
     exists = Token.objects.filter(user=user.id).filter(token=token)
     if len(exists) == 1:
         exists[0].delete()
         return True
     else:
         return False
-    
+
+
 @csrf_exempt
 def register(request):
     if request.method == 'POST':
@@ -34,20 +56,20 @@ def register(request):
             user = form.save(commit=False)
             user.is_active = False
             user.save()
-            
 
             token = make_token(user)
             mail_subject = 'Activate your account.'
             current_site = get_current_site(request)
             message = render_to_string('email_template.html', {
-                        'user': user,
-                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                        'token': token,
-                        'domain': current_site.domain,
-                    })
+                'user': user,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': token,
+                'domain': current_site.domain,
+            })
             to_email = form.cleaned_data.get('email')
-            send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [to_email])
-            
+            send_mail(mail_subject, message,
+                      settings.EMAIL_HOST_USER, [to_email])
+
             return JsonResponse({}, status=201)
         else:
             response_json = {'errors': {}}
@@ -58,17 +80,71 @@ def register(request):
 
     return JsonResponse({'message': 'request is not post'}, status=400)
 
+
 def activate(request, uidb64, token):
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
-    if user is not None and is_token_right(user, token):
+    if user is not None and is_valid(user, token):
         user.is_active = True
         user.save()
+
+        # create profile for user
+        user.get_default_profile()
+
         return HttpResponse('Thank you for your email confirmation. Now you can <a href="localhost:3000/login">login</a> your account.')
     else:
         return HttpResponse('Activation link is invalid!')
 
 
+@ method_decorator(csrf_exempt, name='dispatch')
+class UserView(View):
+    Model = User
+    mode = None
+
+    def setup(self, request, *args, **kwargs):
+        self.user = request.user
+        return super().setup(request, *args, **kwargs)
+
+    @ login_required
+    @ active_user_exists
+    def get(self, request, *args, **kwargs):
+        if self.mode == 'profile':
+            return self.profile()
+
+        if 'id' in kwargs:
+            user = User.objects.get(id=kwargs['id'])
+            return JsonResponse(user.as_detailed())
+
+        return JsonResponse(list(user.as_detailed() for user in User.objects.all_active()), safe=False)
+
+    @ login_required
+    def patch(self, request, *args, **kwargs):
+        if self.mode != 'profile':
+            return JsonResponse({'errors': ['if you need to edit your profile, PATCH to profile/']}, status=405)
+        try:
+            self.change(**json_from(request.body))
+        except ValidationError as exc:
+            return JsonResponse({'errors': extract_errors(exc)}, status=400)
+        except Exception as exc:
+            return JsonResponse({'errors': [str(exc)]}, status=400)
+
+        return JsonResponse({'userId': self.user.id})
+
+    def profile(self):
+        return JsonResponse(self.user.as_detailed() | {
+            'email': self.user.email,
+            'joinDate': timezone.localtime(self.user.joined_at)
+        })
+
+    def change(self, **kwargs):
+        if 'username' in kwargs:
+            self.user.username = kwargs['username']
+
+        if 'password' in kwargs:
+            self.user.set_password(kwargs['password'])
+
+        self.user.full_clean()
+        self.user.save()

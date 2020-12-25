@@ -2,7 +2,11 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .forms import UserCreationForm, UserChangeForm
-from .models import User, Token
+from .models import User, Token, Profile
+
+
+class ProfileInline(admin.StackedInline):
+    model = Profile
 
 
 class UserAdmin(UserAdmin):
@@ -24,7 +28,9 @@ class UserAdmin(UserAdmin):
     )
     search_fields = ('email', 'username')
     ordering = ('email',)
+    inlines = (ProfileInline, )
 
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Token)
+admin.site.register(Profile)
