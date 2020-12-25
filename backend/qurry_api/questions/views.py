@@ -47,7 +47,8 @@ def login_required(function):
 def ownership_required(function):
     def is_owner(self, obj, *args, **kwargs):
         if not self.user.is_owner_of(obj):
-            return JsonResponse({'errors': ['you have to own the %s object to be able to do this action' % self.Model.__name__]}, status=401)
+            raise PermissionDenied(
+                'you have to own the %s object to be able to do this action' % self.Model.__name__)
         return function(self, obj, *args, **kwargs)
     return is_owner
 
@@ -63,7 +64,7 @@ def object_existence_required(function):
     return does_exist
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@ method_decorator(csrf_exempt, name='dispatch')
 class AbstractView(View):
     Model = None
 
@@ -72,8 +73,8 @@ class AbstractView(View):
         return super().setup(request, *args, **kwargs)
 
     # different HTTP requests
-    @login_required
-    @object_existence_required
+    @ login_required
+    @ object_existence_required
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
             obj = self.Model.objects.get(id=kwargs['id'])
@@ -84,7 +85,7 @@ class AbstractView(View):
 
         return self.view_list(**(request.GET.dict() | kwargs))
 
-    @login_required
+    @ login_required
     def post(self, request, *args, **kwargs):
         try:
             id = self.create(json_from(request.body))
@@ -94,8 +95,8 @@ class AbstractView(View):
         except Exception as exc:
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
-    @login_required
-    @object_existence_required
+    @ login_required
+    @ object_existence_required
     def patch(self, request, *args, **kwargs):
         if not 'id' in kwargs:
             return JsonResponse({'errors': ['you can not patch to %ss, you have to add id to the url' % self.Model.__name__]}, status=405)
@@ -105,11 +106,13 @@ class AbstractView(View):
             return JsonResponse({'%sId' % self.Model.__name__.lower(): str(kwargs['id'])}, status=200)
         except ValidationError as exc:
             return JsonResponse({'errors': extract_errors(exc)}, status=400)
+        except PermissionDenied as exc:
+            return JsonResponse({'errors': [str(exc)]}, status=401)
         except Exception as exc:
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
-    @login_required
-    @object_existence_required
+    @ login_required
+    @ object_existence_required
     def delete(self, request, *args, **kwargs):
         if not 'id' in kwargs:
             return JsonResponse({'errors': ['you can not delete to %ss, you have to add id to the url' % self.Model.__name__]}, status=405)
@@ -208,8 +211,9 @@ class QuestionView(AbstractView):
 
         return new_question.id
 
-    @ownership_required
+    @ ownership_required
     def change(self, question, body):
+
         if 'title' in body:
             question.title = body['title']
         if 'body' in body:

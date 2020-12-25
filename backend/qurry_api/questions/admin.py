@@ -8,7 +8,7 @@ class CommentsInline(GenericTabularInline):
     model = Comment
 
 
-class AnwersInline(admin.TabularInline):
+class AnswersInline(admin.TabularInline):
     model = Answer
 
 
@@ -16,7 +16,7 @@ class QuestionAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'user', )
     readonly_fields = ('id', )
     filter_horizontal = ('tags', 'vote_up_users', 'vote_down_users')
-    inlines = (AnwersInline, CommentsInline,)
+    inlines = (AnswersInline, CommentsInline,)
 
 
 class AnswerAdmin(admin.ModelAdmin):

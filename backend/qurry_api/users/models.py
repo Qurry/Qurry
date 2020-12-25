@@ -19,7 +19,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    date_joined = models.DateTimeField(default=timezone.now)
+    joined_at = models.DateTimeField(default=timezone.now)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -29,27 +29,57 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username
 
+    def get_profile(self):
+        try:
+            return self.profile
+        except:
+            return self.create_default_profile()
+
+    def score(self):
+        return self.get_profile().score
+
+    def profile_image(self):
+        return self.get_profile().image_url()
+
     def as_preview(self):
         return {
             'id': self.id,
             'username': self.username
         }
 
+    def as_detailed(self):
+        return self.as_preview() | {
+            'score': self.score(),
+            'image': self.profile_image(),
+        }
+
     def is_owner_of(self, obj):
         return obj.user == self
 
-
-class Token(models.Model):
-
-    user = models.OneToOneField(
-        User, verbose_name='user', on_delete=models.CASCADE)
-    token = models.TextField('token')
+    def create_default_profile(self):
+        return Profile.objects.create(user=self)
 
 
 class Profile(models.Model):
 
-    user = models.OneToOneField(
-        User, verbose_name='User', on_delete=models.CASCADE)
+    user = models.OneToOneField(User, verbose_name='Profile',
+                                on_delete=models.CASCADE)
+
     score = models.IntegerField('Score', default=0)
     image = models.ForeignKey(Image, verbose_name='Profile Image',
                               blank=True, null=True, on_delete=models.SET_NULL)
+
+    def image_url(self):
+        if self.image:
+            return self.image.src.url
+        return ''
+
+    def __str__(self):
+        return str(self.user)
+
+
+class Token(models.Model):
+
+    user = models.OneToOneField(User, verbose_name='user',
+                                on_delete=models.CASCADE)
+    token = models.TextField('token')
