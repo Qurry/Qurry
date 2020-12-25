@@ -1,80 +1,43 @@
 <template>
   <div>
-    <div v-if="inEditMode">
-      <CommentForm
-        :comment="editComment"
-        class="my-2"
-        @submit="onSubmitEdit"
-        @cancel="onCancel"
-      />
-    </div>
-    <div v-else>
-      {{ comment.body }}
-      <PostToolbar
-        :post="comment"
-        post-type="comment"
-        class="toolbar"
-        @delete="onDelete"
-        @edit="onEdit"
-      />
-    </div>
-    <hr class="divider" />
+    <h3 class="mt-1">
+      {{
+        comments.length
+          ? comments.length + ' Comment' + (comments.length > 1 ? 's' : '')
+          : ''
+      }}
+    </h3>
+    <Comment
+      v-for="comment in comments"
+      :key="comment.id"
+      :comment="comment"
+      @delete="onDeleteComment"
+      @update="$emit('update')"
+    />
+    <v-btn color="secondary" small class="mt-2">New Comment</v-btn>
   </div>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { Comment, CreateEditComment } from './../pages/questions/question.model'
 import QuestionService from './../services/QuestionService'
-
 @Component
 export default class CommentContainer extends Vue {
-  inEditMode = false
   @Prop()
-  comment!: Comment
+  comments!: Comment[]
 
-  editComment: CreateEditComment = {
-    body: '',
-  }
-
-  onEdit() {
-    this.inEditMode = true
-    this.editComment.body = this.comment.body
-  }
-
-  onSubmitEdit() {
-    QuestionService.editComment(this.$axios, this.comment.id, this.editComment)
+  onDeleteComment(commentId: string) {
+    QuestionService.deleteComment(this.$axios, commentId)
       .then((res) => {
         if (res.status === 200) {
-          this.comment.body = this.editComment.body
-          this.inEditMode = false
+          this.$emit('update')
         } else {
           console.log(res)
         }
       })
       .catch((e) => console.log(e))
   }
-
-  onDelete() {
-    this.$emit('delete', this.comment.id)
-  }
-
-  onCancel() {
-    this.inEditMode = false
-  }
 }
 </script>
 
-<style scoped>
-.action-icon {
-  cursor: pointer;
-}
-.toolbar {
-  display: inline;
-}
-.divider {
-  height: 2px;
-  background-color: #bbb;
-  border: 0;
-}
-</style>
+<style scoped></style>

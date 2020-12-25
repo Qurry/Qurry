@@ -34,12 +34,9 @@
               @edit="onEdit"
             />
           </div>
-          <h3 class="mt-1">Comments</h3>
           <CommentContainer
-            v-for="comment in question.comments"
-            :key="comment.id"
-            :comment="comment"
-            @delete="onDeleteComment"
+            :comments="question.comments"
+            @update="reloadQuestion"
           />
         </div>
       </div>
@@ -112,29 +109,17 @@ export default class QuestionDetail extends Vue {
   changeUserVote(userVote: number) {
     QuestionService.voteQuestion(this.$axios, this.question.id, userVote)
       .then((_res) => {
-        QuestionService.getQuestion(this.$axios, this.question.id)
-          .then((question) => {
-            this.question = question
-          })
-          .catch((error) => console.log(error))
+        this.reloadQuestion()
       })
       .catch((error) => console.log(error))
   }
 
-  onDeleteComment(commentId: number) {
-    QuestionService.deleteComment(this.$axios, commentId)
-      .then((res) => {
-        if (res.status === 200) {
-          QuestionService.getQuestion(this.$axios, this.question.id)
-            .then((question) => {
-              this.question = question
-            })
-            .catch((e) => console.log(e))
-        } else {
-          console.log(res)
-        }
+  reloadQuestion() {
+    QuestionService.getQuestion(this.$axios, this.question.id)
+      .then((question) => {
+        this.question = question
       })
-      .catch((e) => console.log(e))
+      .catch((error) => console.log(error))
   }
 }
 </script>
