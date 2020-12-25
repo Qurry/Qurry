@@ -41,15 +41,7 @@
         </div>
       </div>
 
-      <h2 class="mt-5">
-        {{ question.answers.length }} Answer{{
-          question.answers.length != 1 ? 's' : ''
-        }}
-      </h2>
-      <div v-for="answer in question.answers" :key="answer.id">
-        <p>{{ answer.body }} by {{ answer.user.username }}</p>
-        <hr />
-      </div>
+      <AnswerContainer :answers="question.answers" @update="reloadQuestion" />
     </v-col>
   </v-row>
 </template>
