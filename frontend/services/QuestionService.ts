@@ -30,4 +30,18 @@ export default {
     )
     return data
   },
+  async getComment($axios: any, commentId: string) {
+    const { data }: { data: any } = await $axios.get(
+      '/comments/' + commentId + '/'
+    )
+    return data
+  },
+  async editComment($axios: any, commentId: string, comment: any) {
+    const response = await $axios.patch('/comments/' + commentId + '/', comment)
+    return response
+  },
+  async deleteComment($axios: any, commentId: string) {
+    const response = await $axios.delete('/comments/' + commentId + '/')
+    return response
+  },
 }

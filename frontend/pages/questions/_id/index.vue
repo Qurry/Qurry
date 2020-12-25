@@ -39,6 +39,7 @@
             v-for="comment in question.comments"
             :key="comment.id"
             :comment="comment"
+            @delete="onDeleteComment"
           />
         </div>
       </div>
@@ -71,7 +72,8 @@ export default class QuestionDetail extends Vue {
     body: '',
     votes: 0,
     userVote: 0,
-    dateTime: '',
+    createDate: '',
+    editDate: '',
     user: {
       id: '',
       username: '',
@@ -117,6 +119,22 @@ export default class QuestionDetail extends Vue {
           .catch((error) => console.log(error))
       })
       .catch((error) => console.log(error))
+  }
+
+  onDeleteComment(commentId: number) {
+    QuestionService.deleteComment(this.$axios, commentId)
+      .then((res) => {
+        if (res.status === 200) {
+          QuestionService.getQuestion(this.$axios, this.question.id)
+            .then((question) => {
+              this.question = question
+            })
+            .catch((e) => console.log(e))
+        } else {
+          console.log(res)
+        }
+      })
+      .catch((e) => console.log(e))
   }
 }
 </script>

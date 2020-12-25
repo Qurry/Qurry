@@ -25,6 +25,7 @@
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
 import { Comment, CreateEditComment } from './../pages/questions/question.model'
+import QuestionService from './../services/QuestionService'
 
 @Component
 export default class CommentContainer extends Vue {
@@ -42,12 +43,20 @@ export default class CommentContainer extends Vue {
   }
 
   onSubmitEdit() {
-    console.log('edit')
-    this.inEditMode = false
+    QuestionService.editComment(this.$axios, this.comment.id, this.editComment)
+      .then((res) => {
+        if (res.status === 200) {
+          this.comment.body = this.editComment.body
+          this.inEditMode = false
+        } else {
+          console.log(res)
+        }
+      })
+      .catch((e) => console.log(e))
   }
 
   onDelete() {
-    console.log('delete')
+    this.$emit('delete', this.comment.id)
   }
 
   onCancel() {

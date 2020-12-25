@@ -1,8 +1,8 @@
 <template>
   <div>
     <span>
-      – <a class="user-link">{{ post.user.username }}</a> 13 weeks ago
-      <!-- on {{ post.dateTime ? post.dateTime : '' }} -->
+      – <a class="user-link">{{ post.user.username }}</a> on
+      {{ post.createDate | prettyDateTime }}
     </span>
     <span>
       <v-btn icon color="secondary" class="action-btn" @click="onEdit">
