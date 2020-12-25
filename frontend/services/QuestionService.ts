@@ -36,6 +36,10 @@ export default {
     )
     return data
   },
+  async createComment($axios: any, comment: any, path: string) {
+    const response = await $axios.post(path + '/comments/', comment)
+    return response
+  },
   async editComment($axios: any, commentId: string, comment: any) {
     const response = await $axios.patch('/comments/' + commentId + '/', comment)
     return response

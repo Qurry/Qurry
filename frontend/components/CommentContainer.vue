@@ -14,22 +14,63 @@
       @delete="onDeleteComment"
       @update="$emit('update')"
     />
-    <v-btn color="secondary" small class="mt-2">New Comment</v-btn>
+    <div v-if="inCreateMode">
+      <CommentForm
+        :comment="createComment"
+        class="my-2"
+        @submit="onSubmitCreate"
+        @cancel="onCancel"
+      />
+    </div>
+    <div v-else>
+      <v-btn color="secondary" small class="mt-2" @click="onCreate">
+        New Comment
+      </v-btn>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
+import { CreateEditComment } from '../pages/questions/question.model'
 import QuestionService from './../services/QuestionService'
+
 @Component
 export default class CommentContainer extends Vue {
+  inCreateMode = false
   @Prop()
   comments!: Comment[]
+
+  createComment: CreateEditComment = {
+    body: '',
+  }
 
   onDeleteComment(commentId: string) {
     QuestionService.deleteComment(this.$axios, commentId)
       .then((res) => {
         if (res.status === 200) {
+          this.$emit('update')
+        } else {
+          console.log(res)
+        }
+      })
+      .catch((e) => console.log(e))
+  }
+
+  onCancel() {
+    this.inCreateMode = false
+  }
+
+  onCreate() {
+    this.inCreateMode = true
+  }
+
+  onSubmitCreate() {
+    QuestionService.createComment(this.$axios, this.createComment, this.$route.path)
+      .then((res) => {
+        if (res.status === 201) {
+          this.inCreateMode = false
+          this.createComment.body = ''
           this.$emit('update')
         } else {
           console.log(res)
