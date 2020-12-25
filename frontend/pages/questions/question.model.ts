@@ -1,3 +1,8 @@
+export interface User {
+  id: string
+  username: string
+}
+
 export interface DetailQuestion {
   id: string
   title: string
@@ -5,12 +10,10 @@ export interface DetailQuestion {
   votes: number
   userVote: number
   dateTime: string
-  user: {
-    id: number
-    username: string
-  }
+  user: User
   tagIds: string[]
   answers: Answer[]
+  comments: Comment[]
 }
 
 export interface PreviewQuestion {
@@ -19,10 +22,7 @@ export interface PreviewQuestion {
   votes: number
   answers: number
   dateTime: string
-  user: {
-    id: number
-    username: string
-  }
+  user: User
   tagIds: string[]
 }
 
@@ -35,15 +35,22 @@ export interface CreateEditQuestion {
 export interface Answer {
   id: string
   body: string
-  dateTime: string
   votes: number
-  user: {
-    id: number
-    username: string
-  }
+  user: User
   userVote: number
+  comments?: Comment[]
 }
 
 export interface CreateEditAnswer {
+  body: string
+}
+
+export interface Comment {
+  id: string
+  body: string
+  user: User
+}
+
+export interface CreateEditComment {
   body: string
 }

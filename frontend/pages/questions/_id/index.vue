@@ -20,53 +20,29 @@
           @user-vote-change="changeUserVote"
         />
         <div class="question-body-container">
-          <h1 class="mb-3"><MathJax :data="question.title" /></h1>
+          <h1 class="mb-3 question-title">
+            <MathJax :data="question.title" />
+          </h1>
           <p><MathJax :data="question.body" /></p>
 
-          <div class="question-footer">
-            <v-btn
-              color="secondary"
-              :to="'/questions/' + question.id + '/edit'"
-              small
-              outlined
-              class="mr-1"
-            >
-              Edit
-            </v-btn>
-
-            <v-dialog v-model="dialog" persistent max-width="290">
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  color="secondary"
-                  small
-                  v-bind="attrs"
-                  outlined
-                  class="mr-5"
-                  v-on="on"
-                >
-                  Delete
-                </v-btn>
-              </template>
-              <v-card>
-                <v-card-title class="headline">
-                  Do you really want to delete this question?
-                </v-card-title>
-                <v-card-text>This action can't be undone.</v-card-text>
-                <v-card-actions>
-                  <v-btn color="error" @click="onDelete()"> Delete </v-btn>
-                  <v-spacer></v-spacer>
-                  <v-btn color="#ddd" @click="dialog = false"> Cancel </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-
-            <p class="question-info">
-              by {{ question.user.username }} on
-              {{ question.dateTime | prettyDateTime }}
-            </p>
+          <div>
+            <TagsList :tag-ids="question.tagIds" />
+            <PostToolbar
+              :post="question"
+              post-type="question"
+              @delete="onDelete"
+              @edit="onEdit"
+            />
           </div>
+          <h3 class="mt-1">Comments</h3>
+          <CommentContainer
+            v-for="comment in question.comments"
+            :key="comment.id"
+            :comment="comment"
+          />
         </div>
       </div>
+
       <h2 class="mt-5">
         {{ question.answers.length }} Answer{{
           question.answers.length != 1 ? 's' : ''
@@ -97,11 +73,12 @@ export default class QuestionDetail extends Vue {
     userVote: 0,
     dateTime: '',
     user: {
-      id: 0,
+      id: '',
       username: '',
     },
     tagIds: [],
     answers: [],
+    comments: [],
   }
 
   fetch() {
@@ -112,6 +89,10 @@ export default class QuestionDetail extends Vue {
         })
         .catch((error) => console.log(error)),
     ])
+  }
+
+  onEdit() {
+    this.$router.push('/questions/' + this.question.id + '/edit')
   }
 
   onDelete() {
@@ -141,10 +122,8 @@ export default class QuestionDetail extends Vue {
 </script>
 
 <style scoped>
-.question-info {
-  color: #888888;
-  margin-bottom: 5px;
-  margin-left: auto;
+.question-title {
+  line-height: 1.2;
 }
 .question-container {
   display: flex;
@@ -154,8 +133,5 @@ export default class QuestionDetail extends Vue {
 }
 .question-body-container {
   flex: 1;
-}
-.question-footer {
-  display: flex;
 }
 </style>
