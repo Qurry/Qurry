@@ -19,7 +19,7 @@
       />
     </div>
     <div v-else>
-      <v-btn color="secondary" small class="mt-2" @click="onCreate">
+      <v-btn color="secondary" class="mt-2" @click="onCreate">
         New Answer
       </v-btn>
     </div>

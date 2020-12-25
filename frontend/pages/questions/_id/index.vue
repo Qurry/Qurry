@@ -17,7 +17,7 @@
           :votes="question.votes"
           :user-vote="question.userVote"
           class="question-votes-container"
-          @user-vote-change="changeUserVote"
+          @update="reloadQuestion"
         />
         <div class="question-body-container">
           <h1 class="mb-3 question-title">
@@ -94,14 +94,6 @@ export default class QuestionDetail extends Vue {
         } else {
           console.log(res)
         }
-      })
-      .catch((error) => console.log(error))
-  }
-
-  changeUserVote(userVote: number) {
-    QuestionService.voteQuestion(this.$axios, this.question.id, userVote)
-      .then((_res) => {
-        this.reloadQuestion()
       })
       .catch((error) => console.log(error))
   }
