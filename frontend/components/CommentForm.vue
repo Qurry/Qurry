@@ -55,4 +55,8 @@ export default class CommentForm extends Vue {
 .toolbar {
   display: inline;
 }
+::v-deep .v-textarea textarea {
+  line-height: 1.3;
+  padding: 5px 0 20px 0;
+}
 </style>

@@ -17,6 +17,7 @@
                 label="E-Mail"
                 required
                 class="form-field"
+                color="secondary"
               ></v-text-field>
             </v-col>
             <v-col cols="12">
@@ -27,6 +28,7 @@
                 :rules="[rules.required]"
                 label="Passwort"
                 class="form-field"
+                color="secondary"
                 @click:append="showPassword = !showPassword"
               ></v-text-field>
             </v-col>

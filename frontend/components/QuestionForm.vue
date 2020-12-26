@@ -7,6 +7,8 @@
       :rules="[rules.required, rules.minLength]"
       required
       outlined
+      auto-grow
+      color="secondary"
     ></v-textarea>
 
     <v-textarea
@@ -16,6 +18,8 @@
       :rules="[rules.required, rules.minLength]"
       required
       outlined
+      auto-grow
+      color="secondary"
     ></v-textarea>
 
     <v-autocomplete
@@ -27,6 +31,7 @@
       item-text="name"
       item-value="id"
       label="Tags"
+      color="secondary"
     >
       <template v-slot:selection="data">
         <v-chip
@@ -76,4 +81,9 @@ export default class QuestionCreate extends Vue {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+::v-deep .v-textarea textarea {
+  line-height: 1.3;
+  padding: 5px 0 20px 0;
+}
+</style>
