@@ -23,7 +23,7 @@
       />
     </div>
     <div v-else>
-      <v-btn color="secondary" small class="mt-2" @click="onCreate">
+      <v-btn color="secondary" small class="mt-2" outlined @click="onCreate">
         New Comment
       </v-btn>
     </div>
@@ -40,6 +40,9 @@ export default class CommentContainer extends Vue {
   inCreateMode = false
   @Prop()
   comments!: Comment[]
+
+  @Prop()
+  path!: string
 
   createComment: CreateEditComment = {
     body: '',
@@ -66,7 +69,7 @@ export default class CommentContainer extends Vue {
   }
 
   onSubmitCreate() {
-    QuestionService.createComment(this.$axios, this.createComment, this.$route.path)
+    QuestionService.createComment(this.$axios, this.createComment, this.path)
       .then((res) => {
         if (res.status === 201) {
           this.inCreateMode = false

@@ -73,8 +73,8 @@ export default class CommentContainer extends Vue {
   display: inline;
 }
 .divider {
-  height: 2px;
-  background-color: #bbb;
+  height: 1px;
+  background-color: #ccc;
   border: 0;
 }
 </style>

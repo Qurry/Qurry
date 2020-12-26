@@ -46,9 +46,15 @@
       </template>
     </v-autocomplete>
 
-    <v-btn color="secondary" :disabled="!isFormValid" @click="onSubmit">
+    <v-btn
+      color="secondary"
+      :disabled="!isFormValid"
+      class="mr-2"
+      @click="onSubmit"
+    >
       Submit
     </v-btn>
+    <v-btn color="gray" @click="onCancel"> Cancel </v-btn>
   </v-form>
 </template>
 
@@ -77,6 +83,10 @@ export default class QuestionCreate extends Vue {
 
   onSubmit() {
     this.$emit('submit')
+  }
+
+  onCancel() {
+    this.$emit('cancel')
   }
 }
 </script>

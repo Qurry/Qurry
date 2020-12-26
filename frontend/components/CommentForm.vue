@@ -3,7 +3,7 @@
     <v-textarea
       v-model.trim="comment.body"
       rows="1"
-      label="Comment Body"
+      label="Comment"
       :rules="[rules.required, rules.minLength]"
       auto-grow
       required
@@ -11,10 +11,10 @@
       color="secondary"
     ></v-textarea>
 
-    <v-btn color="secondary" :disabled="!isFormValid" @click="onSubmit">
+    <v-btn color="secondary" :disabled="!isFormValid" small @click="onSubmit">
       Submit
     </v-btn>
-    <v-btn color="gray" @click="onCancel"> Cancel </v-btn>
+    <v-btn color="gray" small @click="onCancel"> Cancel </v-btn>
   </v-form>
 </template>
 

@@ -32,6 +32,9 @@ export default class VotingContainer extends Vue {
   @Prop()
   votes!: number
 
+  @Prop()
+  path!: string
+
   onVoteUp() {
     if (this.userVote === 1) {
       this.changeUserVote(0)
@@ -49,7 +52,7 @@ export default class VotingContainer extends Vue {
   }
 
   changeUserVote(userVote: number) {
-    QuestionService.votePost(this.$axios, this.$route.path, userVote)
+    QuestionService.votePost(this.$axios, this.path, userVote)
       .then((_res) => {
         this.$emit('update')
       })

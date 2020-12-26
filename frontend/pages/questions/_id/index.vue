@@ -16,6 +16,7 @@
         <VotingContainer
           :votes="question.votes"
           :user-vote="question.userVote"
+          :path="$route.path"
           class="question-votes-container"
           @update="reloadQuestion"
         />
@@ -36,6 +37,7 @@
           </div>
           <CommentContainer
             :comments="question.comments"
+            :path="$route.path"
             @update="reloadQuestion"
           />
         </div>

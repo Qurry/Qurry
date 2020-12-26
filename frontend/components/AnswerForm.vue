@@ -3,7 +3,7 @@
     <v-textarea
       v-model.trim="answer.body"
       rows="1"
-      label="Answer Body"
+      label="Answer"
       :rules="[rules.required, rules.minLength]"
       auto-grow
       required
