@@ -1,25 +1,6 @@
-export interface PreviewQuestion {
+export interface User {
   id: string
-  title: string
-  votes: number
-  answers: number
-  dateTime: string
-  user: {
-    id: number
-    username: string
-  }
-  tagIds: string[]
-}
-
-export interface Answer {
-  id: string
-  body: string
-  dateTime: string
-  votes: number
-  user: {
-    id: number
-    username: string
-  }
+  username: string
 }
 
 export interface DetailQuestion {
@@ -28,17 +9,56 @@ export interface DetailQuestion {
   body: string
   votes: number
   userVote: number
-  dateTime: string
-  user: {
-    id: number
-    username: string
-  }
+  createDate: string
+  editDate: string
+  user: User
   tagIds: string[]
   answers: Answer[]
+  comments: Comment[]
+}
+
+export interface PreviewQuestion {
+  id: string
+  title: string
+  votes: number
+  userVote: number
+  answers: number
+  comments: number
+  createDate: string
+  editDate: string
+  user: User
+  tagIds: string[]
 }
 
 export interface CreateEditQuestion {
   title: string
   body: string
   tagIds: number[]
+}
+
+export interface Answer {
+  id: string
+  createDate: string
+  editDate: string
+  body: string
+  votes: number
+  user: User
+  userVote: number
+  comments: Comment[]
+}
+
+export interface CreateEditAnswer {
+  body: string
+}
+
+export interface Comment {
+  id: string
+  createDate: string
+  editDate: string
+  body: string
+  user: User
+}
+
+export interface CreateEditComment {
+  body: string
 }

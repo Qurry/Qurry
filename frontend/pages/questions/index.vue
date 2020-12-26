@@ -19,7 +19,7 @@
           color="secondary"
           class="ask-question-btn"
         >
-          Ask Question
+          New Question
         </v-btn>
       </div>
       <PreviewQuestionCard

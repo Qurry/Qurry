@@ -22,6 +22,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
+import QuestionService from '../services/QuestionService'
 
 @Component
 export default class VotingContainer extends Vue {
@@ -31,20 +32,31 @@ export default class VotingContainer extends Vue {
   @Prop()
   votes!: number
 
+  @Prop()
+  path!: string
+
   onVoteUp() {
     if (this.userVote === 1) {
-      this.$emit('user-vote-change', 0)
+      this.changeUserVote(0)
     } else {
-      this.$emit('user-vote-change', 1)
+      this.changeUserVote(1)
     }
   }
 
   onVoteDown() {
     if (this.userVote === -1) {
-      this.$emit('user-vote-change', 0)
+      this.changeUserVote(0)
     } else {
-      this.$emit('user-vote-change', -1)
+      this.changeUserVote(-1)
     }
+  }
+
+  changeUserVote(userVote: number) {
+    QuestionService.votePost(this.$axios, this.path, userVote)
+      .then((_res) => {
+        this.$emit('update')
+      })
+      .catch((e) => console.log(e))
   }
 }
 </script>

@@ -7,6 +7,8 @@
       :rules="[rules.required, rules.minLength]"
       required
       outlined
+      auto-grow
+      color="secondary"
     ></v-textarea>
 
     <v-textarea
@@ -16,6 +18,8 @@
       :rules="[rules.required, rules.minLength]"
       required
       outlined
+      auto-grow
+      color="secondary"
     ></v-textarea>
 
     <v-autocomplete
@@ -27,6 +31,7 @@
       item-text="name"
       item-value="id"
       label="Tags"
+      color="secondary"
     >
       <template v-slot:selection="data">
         <v-chip
@@ -41,9 +46,15 @@
       </template>
     </v-autocomplete>
 
-    <v-btn color="secondary" :disabled="!isFormValid" @click="onSubmit">
+    <v-btn
+      color="secondary"
+      :disabled="!isFormValid"
+      class="mr-2"
+      @click="onSubmit"
+    >
       Submit
     </v-btn>
+    <v-btn color="gray" @click="onCancel"> Cancel </v-btn>
   </v-form>
 </template>
 
@@ -73,7 +84,16 @@ export default class QuestionCreate extends Vue {
   onSubmit() {
     this.$emit('submit')
   }
+
+  onCancel() {
+    this.$emit('cancel')
+  }
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+::v-deep .v-textarea textarea {
+  line-height: 1.3;
+  padding: 5px 0 20px 0;
+}
+</style>

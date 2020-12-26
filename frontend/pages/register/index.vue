@@ -21,6 +21,7 @@
                 label="Nutzername"
                 required
                 class="form-field"
+                color="secondary"
               ></v-text-field>
             </v-col>
 
@@ -31,6 +32,7 @@
                 label="E-mail"
                 required
                 class="form-field"
+                color="secondary"
               ></v-text-field>
             </v-col>
             <v-col cols="12">
@@ -48,6 +50,7 @@
                 :type="showPassword ? 'text' : 'password'"
                 label="Passwort"
                 class="form-field"
+                color="secondary"
                 @click:append="showPassword = !showPassword"
               ></v-text-field>
             </v-col>

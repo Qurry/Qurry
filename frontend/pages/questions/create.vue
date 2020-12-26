@@ -3,7 +3,11 @@
     <v-row>
       <v-col>
         <h1 class="mb-5">New Question</h1>
-        <QuestionForm :question="question" @submit="onSubmit" />
+        <QuestionForm
+          :question="question"
+          @submit="onSubmit"
+          @cancel="onCancel"
+        />
       </v-col>
     </v-row>
   </v-container>
@@ -32,6 +36,10 @@ export default class QuestionCreate extends Vue {
         }
       })
       .catch((e) => console.log(e))
+  }
+
+  onCancel() {
+    this.$router.push('/questions')
   }
 }
 </script>
