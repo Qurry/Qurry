@@ -136,7 +136,7 @@ class UserView(View):
     def profile(self):
         return JsonResponse(self.user.as_detailed() | {
             'email': self.user.email,
-            'joinDate': timezone.localtime(self.user.joined_at)
+            'registerDate': timezone.localtime(self.user.registered_at)
         })
 
     def change(self, **kwargs):
