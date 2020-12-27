@@ -8,9 +8,9 @@ import {
 } from '~/pages/questions/question.model'
 
 export default {
-  async getQuestions($axios: NuxtAxiosInstance) {
+  async getQuestions($axios: NuxtAxiosInstance, search: string) {
     const { data }: { data: PreviewQuestion[] } = await $axios.get(
-      '/questions/'
+      '/questions/?search=' + search
     )
     return data
   },

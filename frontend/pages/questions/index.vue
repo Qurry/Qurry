@@ -22,11 +22,29 @@
           New Question
         </v-btn>
       </div>
-      <PreviewQuestionCard
-        v-for="question in questions"
-        :key="question.id"
-        :question="question"
-      />
+      <div class="mb-3">
+        <v-form @submit.prevent="onSubmitSearch">
+          <v-text-field
+            v-model.trim="search"
+            label="Search"
+            append-icon="mdi-magnify"
+            outlined
+            color="secondary"
+          ></v-text-field>
+
+          <v-btn color="secondary" class="mr-2" type="submit"> Submit </v-btn>
+        </v-form>
+      </div>
+      <div v-if="questions.length">
+        <PreviewQuestionCard
+          v-for="question in questions"
+          :key="question.id"
+          :question="question"
+        />
+      </div>
+      <div v-else>
+        <p class="no-questions">No questions found.</p>
+      </div>
     </v-col>
   </v-row>
 </template>
@@ -39,15 +57,29 @@ import { PreviewQuestion } from './question.model'
 @Component
 export default class QuestionList extends Vue {
   questions: PreviewQuestion[] = []
+  search = ''
+
+  sortQuestions() {
+    this.questions.sort((a: PreviewQuestion, b: PreviewQuestion) =>
+      a.votes! < b.votes! ? 1 : b.votes! < a.votes! ? -1 : 0
+    )
+  }
 
   fetch() {
-    return Promise.all([
-      QuestionService.getQuestions(this.$axios)
-        .then((questions) => {
-          this.questions = questions
-        })
-        .catch((error) => console.log(error)),
-    ])
+    return Promise.all([this.getQuestions()])
+  }
+
+  getQuestions() {
+    QuestionService.getQuestions(this.$axios, this.search)
+      .then((questions) => {
+        this.questions = questions
+        this.sortQuestions()
+      })
+      .catch((error) => console.log(error))
+  }
+
+  onSubmitSearch() {
+    this.getQuestions()
   }
 }
 </script>
@@ -60,5 +92,8 @@ export default class QuestionList extends Vue {
 .ask-question-btn {
   margin-left: auto;
   margin-top: 7px;
+}
+p.no-questions {
+  text-align: center;
 }
 </style>

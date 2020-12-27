@@ -30,7 +30,7 @@ export interface PreviewQuestion {
 export interface CreateEditQuestion {
   title: string
   body: string
-  tagIds: number[]
+  tagIds: string[]
 }
 
 export interface Answer {

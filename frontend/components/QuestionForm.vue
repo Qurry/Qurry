@@ -76,7 +76,7 @@ export default class QuestionCreate extends Vue {
     minLength: (value: string) => value.length >= 3 || 'At least 3 characters',
   }
 
-  removeTagIdFromQuestionTagIds(tagId: number) {
+  removeTagIdFromQuestionTagIds(tagId: string) {
     const index = this.question.tagIds.indexOf(tagId)
     if (index >= 0) this.question.tagIds.splice(index, 1)
   }
