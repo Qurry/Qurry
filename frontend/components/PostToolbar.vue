@@ -4,7 +4,7 @@
       – <a class="user-link">{{ post.user.username }}</a> on
       {{ post.createDate | prettyDateTime }}
     </span>
-    <span>
+    <span v-if="isAuthorized">
       <v-btn icon color="secondary" class="action-btn" @click="onEdit">
         <v-icon>mdi-pencil</v-icon> </v-btn
       ><v-dialog v-model="dialog" persistent max-width="290">
@@ -53,6 +53,8 @@ export default class QuestionDetail extends Vue {
 
   @Prop()
   postType!: string
+
+  isAuthorized = this.$store.state.profile.id === this.post.user.id
 
   onDelete() {
     this.$emit('delete')
