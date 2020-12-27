@@ -37,7 +37,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { User } from './../pages/questions/question.model'
+import { User } from '~/pages/users/user.model'
 
 interface Post {
   id: string

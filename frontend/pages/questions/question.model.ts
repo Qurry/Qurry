@@ -1,7 +1,4 @@
-export interface User {
-  id: string
-  username: string
-}
+import { User } from './../users/user.model'
 
 export interface DetailQuestion {
   id: string

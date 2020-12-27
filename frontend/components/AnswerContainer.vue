@@ -41,6 +41,12 @@ export default class AnswerContainer extends Vue {
     body: '',
   }
 
+  created() {
+    this.answers.sort((a: Answer, b: Answer) =>
+      a.votes! < b.votes! ? 1 : b.votes! < a.votes! ? -1 : 0
+    )
+  }
+
   onDeleteAnswer(answerId: string) {
     QuestionService.deleteAnswer(this.$axios, answerId)
       .then((res) => {
