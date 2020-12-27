@@ -19,4 +19,8 @@ export default {
     })
     return res
   },
+  async getUsers($axios: any) {
+    const { data }: { data: any } = await $axios.get('/users/')
+    return data
+  },
 }

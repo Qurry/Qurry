@@ -4,3 +4,4 @@ qurry-db
 migrations/
 __pycache__/
 records.json
+uploads/
