@@ -1,4 +1,6 @@
+import { NuxtAxiosInstance } from '@nuxtjs/axios'
 import axios from 'axios'
+import { User } from '~/pages/users/user.model'
 
 const apiClient = axios.create({
   baseURL: 'http://localhost:8000/api',
@@ -19,8 +21,8 @@ export default {
     })
     return res
   },
-  async getUsers($axios: any) {
-    const { data }: { data: any } = await $axios.get('/users/')
+  async getUsers($axios: NuxtAxiosInstance) {
+    const { data }: { data: User[] } = await $axios.get('/users/')
     return data
   },
 }
