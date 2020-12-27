@@ -4,12 +4,14 @@
       <v-btn to="/" text rounded>Qurry</v-btn>
       <v-spacer></v-spacer>
       <template v-if="loggedIn">
+        <v-btn to="/logout" text rounded>Logout</v-btn>
         <v-btn to="/questions" text rounded>Questions</v-btn>
         <v-btn to="/tags" text rounded>Tags</v-btn>
         <v-btn to="/users" text rounded>Users</v-btn>
-        <v-btn to="/logout" text rounded>Logout</v-btn>
         <v-btn to="/profile" text rounded>Profile</v-btn>
-        <span>{{ points }} <v-icon color="accent"> mdi-trophy </v-icon></span>
+        <span>
+          {{ userScore }} <v-icon color="accent"> mdi-trophy </v-icon>
+        </span>
       </template>
       <template v-else>
         <v-btn to="/login" text rounded>Login</v-btn>
@@ -38,7 +40,7 @@ import { mapState } from 'vuex'
 export default {
   data() {
     return {
-      points: 145,
+      userScore: 0,
       dataFetched: false,
     }
   },
@@ -48,7 +50,9 @@ export default {
   async beforeMount() {
     if (this.loggedIn) {
       await this.$store.dispatch('fetchTags')
+      await this.$store.dispatch('fetchProfile')
     }
+    this.userScore = this.$store.state.profile.score
     this.dataFetched = true
   },
   head: {
