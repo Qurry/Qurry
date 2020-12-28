@@ -1,11 +1,12 @@
 from django.db import models
+from django.db.models.deletion import SET, SET_DEFAULT
 from django.utils import timezone
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
 
 class Post(models.Model):
-    body = models.TextField('Body', max_length=10000)
+    body = models.TextField('Body', default='', max_length=10000)
 
     created_at = models.DateTimeField('Creation Date', auto_now_add=True)
     updated_at = models.DateTimeField('Update Date', auto_now=True)
@@ -46,41 +47,42 @@ class Comment(Post):
 
 class TagCategory(models.Model):
     name = models.CharField('Name', max_length=20)
-    description = models.TextField('Description', blank=True, null=True)
+    description = models.TextField('Description', default='')
 
     def __str__(self):
         return self.name
 
-    def as_preview(self):
-        return {
-            'id': str(self.id),
-            'name': self.name,
-            'description': self.description
-        }
-
-
-class Tag(models.Model):
-
-    name = models.CharField('Name', max_length=20)
-    description = models.TextField('Description', blank=True, null=True)
-
-    category = models.ForeignKey(
-        TagCategory, verbose_name='Kategorie', blank=True, null=True, on_delete=models.SET_NULL)
-
-    def __str__(self):
-        return self.name
-
-    def category_as_string(self):
-        if self.category:
-            return str(self.category)
-        return 'none'
+    def tags_as_preview(self):
+        return list(tag.as_preview() for tag in self.tag_set.all())
 
     def as_preview(self):
         return {
             'id': str(self.id),
             'name': self.name,
             'description': self.description,
-            'category': self.category_as_string()
+            'tags': self.tags_as_preview()
+        }
+
+
+class Tag(models.Model):
+
+    name = models.CharField('Name', max_length=20)
+    description = models.TextField('Description', default='')
+
+    def default_category():
+        return TagCategory.objects.get_or_create(name='-')[0].id
+
+    category = models.ForeignKey(
+        TagCategory, verbose_name='Category', default=default_category, on_delete=models.SET_DEFAULT)
+
+    def __str__(self):
+        return self.name
+
+    def as_preview(self):
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'description': self.description,
         }
 
 

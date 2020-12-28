@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError, PermissionDenied, RequestAborted
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Question, Tag, Answer, Comment
+from .models import Question, Answer, Comment, Tag, TagCategory
 
 # remove us
 from users.models import User
@@ -64,13 +64,15 @@ def object_existence_required(function):
     return does_exist
 
 
-@ method_decorator(csrf_exempt, name='dispatch')
-class AbstractView(View):
-    Model = None
-
+class BaseView(View):
     def setup(self, request, *args, **kwargs):
         self.user = request.user
         return super().setup(request, *args, **kwargs)
+
+
+@ method_decorator(csrf_exempt, name='dispatch')
+class AbstractView(BaseView):
+    Model = None
 
     # different HTTP requests
     @ login_required
@@ -238,15 +240,6 @@ class QuestionView(AbstractView):
         return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
 
 
-class TagView(View):
-    # @login_required throws AttributeError at /api/tags/ 'TagView' object has no attribute 'user'
-    def get(self, request, *args, **kwargs):
-        return self.view_list()
-
-    def view_list(self):
-        return JsonResponse(list(tag.as_preview() for tag in Tag.objects.all()), safe=False)
-
-
 class AnswerView(AbstractView):
     Model = Answer
     question = None
@@ -361,3 +354,13 @@ class CommentView(AbstractView):
             KeyError: 'request must contain body',
         }
         return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
+
+
+class TagView(BaseView):
+
+    @login_required
+    def get(self, request, *args, **kwargs):
+        return self.view_list()
+
+    def view_list(self):
+        return JsonResponse(list(tag_category.as_preview() for tag_category in TagCategory.objects.all()), safe=False)
