@@ -7,10 +7,6 @@ from .models import Question, Answer, Comment, Tag, TagCategory
 from qurry_api.base_views import AthenticatedView
 from qurry_api.decorators import login_required, ownership_required, object_existence_required
 
-# remove us
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-
 
 def json_from(post_body):
     body_unicode = post_body.decode('utf-8')
@@ -33,8 +29,6 @@ def extract_errors(validation_exception):
     return error_list
 
 
-# decorators
-@ method_decorator(csrf_exempt, name='dispatch')
 class AbstractView(AthenticatedView):
     Model = None
 
