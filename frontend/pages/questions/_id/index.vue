@@ -63,8 +63,8 @@ export default class QuestionDetail extends Vue {
     body: '',
     votes: 0,
     userVote: 0,
-    createDate: '',
-    editDate: '',
+    createdAt: '',
+    editedAt: '',
     user: {
       id: '',
       username: '',

@@ -4,5 +4,5 @@ export interface Profile {
   score: number
   image: string
   email: string
-  registerDate: string
+  registeredAt: string
 }

@@ -26,7 +26,7 @@
           by
           {{ question.user.username }}
           on
-          {{ question.createDate | prettyDateTime }}
+          {{ question.createdAt | prettyDateTime }}
         </p>
       </div>
     </div>

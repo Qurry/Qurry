@@ -2,7 +2,7 @@
   <div>
     <span>
       – <a class="user-link">{{ post.user.username }}</a> on
-      {{ post.createDate | prettyDateTime }}
+      {{ post.createdAt | prettyDateTime }}
     </span>
     <span v-if="isAuthorized">
       <v-btn icon color="secondary" class="action-btn" @click="onEdit">

@@ -6,8 +6,8 @@ export interface DetailQuestion {
   body: string
   votes: number
   userVote: number
-  createDate: string
-  editDate: string
+  createdAt: string
+  editedAt: string
   user: User
   tagIds: string[]
   answers: Answer[]
@@ -21,8 +21,8 @@ export interface PreviewQuestion {
   userVote: number
   answers: number
   comments: number
-  createDate: string
-  editDate: string
+  createdAt: string
+  editedAt: string
   user: User
   tagIds: string[]
 }
@@ -35,8 +35,8 @@ export interface CreateEditQuestion {
 
 export interface Answer {
   id: string
-  createDate: string
-  editDate: string
+  createdAt: string
+  editedAt: string
   body: string
   votes: number
   user: User
@@ -50,8 +50,8 @@ export interface CreateEditAnswer {
 
 export interface Comment {
   id: string
-  createDate: string
-  editDate: string
+  createDcreatedAtate: string
+  editedAt: string
   body: string
   user: User
 }
