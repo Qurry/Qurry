@@ -18,8 +18,8 @@ class Post(models.Model):
 
     def time_info(self):
         return {
-            'createDate': timezone.localtime(self.created_at),
-            'editDate': timezone.localtime(self.updated_at),
+            'createdAt': timezone.localtime(self.created_at),
+            'editedAt': timezone.localtime(self.updated_at),
         }
 
 
