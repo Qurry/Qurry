@@ -47,12 +47,12 @@ export default {
       local: {
         endpoints: {
           login: {
-            url: '/token/',
+            url: '/token/generate',
             method: 'post',
             propertyName: 'access',
           },
           logout: false,
-          user: false,
+          user: false
         },
       },
     },

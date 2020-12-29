@@ -15,7 +15,9 @@ from django.contrib.sites.shortcuts import get_current_site
 from qurry_api import settings
 from .models import User, Token, Profile
 from .forms import UserCreationForm
-from questions.views import login_required, json_from, extract_errors
+from qurry_api.decorators import login_required
+from qurry_api.base_views import AthenticatedView
+from questions.views import json_from, extract_errors
 
 # remove us
 from django.views.decorators.csrf import csrf_exempt
@@ -100,13 +102,9 @@ def activate(request, uidb64, token):
 
 
 @ method_decorator(csrf_exempt, name='dispatch')
-class UserView(View):
+class UserView(AthenticatedView):
     Model = User
     mode = None
-
-    def setup(self, request, *args, **kwargs):
-        self.user = request.user
-        return super().setup(request, *args, **kwargs)
 
     @ login_required
     @ active_user_exists

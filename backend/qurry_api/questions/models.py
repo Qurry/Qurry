@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models.deletion import SET, SET_DEFAULT
 from django.utils import timezone
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType

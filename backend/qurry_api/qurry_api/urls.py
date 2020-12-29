@@ -9,8 +9,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('questions.urls')),
     path('api/', include('users.urls')),
-    path('api/token/', TokenObtainPairView.as_view(), name='token'),
-    path('api/refresh_token/', TokenRefreshView.as_view(), name='refresh_token'),
+    path('api/token/generate', TokenObtainPairView.as_view(), name='generate-token'),
+    # path('api/token/refresh', TokenRefreshView.as_view(), name='refresh-token'),
+    # path('api/token/discard', TokenRefreshView.as_view(), name='discard-token'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
