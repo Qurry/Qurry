@@ -19,7 +19,7 @@
             </tr>
             <tr>
               <td>Register Date</td>
-              <td>{{ profile.registerDate }}</td>
+              <td>{{ profile.registeredAt }}</td>
             </tr>
           </tbody>
         </template>
