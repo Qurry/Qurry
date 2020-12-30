@@ -36,8 +36,6 @@ interface ContentBlock {
 export default class PostContentParser extends Vue {
   @Prop()
   content!: string
-  // content =
-  //   'This is some css <code class="lang-css">a: {color: red} and some python code <python>`print(ab\\`c)` Awesome'
 
   contentBlocks: ContentBlock[] = []
 
@@ -85,12 +83,12 @@ export default class PostContentParser extends Vue {
     })
     if (blockCodeSegments) {
       for (let i = 0; i < blockCodeSegments.length; i++) {
+        const lang = blockCodeSegments[i].match(/<[a-z]+>/)![0].slice(1, -1)
         contentBlocks.push({
           type: 'block-code',
-          lang: blockCodeSegments[i].match(/<[a-z]+>/)![0].slice(1, -1),
+          lang,
           value: blockCodeSegments[i]
-            .split(/<[a-z]+>/)[1]
-            .slice(3, -3)
+            .slice(lang.length + 5, -3)
             .replace('\\`', '`'),
         })
         contentBlocks.push({
@@ -113,12 +111,12 @@ export default class PostContentParser extends Vue {
     })
     if (inlineCodeSegments) {
       for (let i = 0; i < inlineCodeSegments.length; i++) {
+        const lang = inlineCodeSegments[i].match(/<[a-z]+>/)![0].slice(1, -1)
         contentBlocks.push({
           type: 'inline-code',
-          lang: inlineCodeSegments[i].match(/<[a-z]+>/)![0].slice(1, -1),
+          lang,
           value: inlineCodeSegments[i]
-            .split(/<[a-z]+>/)[1]
-            .slice(1, -1)
+            .slice(lang.length + 3, -1)
             .replace('\\`', '`'),
         })
         contentBlocks.push({
