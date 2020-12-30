@@ -1,17 +1,11 @@
 import json
 
 from django.http import JsonResponse
-from django.views import View
-from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError, PermissionDenied, RequestAborted
-from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Question, Tag, Answer, Comment
-
-# remove us
-from users.models import User
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
+from .models import Question, Answer, Comment, Tag, TagCategory
+from qurry_api.base_views import AthenticatedView
+from qurry_api.decorators import login_required, ownership_required, object_existence_required
 
 
 def json_from(post_body):
@@ -35,47 +29,13 @@ def extract_errors(validation_exception):
     return error_list
 
 
-# decorators
-def login_required(function):
-    def is_authenticated(self, *args, **kwargs):
-        if not self.user.is_authenticated:
-            return JsonResponse({'errors': ['you have to login to access questions']}, status=401)
-        return function(self, *args, **kwargs)
-    return is_authenticated
-
-
-def ownership_required(function):
-    def is_owner(self, obj, *args, **kwargs):
-        if not self.user.is_owner_of(obj):
-            raise PermissionDenied(
-                'you have to own the %s object to be able to do this action' % self.Model.__name__)
-        return function(self, obj, *args, **kwargs)
-    return is_owner
-
-
-def object_existence_required(function):
-    def does_exist(self, *args, **kwargs):
-        if 'id' in kwargs:
-            try:
-                self.Model.objects.get(id=kwargs['id'])
-            except Exception as err:
-                return JsonResponse({'errors': [str(err)]}, status=404)
-        return function(self, *args, **kwargs)
-    return does_exist
-
-
-@ method_decorator(csrf_exempt, name='dispatch')
-class AbstractView(View):
+class AbstractView(AthenticatedView):
     Model = None
-
-    def setup(self, request, *args, **kwargs):
-        self.user = request.user
-        return super().setup(request, *args, **kwargs)
 
     # different HTTP requests
     @ login_required
     @ object_existence_required
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs): 
         if 'id' in kwargs:
             obj = self.Model.objects.get(id=kwargs['id'])
             if 'vote' in request.GET:
@@ -238,15 +198,6 @@ class QuestionView(AbstractView):
         return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
 
 
-class TagView(View):
-    # @login_required throws AttributeError at /api/tags/ 'TagView' object has no attribute 'user'
-    def get(self, request, *args, **kwargs):
-        return self.view_list()
-
-    def view_list(self):
-        return JsonResponse(list(tag.as_preview() for tag in Tag.objects.all()), safe=False)
-
-
 class AnswerView(AbstractView):
     Model = Answer
     question = None
@@ -361,3 +312,13 @@ class CommentView(AbstractView):
             KeyError: 'request must contain body',
         }
         return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
+
+
+class TagView(AthenticatedView):
+
+    @login_required
+    def get(self, request, *args, **kwargs):
+        return self.view_list()
+
+    def view_list(self):
+        return JsonResponse(list(tag_category.as_preview() for tag_category in TagCategory.objects.all()), safe=False)

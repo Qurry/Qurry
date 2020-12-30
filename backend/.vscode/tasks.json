@@ -1,17 +1,4 @@
 {
-  "folders": [
-    {
-      "path": ".."
-    },
-    {
-      "path": "../../frontend"
-    }
-  ],
-  "settings": {
-    "python.pythonPath": "python-env/bin/python",
-    "python.terminal.activateEnvironment": true
-  },
-  "tasks": {
     "version": "2.0.0",
     "tasks": [
       {
@@ -52,4 +39,3 @@
       }
     ]
   }
-}

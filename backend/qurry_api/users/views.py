@@ -2,8 +2,6 @@ import secrets
 from django.core.exceptions import ValidationError
 
 from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render, redirect
-from django.views.decorators.csrf import csrf_exempt
 from django.views import View
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
@@ -15,11 +13,9 @@ from django.contrib.sites.shortcuts import get_current_site
 from qurry_api import settings
 from .models import User, Token, Profile
 from .forms import UserCreationForm
-from questions.views import login_required, json_from, extract_errors
-
-# remove us
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
+from qurry_api.decorators import login_required
+from qurry_api.base_views import AthenticatedView
+from questions.views import json_from, extract_errors
 
 
 def active_user_exists(function):
@@ -48,7 +44,6 @@ def is_valid(user, token):
         return False
 
 
-@csrf_exempt
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -99,14 +94,9 @@ def activate(request, uidb64, token):
         return HttpResponse('Activation link is invalid!')
 
 
-@ method_decorator(csrf_exempt, name='dispatch')
-class UserView(View):
+class UserView(AthenticatedView):
     Model = User
     mode = None
-
-    def setup(self, request, *args, **kwargs):
-        self.user = request.user
-        return super().setup(request, *args, **kwargs)
 
     @ login_required
     @ active_user_exists
