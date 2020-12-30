@@ -1,20 +1,20 @@
 <template>
   <v-row>
     <v-col>
-      <h1>Anmelden</h1>
+      <h1>Login</h1>
       <ul>
         <li v-for="(error, i) of errors" :key="i">
           {{ error }}
         </li>
       </ul>
-      <v-form v-model="isFormValid">
+      <v-form v-model="isFormValid" @submit.prevent="onSubmit">
         <v-container>
           <v-row>
             <v-col cols="12">
               <v-text-field
                 v-model="email"
-                :rules="[rules.required]"
-                label="E-Mail"
+                :rules="[rules.required, rules.email]"
+                label="Email"
                 required
                 class="form-field"
                 color="secondary"
@@ -26,14 +26,14 @@
                 :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
                 :type="showPassword ? 'text' : 'password'"
                 :rules="[rules.required]"
-                label="Passwort"
+                label="Password"
                 class="form-field"
                 color="secondary"
                 @click:append="showPassword = !showPassword"
               ></v-text-field>
             </v-col>
-            <v-btn :disabled="!isFormValid" color="secondary" @click="login">
-              Anmelden
+            <v-btn :disabled="!isFormValid" color="secondary" type="submit">
+              Login
             </v-btn>
           </v-row>
         </v-container>
@@ -53,11 +53,15 @@ export default class Register extends Vue {
   password = ''
   showPassword = false
   rules = {
-    required: (value: string) => !!value || 'Erforderlich.',
+    required: (value: string) => !!value || 'Required.',
     email: (value: string) => {
       const pattern = /^[a-zA-Z.-]*@[a-zA-Z.-]*(hpi.de|hpi.uni-potsdam.de)$/
-      return pattern.test(value) || 'Ungültige E-Mail'
+      return pattern.test(value) || 'Please use a HPI Email.'
     },
+  }
+
+  onSubmit() {
+    this.login()
   }
 
   login() {
