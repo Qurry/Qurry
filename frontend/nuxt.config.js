@@ -27,7 +27,7 @@ export default {
   css: [],
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
-  plugins: [{ src: '~/plugins/prism', mode: 'client' }],
+  plugins: [{ src: '~/plugins/prism', mode: 'client' }, '~plugins/filters.ts'],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
   components: true,
@@ -52,26 +52,15 @@ export default {
             propertyName: 'access',
           },
           logout: false,
-          user: false
+          user: false,
         },
       },
     },
   },
 
-  // auth: {
-  //   strategies: {
-  //     local: {
-  //       cookie: {
-  //         // (optional) If set we check this cookie exsistence for loggedIn check
-  //         name: 'sessionid',
-  //       },
-  //     },
-  //   },
-  // },
-
-  // router: {
-  //   middleware: ['auth'],
-  // },
+  router: {
+    middleware: ['auth'],
+  },
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
   axios: {

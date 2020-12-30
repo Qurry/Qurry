@@ -6,3 +6,10 @@
     </v-col>
   </v-row>
 </template>
+
+<script lang="ts">
+import { Vue, Component } from 'nuxt-property-decorator'
+
+@Component({ auth: false })
+export default class ConfirmRegistration extends Vue {}
+</script>

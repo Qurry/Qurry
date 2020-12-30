@@ -68,7 +68,7 @@
 import { Vue, Component } from 'nuxt-property-decorator'
 import UserService from './../../services/UserService'
 
-@Component({ middleware: 'guest' })
+@Component({ middleware: 'guest', auth: false })
 export default class Register extends Vue {
   isFormValid = false
   username = ''

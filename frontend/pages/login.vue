@@ -45,7 +45,7 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 
-@Component({ middleware: 'guest' })
+@Component({ middleware: 'guest', auth: false })
 export default class Register extends Vue {
   errors: string[] = []
   isFormValid = false
@@ -60,45 +60,15 @@ export default class Register extends Vue {
     },
   }
 
-  // async (): Promise<Array<Employee> | string> =>
-
-  // async login() {
-  //   try {
-  //     const response: any = await this.$auth.loginWith('local', {
-  //       data: { email: this.email, password: this.password },
-  //     })
-  //     console.log("here")
-  //     console.log(response)
-  //     console.log(response.ok)
-  //     if (!response.ok) throw new Error(response.statusText)
-  //     const { data } = await response.json()
-  //     console.log(data)
-  //     // process body
-  //   } catch (err) {
-  //     console.log("hereerr")
-  //     console.log(err)
-  //     console.log(err.message)
-  //     const { data } = await err.json()
-  //     console.log(data)
-  //   }
-  //   // try {
-  //   //   const res = await this.$auth.loginWith('local', {
-  //   //     data: { email: this.email, password: this.password },
-  //   //   })
-  //   //   console.log(res.status)
-  //   // } catch (err) {
-  //   //   console.log(err)
-  //   // }
-  // }
-
   login() {
     this.errors = []
     this.$auth
       .loginWith('local', {
         data: { email: this.email, password: this.password },
       })
-      .then((response: any) => {
-        console.log(response)
+      .then((_res: any) => {
+        this.$nuxt.$emit('reload')
+        this.$router.push('/questions')
       })
       .catch((error) => {
         console.log(error.response.data.detail)

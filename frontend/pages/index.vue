@@ -14,6 +14,6 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 
-@Component
+@Component({ auth: false })
 export default class Dashboard extends Vue {}
 </script>

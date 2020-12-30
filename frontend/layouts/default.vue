@@ -3,7 +3,7 @@
     <v-app-bar app color="primary" dark>
       <v-btn to="/" text rounded>Qurry</v-btn>
       <v-spacer></v-spacer>
-      <template v-if="loggedIn">
+      <template v-if="$store.state.auth.loggedIn">
         <v-btn to="/logout" text rounded>Logout</v-btn>
         <v-btn to="/questions" text rounded>Questions</v-btn>
         <v-btn to="/tags" text rounded>Tags</v-btn>
@@ -21,8 +21,7 @@
 
     <v-main>
       <v-container>
-        <div v-if="dataFetched"><nuxt /></div>
-        <div v-else>
+        <div v-if="isLoading">
           <v-progress-circular
             :size="70"
             :width="7"
@@ -30,31 +29,18 @@
             indeterminate
           ></v-progress-circular>
         </div>
+        <div v-else>
+          <nuxt />
+        </div>
       </v-container>
     </v-main>
   </v-app>
 </template>
 
-<script>
-import { mapState } from 'vuex'
-export default {
-  data() {
-    return {
-      userScore: 0,
-      dataFetched: false,
-    }
-  },
-  computed: {
-    ...mapState('auth', ['loggedIn']),
-  },
-  async beforeMount() {
-    if (this.loggedIn) {
-      await this.$store.dispatch('fetchTags')
-      await this.$store.dispatch('fetchProfile')
-    }
-    this.userScore = this.$store.state.profile.score
-    this.dataFetched = true
-  },
+<script lang="ts">
+import { Vue, Component } from 'nuxt-property-decorator'
+
+@Component({
   head: {
     script: [
       {
@@ -63,5 +49,29 @@ export default {
       },
     ],
   },
+})
+export default class DefaultLayout extends Vue {
+  userScore = ''
+  isLoading = false
+
+  created() {
+    this.$nuxt.$on('reload', () => {
+      this.reload()
+    })
+  }
+
+  async reload() {
+    this.isLoading = true
+    await this.$store.dispatch('fetchTags')
+    await this.$store.dispatch('fetchProfile')
+    this.userScore = this.$store.state.profile.score.toString()
+    this.isLoading = false
+  }
+
+  beforeMount() {
+    if (this.$store.state.auth.loggedIn) {
+      this.reload()
+    }
+  }
 }
 </script>
