@@ -27,7 +27,7 @@ export default {
   css: [],
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
-  plugins: ['~plugins/filters.ts'],
+  plugins: [{ src: '~/plugins/prism', mode: 'client' }],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
   components: true,
@@ -107,5 +107,18 @@ export default {
   },
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
-  build: {},
+  build: {
+    // * You can extend webpack config here
+    vendor: ['axios', 'prismjs'],
+
+    extend(config, ctx) {
+      if (ctx.isServer) {
+        config.externals = [
+          nodeExternals({
+            whitelist: [/^vuetify/],
+          }),
+        ]
+      }
+    },
+  },
 }
