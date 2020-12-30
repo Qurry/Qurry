@@ -66,7 +66,7 @@ import { Tag } from './../pages/tags/tag.model'
 @Component
 export default class QuestionCreate extends Vue {
   isFormValid = false
-  tags: Tag[] = this.$store.state.tags
+  tags: Tag[] = Object.values(this.$store.state.tags)
 
   @Prop()
   question!: CreateEditQuestion

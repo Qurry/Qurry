@@ -1,7 +1,12 @@
 <template>
   <div class="tags">
-    <v-chip v-for="tagId in tagIds" :key="tagId" class="chip">
-      {{ getTagName(tagId) }}
+    <v-chip
+      v-for="tag in selectedTags"
+      :key="tag.id"
+      class="chip"
+      :color="tag.color"
+    >
+      {{ tag.name }}
     </v-chip>
   </div>
 </template>
@@ -15,15 +20,13 @@ export default class TagsList extends Vue {
   @Prop()
   tagIds!: string[]
 
-  tags: Tag[] = this.$store.state.tags
+  tags: { [key: string]: Tag } = this.$store.state.tags
+  selectedTags: Tag[] = []
 
-  getTagName(tagId: string): string {
-    for (const tag of this.tags) {
-      if (tag.id === tagId) {
-        return tag.name
-      }
+  created() {
+    for (const tagId of this.tagIds) {
+      this.selectedTags.push(this.tags[tagId])
     }
-    return ''
   }
 }
 </script>
