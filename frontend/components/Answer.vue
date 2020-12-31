@@ -18,7 +18,7 @@
           />
         </div>
         <div v-else>
-          {{ answer.body }}<br />
+          <PostContentParser :content="answer.body" mode="body" /><br />
           <PostToolbar
             :post="answer"
             post-type="answer"

@@ -2,11 +2,7 @@
   <div>
     <template v-for="(contentBlock, index) in contentBlocks">
       <template v-if="contentBlock.type === 'unparsed'">
-        <span :key="index">{{ contentBlock.value }} </span>
-        <!-- <span :key="index" v-html="$md.render(contentBlock.value)"></span> -->
-      </template>
-      <template v-else-if="contentBlock.type === 'bold-text'">
-        <strong :key="index">{{ contentBlock.value }} </strong>
+        <MathJaxParser :key="index" :content="contentBlock.value" />
       </template>
       <template v-else-if="contentBlock.type === 'block-code'">
         <pre :key="index"><code :class="'lang-' + contentBlock.lang">{{
@@ -37,6 +33,9 @@ export default class PostContentParser extends Vue {
   @Prop()
   content!: string
 
+  @Prop()
+  mode!: string
+
   contentBlocks: ContentBlock[] = []
 
   created() {
@@ -51,14 +50,17 @@ export default class PostContentParser extends Vue {
     let contentBlocks: ContentBlock[] = []
     contentBlocks.push({ type: 'unparsed', value: content })
 
-    contentBlocks = this.parseContentBlocks(this.parseCode, contentBlocks, [
-      'block',
-      '```',
-    ])
-    contentBlocks = this.parseContentBlocks(this.parseCode, contentBlocks, [
-      'inline',
-      '`',
-    ])
+    if (this.mode === 'body') {
+      contentBlocks = this.parseContentBlocks(this.parseCode, contentBlocks, [
+        'block',
+        '```',
+      ])
+      contentBlocks = this.parseContentBlocks(this.parseCode, contentBlocks, [
+        'inline',
+        '`',
+      ])
+    }
+
     return contentBlocks
   }
 

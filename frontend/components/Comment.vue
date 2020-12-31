@@ -9,7 +9,7 @@
       />
     </div>
     <div v-else>
-      {{ comment.body }}
+      <PostContentParser :content="comment.body" mode="body" />
       <PostToolbar
         :post="comment"
         post-type="comment"
