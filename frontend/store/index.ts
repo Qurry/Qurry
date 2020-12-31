@@ -46,6 +46,7 @@ export const actions: ActionTree<RootState, RootState> = {
           ...tag,
           color: tagCategory.color,
           tagCategoryId: tagCategory.id,
+          tagCategoryName: tagCategory.name,
         }
       }
     }

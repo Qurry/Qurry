@@ -4,6 +4,7 @@ export interface Tag {
   description?: string
   color: string
   tagCategoryId: string
+  tagCategoryName?: string
 }
 
 export interface TagCategory {
