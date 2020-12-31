@@ -140,8 +140,6 @@ class QuestionView(AbstractView):
         except:
             return JsonResponse({'errors': ['get arguments are invalid']}, status=400)
 
-        # print(search_words, kwargs['search']) throws error if no search parameter
-
         questions = Question.objects.all()
 
         search_result = Question.objects.none()

@@ -1,5 +1,8 @@
 from django.contrib import admin
 from .models import Image, Document
 
-admin.site.register(Image)
-admin.site.register(Document)
+class FileAdmin(admin.ModelAdmin):
+    list_display = ('uuid', 'src', 'description',)
+
+admin.site.register(Image, FileAdmin)
+admin.site.register(Document, FileAdmin)
