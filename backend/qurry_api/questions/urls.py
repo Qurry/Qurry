@@ -1,5 +1,4 @@
-from django.urls import path, include
-from django.http import JsonResponse
+from django.urls import path
 
 from .views import QuestionView, TagView, AnswerView, CommentView
 
