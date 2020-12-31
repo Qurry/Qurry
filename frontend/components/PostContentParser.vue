@@ -1,7 +1,7 @@
 <template>
   <div>
     <template v-for="(contentBlock, index) in contentBlocks">
-      <template v-if="contentBlock.type === 'text'">
+      <template v-if="contentBlock.type === 'unparsed'">
         <span :key="index">{{ contentBlock.value }} </span>
         <!-- <span :key="index" v-html="$md.render(contentBlock.value)"></span> -->
       </template>
@@ -51,19 +51,26 @@ export default class PostContentParser extends Vue {
     let contentBlocks: ContentBlock[] = []
     contentBlocks.push({ type: 'unparsed', value: content })
 
-    contentBlocks = this.parseContentBlocks(contentBlocks, this.parseBlockCode)
-    contentBlocks = this.parseContentBlocks(contentBlocks, this.parseInlineCode)
+    contentBlocks = this.parseContentBlocks(this.parseCode, contentBlocks, [
+      'block',
+      '```',
+    ])
+    contentBlocks = this.parseContentBlocks(this.parseCode, contentBlocks, [
+      'inline',
+      '`',
+    ])
     return contentBlocks
   }
 
   parseContentBlocks(
+    parseFunction: (contentBlock: ContentBlock, ...args: any) => ContentBlock[],
     contentBlocks: ContentBlock[],
-    parseFunction: (contentBlock: ContentBlock) => ContentBlock[]
+    args: any[]
   ) {
     const newContentBlocks: ContentBlock[] = []
     for (let i = 0; i < contentBlocks.length; i++) {
       if (contentBlocks[i].type === 'unparsed') {
-        const parsedContentBlocks = parseFunction(contentBlocks[i])
+        const parsedContentBlocks = parseFunction(contentBlocks[i], ...args)
         newContentBlocks.push(...parsedContentBlocks)
       } else {
         newContentBlocks.push(contentBlocks[i])
@@ -72,9 +79,16 @@ export default class PostContentParser extends Vue {
     return newContentBlocks
   }
 
-  parseBlockCode(contentBlock: ContentBlock) {
+  parseCode(
+    contentBlock: ContentBlock,
+    mode: 'inline' | 'block',
+    delimiter: string
+  ) {
     const contentBlocks: ContentBlock[] = []
-    const blockCodeRegex = /<[a-z]+>```(?:[^`]|(?:(?<=\\)`))+```/g
+    const blockCodeRegex = new RegExp(
+      '<[a-z]+>' + delimiter + '(?:[^`]|(?:(?<=\\\\)`))+(?<!\\\\)' + delimiter,
+      'g'
+    )
     const otherContentSegments = contentBlock.value.split(blockCodeRegex)
     const blockCodeSegments = contentBlock.value.match(blockCodeRegex)
     contentBlocks.push({
@@ -85,42 +99,14 @@ export default class PostContentParser extends Vue {
       for (let i = 0; i < blockCodeSegments.length; i++) {
         const lang = blockCodeSegments[i].match(/<[a-z]+>/)![0].slice(1, -1)
         contentBlocks.push({
-          type: 'block-code',
+          type: mode + '-code',
           lang,
           value: blockCodeSegments[i]
-            .slice(lang.length + 5, -3)
+            .slice(lang.length + 2 + delimiter.length, -1 * delimiter.length)
             .replace('\\`', '`'),
         })
         contentBlocks.push({
           type: 'unparsed',
-          value: otherContentSegments[i + 1],
-        })
-      }
-    }
-    return contentBlocks
-  }
-
-  parseInlineCode(contentBlock: ContentBlock) {
-    const contentBlocks: ContentBlock[] = []
-    const inlineCodeRegex = /<[a-z]+>`(?:[^`]|(?:(?<=\\)`))+(?<!\\)`/g
-    const otherContentSegments = contentBlock.value.split(inlineCodeRegex)
-    const inlineCodeSegments = contentBlock.value.match(inlineCodeRegex)
-    contentBlocks.push({
-      type: 'text',
-      value: otherContentSegments[0],
-    })
-    if (inlineCodeSegments) {
-      for (let i = 0; i < inlineCodeSegments.length; i++) {
-        const lang = inlineCodeSegments[i].match(/<[a-z]+>/)![0].slice(1, -1)
-        contentBlocks.push({
-          type: 'inline-code',
-          lang,
-          value: inlineCodeSegments[i]
-            .slice(lang.length + 3, -1)
-            .replace('\\`', '`'),
-        })
-        contentBlocks.push({
-          type: 'text',
           value: otherContentSegments[i + 1],
         })
       }
