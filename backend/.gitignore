@@ -4,3 +4,4 @@ qurry-db
 migrations/
 __pycache__/
 uploads/
+env.sh
