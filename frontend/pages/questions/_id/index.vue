@@ -22,9 +22,9 @@
         />
         <div class="question-body-container">
           <h1 class="mb-3 question-title">
-            <MathJax :data="question.title" />
+            <PostContentParser :content="question.title" mode="title" />
           </h1>
-          <p><MathJax :data="question.body" /></p>
+          <PostContentParser :content="question.body" mode="body" />
 
           <div>
             <TagsList :tag-ids="question.tagIds" />

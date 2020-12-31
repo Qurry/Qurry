@@ -27,7 +27,7 @@ export default {
   css: [],
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
-  plugins: ['~plugins/filters.ts'],
+  plugins: [{ src: '~/plugins/prism', mode: 'client' }, '~plugins/filters.ts'],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
   components: true,
@@ -52,26 +52,15 @@ export default {
             propertyName: 'access',
           },
           logout: false,
-          user: false
+          user: false,
         },
       },
     },
   },
 
-  // auth: {
-  //   strategies: {
-  //     local: {
-  //       cookie: {
-  //         // (optional) If set we check this cookie exsistence for loggedIn check
-  //         name: 'sessionid',
-  //       },
-  //     },
-  //   },
-  // },
-
-  // router: {
-  //   middleware: ['auth'],
-  // },
+  router: {
+    middleware: ['auth'],
+  },
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
   axios: {
@@ -107,5 +96,18 @@ export default {
   },
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
-  build: {},
+  build: {
+    // * You can extend webpack config here
+    vendor: ['axios', 'prismjs'],
+
+    extend(config, ctx) {
+      if (ctx.isServer) {
+        config.externals = [
+          nodeExternals({
+            whitelist: [/^vuetify/],
+          }),
+        ]
+      }
+    },
+  },
 }

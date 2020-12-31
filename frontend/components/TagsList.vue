@@ -1,8 +1,19 @@
 <template>
   <div class="tags">
-    <v-chip v-for="tagId in tagIds" :key="tagId" class="chip">
-      {{ getTagName(tagId) }}
-    </v-chip>
+    <v-tooltip v-for="tag in selectedTags" :key="tag.id" bottom>
+      <template v-slot:activator="{ on, attrs }">
+        <v-chip
+          v-bind="attrs"
+          class="chip"
+          :color="tag.color"
+          v-on="on"
+          @click="onClick"
+        >
+          {{ tag.name }}
+        </v-chip>
+      </template>
+      <span>{{ tag.tagCategoryName }}: {{ tag.description }}</span>
+    </v-tooltip>
   </div>
 </template>
 
@@ -15,15 +26,17 @@ export default class TagsList extends Vue {
   @Prop()
   tagIds!: string[]
 
-  tags: Tag[] = this.$store.state.tags
+  tags: { [key: string]: Tag } = this.$store.state.tags
+  selectedTags: Tag[] = []
 
-  getTagName(tagId: string): string {
-    for (const tag of this.tags) {
-      if (tag.id === tagId) {
-        return tag.name
-      }
+  created() {
+    for (const tagId of this.tagIds) {
+      this.selectedTags.push(this.tags[tagId])
     }
-    return ''
+  }
+
+  onClick() {
+    this.$router.push('/tags')
   }
 }
 </script>
@@ -36,5 +49,8 @@ export default class TagsList extends Vue {
 .chip {
   margin-right: 3px;
   height: 25px;
+}
+.chip:hover {
+  cursor: pointer;
 }
 </style>
