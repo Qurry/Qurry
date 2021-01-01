@@ -1,12 +1,11 @@
 import json
-
-from django.http import JsonResponse
 from django.core.exceptions import ValidationError, PermissionDenied, RequestAborted
-
-from .models import Question, Answer, Comment, Tag, TagCategory
+from django.http import JsonResponse
 from media.models import Document, Image
 from qurry_api.base_views import AthenticatedView
 from qurry_api.decorators import login_required, ownership_required, object_existence_required
+
+from .models import Question, Answer, Comment, Tag, TagCategory
 
 
 def json_from(post_body):
@@ -14,10 +13,10 @@ def json_from(post_body):
     return json.loads(body_unicode or '{}')
 
 
-def objects_from(obj_ids, Model):
+def objects_from(obj_ids, model):
     objects = []
     for obj_id in obj_ids:
-        objects.append(Model.objects.get(id=obj_id))
+        objects.append(model.objects.get(id=obj_id))
     return objects
 
 
@@ -30,13 +29,19 @@ def extract_errors(validation_exception):
     return error_list
 
 
+def reference(files, obj):
+    for file in files:
+        file.reference_object = obj
+        file.save()
+
+
 class AbstractView(AthenticatedView):
     Model = None
 
     # different HTTP requests
-    @ login_required
-    @ object_existence_required
-    def get(self, request, *args, **kwargs): 
+    @login_required
+    @object_existence_required
+    def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
             obj = self.Model.objects.get(id=kwargs['id'])
             if 'vote' in request.GET:
@@ -46,7 +51,7 @@ class AbstractView(AthenticatedView):
 
         return self.view_list(**(request.GET.dict() | kwargs))
 
-    @ login_required
+    @login_required
     def post(self, request, *args, **kwargs):
         try:
             id = self.create(json_from(request.body))
@@ -56,11 +61,13 @@ class AbstractView(AthenticatedView):
         except Exception as exc:
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
-    @ login_required
-    @ object_existence_required
+    @login_required
+    @object_existence_required
     def patch(self, request, *args, **kwargs):
-        if not 'id' in kwargs:
-            return JsonResponse({'errors': ['you can not patch to %ss, you have to add id to the url' % self.Model.__name__]}, status=405)
+        if 'id' not in kwargs:
+            return JsonResponse(
+                {'errors': ['you can not patch to %ss, you have to add id to the url' % self.Model.__name__]},
+                status=405)
         obj = self.Model.objects.get(id=kwargs['id'])
         try:
             self.change(obj, json_from(request.body))
@@ -72,11 +79,13 @@ class AbstractView(AthenticatedView):
         except Exception as exc:
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
-    @ login_required
-    @ object_existence_required
+    @login_required
+    @object_existence_required
     def delete(self, request, *args, **kwargs):
-        if not 'id' in kwargs:
-            return JsonResponse({'errors': ['you can not delete to %ss, you have to add id to the url' % self.Model.__name__]}, status=405)
+        if 'id' not in kwargs:
+            return JsonResponse(
+                {'errors': ['you can not delete to %ss, you have to add id to the url' % self.Model.__name__]},
+                status=405)
         obj = self.Model.objects.get(id=kwargs['id'])
         try:
             self.remove(obj)
@@ -96,7 +105,7 @@ class AbstractView(AthenticatedView):
     def change(self, obj, body):
         pass
 
-    @ ownership_required
+    @ownership_required
     def remove(self, obj):
         obj.delete()
 
@@ -119,14 +128,8 @@ class AbstractView(AthenticatedView):
 
         return JsonResponse({'%sId' % self.Model.__name__.lower(): str(obj.id)})
 
-    def reference(self ,files, obj):
-        for file in files:
-                file.reference_object = obj
-                file.save()
-
 
 class QuestionView(AbstractView):
-
     Model = Question
 
     def view_list(self, **kwargs):  # in preview format
@@ -156,20 +159,21 @@ class QuestionView(AbstractView):
 
             questions = search_result
 
-        return JsonResponse(list(question.as_preview(self.user) for question in questions[offset: offset + limit]), safe=False)
+        return JsonResponse(list(question.as_preview(self.user) for question in questions[offset: offset + limit]),
+                            safe=False)
 
     def view_detailed(self, question):
         return JsonResponse(question.as_detailed(self.user))
 
     def create(self, body):
-        tagIds = list(int(id) for id in body['tagIds'])
-        tags = objects_from(tagIds, Tag)
+        tag_ids = list(int(tag_id) for tag_id in body['tagIds'])
+        tags = objects_from(tag_ids, Tag)
 
-        imageIds = body['imageIds']
-        images = objects_from(imageIds, Image)
+        image_ids = body['imageIds']
+        images = objects_from(image_ids, Image)
 
-        documentIds = body['documentIds']
-        documents = objects_from(documentIds, Document)
+        document_ids = body['documentIds']
+        documents = objects_from(document_ids, Document)
 
         creation_data = {'title': body['title'],
                          'body': body['body'], 'user': self.user}
@@ -179,12 +183,12 @@ class QuestionView(AbstractView):
         new_question.save()
 
         new_question.tags.set(tags)
-        self.reference(images, new_question)
-        self.reference(documents, new_question)
+        reference(images, new_question)
+        reference(documents, new_question)
 
         return new_question.id
 
-    @ ownership_required
+    @ownership_required
     def change(self, question, body):
 
         if 'title' in body:
@@ -196,30 +200,30 @@ class QuestionView(AbstractView):
         question.save()
 
         if 'tagIds' in body:
-            tagIds = list(int(id) for id in body['tagIds'])
-            tags = objects_from(tagIds, Tag)
+            tag_ids = list(int(tag_id) for tag_id in body['tagIds'])
+            tags = objects_from(tag_ids, Tag)
             question.tags.set(tags)
-        
-        if 'imageIds' in body:
-            imageIds = body['imageIds']
-            images = objects_from(imageIds, Image)
-            self.reference(images, question)
-            
-        if 'documentIds' in body:
-            documentIds = body['documentIds']
-            documents = objects_from(documentIds, Document)
-            self.reference(documents, question)
 
+        if 'imageIds' in body:
+            image_ids = body['imageIds']
+            images = objects_from(image_ids, Image)
+            reference(images, question)
+
+        if 'documentIds' in body:
+            document_ids = body['documentIds']
+            documents = objects_from(document_ids, Document)
+            reference(documents, question)
 
     def handle(self, bad_request_exception):
         # fields are not valid
         message_dict = {
             # one argument is not given
-            KeyError: 'request must contain title, body and tagIds, even it is blank.',
+            KeyError: 'request must contain title, body, tagIds, imageIds and documentIds, even if they are blank.',
             # tagIds is not a list
-            TypeError: 'tagIds should be a list of strings.',
+            TypeError: 'tagIds, imageIds and documentIds should be a list of strings.',
         }
         return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
+
 
 class AnswerView(AbstractView):
     Model = Answer
@@ -235,7 +239,8 @@ class AnswerView(AbstractView):
 
     def view_list(self, **kwargs):  # in preview format
         if self.question:
-            return JsonResponse(list(answer.as_preview(self.user) for answer in self.question.answer_set.all()), safe=False)
+            return JsonResponse(list(answer.as_preview(self.user) for answer in self.question.answer_set.all()),
+                                safe=False)
         return JsonResponse(list(answer.as_preview(self.user) for answer in Answer.objects.all()), safe=False)
 
     def view_detailed(self, answer):
@@ -247,11 +252,11 @@ class AnswerView(AbstractView):
             raise RequestAborted(
                 'you can create an answer with questions/<id>/answers/')
 
-        imageIds = body['imageIds']
-        images = objects_from(imageIds, Image)
+        image_ids = body['imageIds']
+        images = objects_from(image_ids, Image)
 
-        documentIds = body['documentIds']
-        documents = objects_from(documentIds, Document)
+        document_ids = body['documentIds']
+        documents = objects_from(document_ids, Document)
 
         creation_data = {
             'body': body['body'], 'user': self.user, 'question': self.question}
@@ -260,8 +265,8 @@ class AnswerView(AbstractView):
         new_answer.full_clean()
         new_answer.save()
 
-        self.reference(images, new_answer)
-        self.reference(documents, new_answer)
+        reference(images, new_answer)
+        reference(documents, new_answer)
 
         return new_answer.id
 
@@ -275,13 +280,14 @@ class AnswerView(AbstractView):
         answer.save()
 
     def handle(self, bad_request_exception):
-        # fields are not vali
+        # fields are not valid
 
         message_dict = {
             # one argument is not given
             KeyError: 'request must contain body',
         }
         return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
+
 
 class CommentView(AbstractView):
     Model = Comment
@@ -323,7 +329,7 @@ class CommentView(AbstractView):
 
         return new_comment.id
 
-    @ ownership_required
+    @ownership_required
     def change(self, comment, body):
 
         if 'body' in body:
@@ -336,7 +342,7 @@ class CommentView(AbstractView):
         return JsonResponse({'error': ['you can not vote comments now']}, status=405)
 
     def handle(self, bad_request_exception):
-        # fields are not vali
+        # fields are not valid
 
         message_dict = {
             # one argument is not given

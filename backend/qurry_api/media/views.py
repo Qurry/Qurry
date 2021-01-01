@@ -13,17 +13,17 @@ class FileView(AthenticatedView):
     #         file = self.Model.objects.get(id=kwargs['id'])
     #         return response(file)
     #     else:
-    #         return JsonResponse({'errors': ['you can either add a new file or get a spesific file']}, status=405)
+    #         return JsonResponse({'errors': ['you can either add a new file or get a specific file']}, status=405)
 
-    @ login_required
+    @login_required
     def post(self, request, *args, **kwargs):
         file = request.FILES['file']
         try:
-            id = self.create(file)
+            file_id = self.create(file)
         except Exception as exc:
             return JsonResponse({'errors': [str(exc)]}, status=400)
 
-        return JsonResponse({'%sId' % (self.Model.__name__.lower()): id})
+        return JsonResponse({'%sId' % (self.Model.__name__.lower()): file_id})
 
     def create(self, file):
         file_object = self.Model(src=file, user=self.user)

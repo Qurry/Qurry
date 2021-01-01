@@ -1,31 +1,30 @@
 import secrets
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
-
-from django.http import JsonResponse, HttpResponse
-from django.views import View
-from django.template.loader import render_to_string
 from django.core.mail import send_mail
+from django.http import JsonResponse, HttpResponse
+from django.template.loader import render_to_string
+from django.utils import timezone
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils import timezone
-from django.contrib.sites.shortcuts import get_current_site
-
-from qurry_api import settings
-from .models import User, Token, Profile
-from .forms import UserCreationForm
-from qurry_api.decorators import login_required
-from qurry_api.base_views import AthenticatedView
 from questions.views import json_from, extract_errors
+from qurry_api import settings
+from qurry_api.base_views import AthenticatedView
+from qurry_api.decorators import login_required
+
+from .forms import UserCreationForm
+from .models import User, Token
 
 
 def active_user_exists(function):
     def does_active_exist(self, *args, **kwargs):
         if 'id' in kwargs:
             try:
-                user = User.objects.get(id=kwargs['id'], is_active=True)
+                User.objects.get(id=kwargs['id'], is_active=True)
             except Exception as err:
                 return JsonResponse({'errors': [str(err)]}, status=404)
         return function(self, *args, **kwargs)
+
     return does_active_exist
 
 
@@ -76,9 +75,9 @@ def register(request):
     return JsonResponse({'message': 'request is not post'}, status=400)
 
 
-def activate(request, uidb64, token):
+def activate(request, uidb, token):
     try:
-        uid = force_text(urlsafe_base64_decode(uidb64))
+        uid = force_text(urlsafe_base64_decode(uidb))
         user = User.objects.get(pk=uid)
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
@@ -89,7 +88,8 @@ def activate(request, uidb64, token):
         # create profile for user
         user.get_default_profile()
 
-        return HttpResponse('Thank you for your email confirmation. Now you can <a href="localhost:3000/login">login</a> your account.')
+        return HttpResponse(
+            'Thank you for your email confirmation. Now you can <a href="localhost:3000/login">login</a> your account.')
     else:
         return HttpResponse('Activation link is invalid!')
 
@@ -98,9 +98,9 @@ class UserView(AthenticatedView):
     Model = User
     mode = None
 
-    @ login_required
-    @ active_user_exists
-    def get(self, request, *args, **kwargs):
+    @login_required
+    @active_user_exists
+    def get(self, *_, **kwargs):
         if self.mode == 'profile':
             return self.profile()
 
@@ -110,8 +110,8 @@ class UserView(AthenticatedView):
 
         return JsonResponse(list(user.as_detailed() for user in User.objects.all_active()), safe=False)
 
-    @ login_required
-    def patch(self, request, *args, **kwargs):
+    @login_required
+    def patch(self, *_, **__):
         if self.mode != 'profile':
             return JsonResponse({'errors': ['if you need to edit your profile, PATCH to profile/']}, status=405)
         try:

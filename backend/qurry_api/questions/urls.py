@@ -2,7 +2,6 @@ from django.urls import path
 
 from .views import QuestionView, TagView, AnswerView, CommentView
 
-
 urlpatterns = [
     path('questions/', QuestionView.as_view(), name='view-questions'),
     path('questions/<int:id>/', QuestionView.as_view(),

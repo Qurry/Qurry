@@ -1,5 +1,6 @@
 from rest_framework import permissions
 
+
 class IsOwner(permissions.DjangoObjectPermissions):
     # for view permission
     def has_permission(self, request, view):

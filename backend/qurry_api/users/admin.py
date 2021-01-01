@@ -18,7 +18,7 @@ class UserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
         ('Permissions', {
-         'fields': ('is_superuser', 'is_active', 'user_permissions')}),
+            'fields': ('is_superuser', 'is_active', 'user_permissions')}),
     )
     add_fieldsets = (
         (None, {
@@ -28,7 +28,7 @@ class UserAdmin(UserAdmin):
     )
     search_fields = ('email', 'username')
     ordering = ('email',)
-    inlines = (ProfileInline, )
+    inlines = (ProfileInline,)
 
 
 admin.site.register(User, UserAdmin)

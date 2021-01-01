@@ -1,16 +1,14 @@
 import uuid
-
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, Permission, _user_get_permissions
-from django.utils.translation import gettext_lazy as _
+from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from media.models import Image
 
 from .managers import UserManager
-from media.models import Image
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     email = models.EmailField('email address', unique=True)
@@ -61,7 +59,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Profile(models.Model):
-
     user = models.OneToOneField(User, verbose_name='Profile',
                                 on_delete=models.CASCADE)
 
@@ -79,7 +76,6 @@ class Profile(models.Model):
 
 
 class Token(models.Model):
-
     user = models.OneToOneField(User, verbose_name='user',
                                 on_delete=models.CASCADE)
     token = models.TextField('token')

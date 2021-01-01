@@ -1,7 +1,7 @@
-from django.db import models
-from django.utils import timezone
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
+from django.utils import timezone
 
 
 class Post(models.Model):
@@ -64,7 +64,6 @@ class TagCategory(models.Model):
 
 
 class Tag(models.Model):
-
     name = models.CharField('Name', max_length=20)
     description = models.TextField('Description', default='')
 
@@ -86,7 +85,6 @@ class Tag(models.Model):
 
 
 class Question(Post):
-
     title = models.CharField('Title', max_length=200)
     tags = models.ManyToManyField(Tag, verbose_name='Tags', blank=True)
 
