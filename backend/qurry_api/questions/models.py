@@ -26,7 +26,7 @@ class Post(models.Model):
 class Comment(Post):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
+    reference_object = GenericForeignKey('content_type', 'object_id')
 
     def __str__(self):
         return 'comment from %s' % self.user

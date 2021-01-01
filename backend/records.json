@@ -320,10 +320,32 @@
 },
 {
     "model": "media.image",
-    "pk": 1,
+    "pk": "00000000-0000-0000-0000-000000000001",
     "fields": {
-        "src": "images/72805148_NDnWpWU.png",
-        "description": ""
+        "description": "",
+        "uploaded_at": "2021-01-01T10:51:04.237Z",
+        "user": null,
+        "src": "images/72805148_NDnWpWU.png"
+    }
+},
+{
+    "model": "media.image",
+    "pk": "da4dcf13-af2e-4d44-ae1e-e20853c8d18a",
+    "fields": {
+        "description": null,
+        "uploaded_at": "2021-01-01T10:28:57.604Z",
+        "user": null,
+        "src": "images/IMG_20201001_093757.jpg"
+    }
+},
+{
+    "model": "media.image",
+    "pk": "e76d3921-4a1f-406e-ba67-384b0b9820e0",
+    "fields": {
+        "description": null,
+        "uploaded_at": "2021-01-01T10:25:19.271Z",
+        "user": null,
+        "src": "images/IMG_20201001_093757.jpg"
     }
 },
 {
@@ -405,7 +427,7 @@
     "fields": {
         "user": "680d0bb2-523f-4222-8fac-0d339bbb2804",
         "score": 123,
-        "image": 1
+        "image": "00000000-0000-0000-0000-000000000001"
     }
 },
 {
