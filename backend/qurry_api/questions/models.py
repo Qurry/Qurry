@@ -69,7 +69,7 @@ class Tag(models.Model):
     description = models.TextField('Description', default='')
 
     def default_category():
-        return TagCategory.objects.get_or_create(name='-')[0].id
+        return TagCategory.objects.get_or_create(name='other')[0].id
 
     category = models.ForeignKey(
         TagCategory, verbose_name='Category', default=default_category, on_delete=models.SET_DEFAULT)
