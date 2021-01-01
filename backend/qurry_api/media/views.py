@@ -1,10 +1,10 @@
 from django.http.response import JsonResponse
 
-from qurry_api.base_views import AthenticatedView
+from qurry_api.base_views import AuthenticatedView
 from qurry_api.decorators import login_required, object_existence_required
 
 
-class FileView(AthenticatedView):
+class FileView(AuthenticatedView):
     Model = None
 
     # @ object_existence_required

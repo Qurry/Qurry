@@ -2,7 +2,7 @@ import json
 from django.core.exceptions import ValidationError, PermissionDenied, RequestAborted
 from django.http import JsonResponse
 from media.models import Document, Image
-from qurry_api.base_views import AthenticatedView
+from qurry_api.base_views import AuthenticatedView
 from qurry_api.decorators import login_required, ownership_required, object_existence_required
 
 from .models import Question, Answer, Comment, Tag, TagCategory
@@ -35,7 +35,7 @@ def reference(files, obj):
         file.save()
 
 
-class AbstractView(AthenticatedView):
+class AbstractView(AuthenticatedView):
     Model = None
 
     # different HTTP requests
@@ -351,7 +351,7 @@ class CommentView(AbstractView):
         return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
 
 
-class TagView(AthenticatedView):
+class TagView(AuthenticatedView):
 
     @login_required
     def get(self, request, *args, **kwargs):

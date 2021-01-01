@@ -9,7 +9,7 @@ from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from questions.views import json_from, extract_errors
 from qurry_api import settings
-from qurry_api.base_views import AthenticatedView
+from qurry_api.base_views import AuthenticatedView
 from qurry_api.decorators import login_required
 
 from .forms import UserCreationForm
@@ -94,7 +94,7 @@ def activate(request, uidb, token):
         return HttpResponse('Activation link is invalid!')
 
 
-class UserView(AthenticatedView):
+class UserView(AuthenticatedView):
     Model = User
     mode = None
 
