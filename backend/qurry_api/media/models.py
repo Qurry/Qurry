@@ -6,7 +6,7 @@ from django.utils import timezone
 from .validators import validate_image_size, validate_document_size
 
 class File(models.Model):
-    uuid = models.UUIDField('UUID',
+    id = models.UUIDField('UUID',
         primary_key=True, default=uuid.uuid4, editable=False,
     )
 
