@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.core.exceptions import ValidationError, PermissionDenied, RequestAborted
 
 from .models import Question, Answer, Comment, Tag, TagCategory
+from media.models import Document, Image
 from qurry_api.base_views import AthenticatedView
 from qurry_api.decorators import login_required, ownership_required, object_existence_required
 
@@ -13,11 +14,11 @@ def json_from(post_body):
     return json.loads(body_unicode or '{}')
 
 
-def tags_from(tag_ids):
-    tags = []
-    for tag_id in tag_ids:
-        tags.append(Tag.objects.get(id=int(tag_id)))
-    return tags
+def objects_from(obj_ids, Model):
+    objects = []
+    for obj_id in obj_ids:
+        objects.append(Model.objects.get(id=obj_id))
+    return objects
 
 
 def extract_errors(validation_exception):
@@ -118,6 +119,11 @@ class AbstractView(AthenticatedView):
 
         return JsonResponse({'%sId' % self.Model.__name__.lower(): str(obj.id)})
 
+    def reference(self ,files, obj):
+        for file in files:
+                file.reference_object = obj
+                file.save()
+
 
 class QuestionView(AbstractView):
 
@@ -156,8 +162,14 @@ class QuestionView(AbstractView):
         return JsonResponse(question.as_detailed(self.user))
 
     def create(self, body):
-        tagIds = body['tagIds']
-        tags = tags_from(tagIds)
+        tagIds = list(int(id) for id in body['tagIds'])
+        tags = objects_from(tagIds, Tag)
+
+        imageIds = body['imageIds']
+        images = objects_from(imageIds, Image)
+
+        documentIds = body['documentIds']
+        documents = objects_from(documentIds, Document)
 
         creation_data = {'title': body['title'],
                          'body': body['body'], 'user': self.user}
@@ -165,7 +177,10 @@ class QuestionView(AbstractView):
         new_question = Question(**creation_data)
         new_question.full_clean()
         new_question.save()
+
         new_question.tags.set(tags)
+        self.reference(images, new_question)
+        self.reference(documents, new_question)
 
         return new_question.id
 
@@ -181,9 +196,20 @@ class QuestionView(AbstractView):
         question.save()
 
         if 'tagIds' in body:
-            tagIds = body['tagIds']
-            tags = tags_from(tagIds)
+            tagIds = list(int(id) for id in body['tagIds'])
+            tags = objects_from(tagIds, Tag)
             question.tags.set(tags)
+        
+        if 'imageIds' in body:
+            imageIds = body['imageIds']
+            images = objects_from(imageIds, Image)
+            self.reference(images, question)
+            
+        if 'documentIds' in body:
+            documentIds = body['documentIds']
+            documents = objects_from(documentIds, Document)
+            self.reference(documents, question)
+
 
     def handle(self, bad_request_exception):
         # fields are not valid
@@ -194,7 +220,6 @@ class QuestionView(AbstractView):
             TypeError: 'tagIds should be a list of strings.',
         }
         return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
-
 
 class AnswerView(AbstractView):
     Model = Answer
@@ -222,12 +247,21 @@ class AnswerView(AbstractView):
             raise RequestAborted(
                 'you can create an answer with questions/<id>/answers/')
 
+        imageIds = body['imageIds']
+        images = objects_from(imageIds, Image)
+
+        documentIds = body['documentIds']
+        documents = objects_from(documentIds, Document)
+
         creation_data = {
             'body': body['body'], 'user': self.user, 'question': self.question}
 
         new_answer = Answer(**creation_data)
         new_answer.full_clean()
         new_answer.save()
+
+        self.reference(images, new_answer)
+        self.reference(documents, new_answer)
 
         return new_answer.id
 
@@ -248,7 +282,6 @@ class AnswerView(AbstractView):
             KeyError: 'request must contain body',
         }
         return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
-
 
 class CommentView(AbstractView):
     Model = Comment
@@ -282,7 +315,7 @@ class CommentView(AbstractView):
                 'you can create a comment with questions/<id>/comments/ or answers/<id>/comments')
 
         creation_data = {
-            'body': body['body'], 'user': self.user, 'content_object': self.reference}
+            'body': body['body'], 'user': self.user, 'reference_object': self.reference}
 
         new_comment = Comment(**creation_data)
         new_comment.full_clean()
