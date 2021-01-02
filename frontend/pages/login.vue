@@ -70,9 +70,10 @@ export default class Register extends Vue {
       .loginWith('local', {
         data: { email: this.email, password: this.password },
       })
-      .then((_res: any) => {
-        this.$nuxt.$emit('reload')
-        this.$router.push('/questions')
+      .then((res: any) => {
+        // this.$nuxt.$emit('reload')
+        // this.$router.push('/questions')
+        console.log(res)
       })
       .catch((error) => {
         console.log(error.response.data.detail)

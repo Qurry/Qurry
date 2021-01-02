@@ -9,7 +9,7 @@ urlpatterns = [
     path('api/', include('questions.urls')),
     path('api/', include('users.urls')),
     path('api/media/', include('media.urls')),
-    path('api/token/generate', TokenObtainPairView.as_view(), name='generate-token'),
+    # path('api/token/generate/', TokenObtainPairView.as_view(), name='generate-token'),
     # path('api/token/refresh', TokenRefreshView.as_view(), name='refresh-token'),
     # path('api/token/discard', TokenRefreshView.as_view(), name='discard-token'),
 ]
