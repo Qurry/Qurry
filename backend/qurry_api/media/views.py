@@ -7,13 +7,14 @@ from qurry_api.decorators import login_required, object_existence_required
 class FileView(AuthenticatedView):
     Model = None
 
-    # @ object_existence_required
-    # def get(self, request, *args, **kwargs):
-    #     if 'id' in kwargs:
-    #         file = self.Model.objects.get(id=kwargs['id'])
-    #         return response(file)
-    #     else:
-    #         return JsonResponse({'errors': ['you can either add a new file or get a specific file']}, status=405)
+    @login_required
+    @object_existence_required
+    def get(self, request, *args, **kwargs):
+        if 'id' in kwargs:
+            file = self.Model.objects.get(id=kwargs['id'])
+            return self.response_with(file)
+        else:
+            return JsonResponse({'errors': ['you can either add a new file or get a specific file']}, status=405)
 
     @login_required
     def post(self, request, *args, **kwargs):
@@ -31,3 +32,6 @@ class FileView(AuthenticatedView):
         file_object.save()
 
         return file_object.id
+
+    def response_with(self, file):
+        return JsonResponse({'data': file.src.read().hex()})
