@@ -46,6 +46,8 @@
       </template>
     </v-autocomplete>
 
+    <FileUpload :image-ids="question.imageIds" />
+
     <v-btn
       color="secondary"
       :disabled="!isFormValid"

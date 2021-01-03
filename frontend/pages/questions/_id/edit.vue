@@ -26,6 +26,8 @@ export default class QuestionCreate extends Vue {
     title: '',
     body: '',
     tagIds: [],
+    imageIds: [],
+    documentIds: [],
   }
 
   fetch() {
@@ -36,6 +38,8 @@ export default class QuestionCreate extends Vue {
             title: question.title,
             body: question.body,
             tagIds: question.tagIds,
+            imageIds: [],
+            documentIds: [],
           }
         })
         .catch((error) => console.log(error)),
