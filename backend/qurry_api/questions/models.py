@@ -1,7 +1,11 @@
+from media.models import Image
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
+
+from media.models import ImageAttach, DocumentAttach
+from django.contrib.contenttypes.fields import GenericRelation
 
 
 class Post(models.Model):
@@ -90,6 +94,9 @@ class Question(Post):
 
     comments = GenericRelation(Comment)
 
+    images = GenericRelation(ImageAttach)
+    documents = GenericRelation(DocumentAttach)
+
     vote_up_users = models.ManyToManyField(
         "users.User", verbose_name='Users who voted up this question', related_name='question_upvotes', blank=True)
     vote_down_users = models.ManyToManyField(
@@ -134,6 +141,8 @@ class Question(Post):
             'body': self.body,
             'answers': list(answer.as_detailed(user) for answer in self.answer_set.all()),
             'comments': list(comment.as_preview() for comment in self.comments.all()),
+            'imageIds': list(image.file.id for image in self.images.all()),
+            'documentIds': list(document.file.id for document in self.documents.all()),
         }
 
 
@@ -142,6 +151,9 @@ class Answer(Post):
         Question, verbose_name='Question', on_delete=models.CASCADE)
 
     comments = GenericRelation(Comment)
+
+    images = GenericRelation(ImageAttach)
+    documents = GenericRelation(DocumentAttach)
 
     vote_up_users = models.ManyToManyField(
         "users.User", verbose_name='Users who voted up this answer', related_name='answer_upvotes', blank=True)
@@ -172,5 +184,7 @@ class Answer(Post):
 
     def as_detailed(self, user):
         return self.as_preview(user) | {
-            'comments': list(comment.as_preview() for comment in self.comments.all())
+            'comments': list(comment.as_preview() for comment in self.comments.all()),
+            'imageIds': list(image.file.id for image in self.images.all()),
+            'documentIds': list(document.file.id for document in self.documents.all()),
         }
