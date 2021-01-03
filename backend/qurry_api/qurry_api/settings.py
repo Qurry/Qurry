@@ -35,8 +35,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'corsheaders',
-    'rest_framework',
-    'rest_framework_simplejwt.token_blacklist',
 
     'storages',
     'media',
@@ -56,6 +54,10 @@ MIDDLEWARE = [
 ]
 
 AUTH_USER_MODEL = 'users.User'
+AUTHENTICATION_BACKENDS = [
+    'users.backends.JWTAuthentication',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 ROOT_URLCONF = 'qurry_api.urls'
 
@@ -122,11 +124,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LOGIN_URL = '/api/login'
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=2),
-}
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -153,19 +150,6 @@ STATIC_URL = '/static/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media/uploads/')
 
 # MEDIA_URL = 'api/media/'
-
-
-# REST FRAMEWORK SETIINGS
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-    'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.BrowsableAPIRenderer',
-                                 'rest_framework.renderers.JSONRenderer'],
-    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated',
-                                   'rest_framework.permissions.DjangoModelPermissions']
-}
 
 # EMAIL SETTINGS
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

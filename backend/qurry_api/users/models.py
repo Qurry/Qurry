@@ -1,6 +1,7 @@
 import uuid
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, Permission, _user_get_permissions
 from django.db import models
+from django.db.models.fields.related import ForeignKey
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from media.models import Image
@@ -75,7 +76,17 @@ class Profile(models.Model):
         return str(self.user)
 
 
-class Token(models.Model):
+class ActivationToken(models.Model):
     user = models.OneToOneField(User, verbose_name='user',
                                 on_delete=models.CASCADE)
     token = models.TextField('token')
+
+class AccessToken(models.Model):
+    user = models.OneToOneField(User, verbose_name='user',
+                                on_delete=models.CASCADE)
+    token = models.TextField('token')
+
+    is_blocked = models.BooleanField('Is Blocked', default=False)
+
+    def block(self):
+        self.is_blocked = True

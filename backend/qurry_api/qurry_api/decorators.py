@@ -4,7 +4,7 @@ from django.http import JsonResponse
 
 def login_required(function):
     def is_authenticated(self, *args, **kwargs):
-        if False:
+        if not self.user:
             return JsonResponse({'errors': ['you have to login to access questions']}, status=401)
         return function(self, *args, **kwargs)
 

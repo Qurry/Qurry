@@ -2,6 +2,7 @@ import json
 import jwt
 import secrets
 import time
+
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
@@ -16,7 +17,7 @@ from qurry_api.base_views import AuthenticatedView
 from qurry_api.decorators import login_required
 
 from .forms import UserCreationForm
-from .models import User, Token
+from .models import User, ActivationToken
 
 
 def active_user_exists(function):
@@ -31,14 +32,14 @@ def active_user_exists(function):
     return does_active_exist
 
 
-def make_token(user):
+def activation_token_for(user):
     token = secrets.token_urlsafe(30)
-    Token(user=user, token=token).save()
+    ActivationToken(user=user, token=token).save()
     return token
 
 
 def is_valid(user, token):
-    exists = Token.objects.filter(user=user.id).filter(token=token)
+    exists = ActivationToken.objects.filter(user=user.id).filter(token=token)
     if len(exists) == 1:
         exists[0].delete()
         return True
@@ -54,7 +55,7 @@ def register(request):
             user.is_active = False
             user.save()
 
-            token = make_token(user)
+            token = activation_token_for(user)
             mail_subject = 'Activate your account.'
             current_site = get_current_site(request)
             message = render_to_string('email_template.html', {
@@ -80,7 +81,8 @@ def register(request):
 
 def login(request):
     if request.method == 'POST':
-        user = json.loads(request.body)
+        user = {'email': 'admin@hpi.de', 'password': 'admin'}
+        # user = json.loads(request.body)
         # fetch db_user from database and compare with user from request, return 4** if no match
         # hash password and compare with hash from database
         db_user = {'email': 'admin@hpi.de', 'password': 'admin', 'id': 'afdbd33c-5f31-4672-93f1-8d1cad47bbcf'}
@@ -138,7 +140,7 @@ class UserView(AuthenticatedView):
         return JsonResponse(list(user.as_detailed() for user in User.objects.all_active()), safe=False)
 
     @login_required
-    def patch(self, *_, **__):
+    def patch(self, request, *_, **__):
         if self.mode != 'profile':
             return JsonResponse({'errors': ['if you need to edit your profile, PATCH to profile/']}, status=405)
         try:
