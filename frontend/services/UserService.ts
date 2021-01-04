@@ -15,7 +15,7 @@ export default {
 
     const res = await apiClient({
       method: 'post',
-      url: '/register',
+      url: '/register/',
       data: bodyFormData,
       headers: { 'Content-Type': 'multipart/form-data' },
     })

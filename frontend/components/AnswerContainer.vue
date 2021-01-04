@@ -48,6 +48,10 @@ export default class AnswerContainer extends Vue {
       .then((res) => {
         if (res.status === 200) {
           this.$emit('update')
+          this.$store.commit(
+            'snackbar/setSnack',
+            'Successfully deleted answer with id ' + res.data.answerId + '.'
+          )
         } else {
           console.log(res)
         }
@@ -79,7 +83,6 @@ export default class AnswerContainer extends Vue {
         }
       })
       .catch((e) => console.log(e))
-    console.log('create')
   }
 }
 </script>

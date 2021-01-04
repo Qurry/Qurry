@@ -7,6 +7,7 @@
         <a href="https://hpi.de/" target="_blank">HPI</a> students with an HPI
         email address.
       </p>
+      <MessageList :messages="errors" />
       <v-form v-model="isFormValid">
         <v-container>
           <v-row>
@@ -71,6 +72,7 @@ import UserService from './../../services/UserService'
 
 @Component({ middleware: 'guest', auth: false })
 export default class Register extends Vue {
+  errors: string[] = []
   isFormValid = false
   username = ''
   email = ''
@@ -98,11 +100,20 @@ export default class Register extends Vue {
   }
 
   onSubmit() {
+    this.errors = []
     UserService.register(this.username, this.email, this.password)
       .then((res: any) => {
         console.log(res)
       })
-      .catch((error) => console.log(error))
+      .catch((error) => {
+        if (error.response.data.errors) {
+          this.errors.push(
+            ...Object.values(error.response.data.errors as string)
+          )
+        } else {
+          console.log(error)
+        }
+      })
   }
 }
 </script>

@@ -1,5 +1,7 @@
 <template>
   <v-app>
+    <MessageSnackbar />
+
     <v-app-bar app color="primary" dark>
       <v-btn to="/" text rounded>Qurry</v-btn>
       <v-spacer></v-spacer>

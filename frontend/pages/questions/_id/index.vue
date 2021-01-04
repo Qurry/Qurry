@@ -100,6 +100,10 @@ export default class QuestionDetail extends Vue {
       .then((res) => {
         if (res.status === 200) {
           this.$router.push('/questions')
+          this.$store.commit(
+            'snackbar/setSnack',
+            'Successfully deleted question with id ' + res.data.questionId + '.'
+          )
         } else {
           console.log(res)
         }

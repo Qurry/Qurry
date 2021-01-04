@@ -53,6 +53,10 @@ export default class CommentContainer extends Vue {
       .then((res) => {
         if (res.status === 200) {
           this.$emit('update')
+          this.$store.commit(
+            'snackbar/setSnack',
+            'Successfully deleted comment with id ' + res.data.commentId + '.'
+          )
         } else {
           console.log(res)
         }

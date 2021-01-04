@@ -2,11 +2,7 @@
   <v-row>
     <v-col>
       <h1>Login</h1>
-      <ul>
-        <li v-for="(error, i) of errors" :key="i">
-          {{ error }}
-        </li>
-      </ul>
+      <MessageList :messages="errors" />
       <v-form v-model="isFormValid" @submit.prevent="onSubmit">
         <v-container>
           <v-row>
@@ -75,7 +71,6 @@ export default class Register extends Vue {
         this.$router.push('/questions')
       })
       .catch((error) => {
-        console.log(error.response.data.detail)
         this.errors.push(error.response.data.detail)
       })
   }
