@@ -1,7 +1,8 @@
 import json
+
 from django.core.exceptions import ValidationError, PermissionDenied, RequestAborted
 from django.http import JsonResponse
-from media.models import Document, Image
+from media.models import Document, Image, DocumentAttach, ImageAttach
 from qurry_api.base_views import AuthenticatedView
 from qurry_api.decorators import login_required, ownership_required, object_existence_required
 
@@ -29,17 +30,21 @@ def extract_errors(validation_exception):
     return error_list
 
 
-def reference(files, obj):
-    for file in files:
-        file.reference_object = obj
-        file.save()
+def reference_images(images, obj):
+    for image in images:
+        obj.images.add(ImageAttach(file=image), bulk=False)
+
+
+def reference_documents(documents, obj):
+    for document in documents:
+        obj.documents.add(DocumentAttach(file=document), bulk=False)
 
 
 class AbstractView(AuthenticatedView):
     Model = None
 
     # different HTTP requests
-    @login_required
+    # @login_required
     @object_existence_required
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
@@ -51,14 +56,16 @@ class AbstractView(AuthenticatedView):
 
         return self.view_list(**(request.GET.dict() | kwargs))
 
-    @login_required
+    # @login_required
     def post(self, request, *args, **kwargs):
         try:
             id = self.create(json_from(request.body))
             return JsonResponse({'%sId' % self.Model.__name__.lower(): str(id)}, status=201)
         except ValidationError as exc:
+            raise exc
             return JsonResponse({'errors': extract_errors(exc)}, status=400)
         except Exception as exc:
+            raise exc
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
     @login_required
@@ -66,7 +73,8 @@ class AbstractView(AuthenticatedView):
     def patch(self, request, *args, **kwargs):
         if 'id' not in kwargs:
             return JsonResponse(
-                {'errors': ['you can not patch to %ss, you have to add id to the url' % self.Model.__name__]},
+                {'errors': [
+                    'you can not patch to %ss, you have to add id to the url' % self.Model.__name__]},
                 status=405)
         obj = self.Model.objects.get(id=kwargs['id'])
         try:
@@ -84,7 +92,8 @@ class AbstractView(AuthenticatedView):
     def delete(self, request, *args, **kwargs):
         if 'id' not in kwargs:
             return JsonResponse(
-                {'errors': ['you can not delete to %ss, you have to add id to the url' % self.Model.__name__]},
+                {'errors': [
+                    'you can not delete to %ss, you have to add id to the url' % self.Model.__name__]},
                 status=405)
         obj = self.Model.objects.get(id=kwargs['id'])
         try:
@@ -183,9 +192,8 @@ class QuestionView(AbstractView):
         new_question.save()
 
         new_question.tags.set(tags)
-        reference(images, new_question)
-        reference(documents, new_question)
-
+        reference_images(images, new_question)
+        reference_documents(documents, new_question)
         return new_question.id
 
     @ownership_required
@@ -207,12 +215,12 @@ class QuestionView(AbstractView):
         if 'imageIds' in body:
             image_ids = body['imageIds']
             images = objects_from(image_ids, Image)
-            reference(images, question)
+            reference_images(images, question)
 
         if 'documentIds' in body:
             document_ids = body['documentIds']
             documents = objects_from(document_ids, Document)
-            reference(documents, question)
+            reference_documents(documents, question)
 
     def handle(self, bad_request_exception):
         # fields are not valid
@@ -265,8 +273,8 @@ class AnswerView(AbstractView):
         new_answer.full_clean()
         new_answer.save()
 
-        reference(images, new_answer)
-        reference(documents, new_answer)
+        reference_images(images, new_answer)
+        reference_documents(documents, new_answer)
 
         return new_answer.id
 
