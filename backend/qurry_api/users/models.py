@@ -1,3 +1,4 @@
+import secrets
 import uuid
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, Permission, _user_get_permissions
 from django.db import models
@@ -79,14 +80,14 @@ class Profile(models.Model):
 class ActivationToken(models.Model):
     user = models.OneToOneField(User, verbose_name='user',
                                 on_delete=models.CASCADE)
+    token = models.TextField('token', blank=True)
+
+    def save(self, *args, **kwargs):
+        self.token = secrets.token_urlsafe(30)
+        super(AccessToken, self).save(*args, **kwargs)
+
+class BlockedAccessToken(models.Model):
     token = models.TextField('token')
 
-class AccessToken(models.Model):
-    user = models.OneToOneField(User, verbose_name='user',
-                                on_delete=models.CASCADE)
-    token = models.TextField('token')
-
-    is_blocked = models.BooleanField('Is Blocked', default=False)
-
-    def block(self):
-        self.is_blocked = True
+    def __str__(self):
+        return self.token

@@ -1,8 +1,8 @@
+from django.conf import settings
 import jwt
 
 from django.core.exceptions import PermissionDenied, RequestAborted
 from django.contrib.auth.backends import ModelBackend
-from django.http import JsonResponse
 
 from .models import User
 
@@ -12,7 +12,6 @@ class JWTAuthentication(ModelBackend):
         # 1. check whether token is valid with: jwt.decode(encoded, "secret", algorithms=["HS256"]) !!!Important: check if Hacker removed signature!!!
         # 2. check if token is in Blocklist
         # 3. Not sure but maybe get user from database
-        print('###########')
         header = self.get_header(request)
         if header is None:
             return None
@@ -67,5 +66,5 @@ class JWTAuthentication(ModelBackend):
     def validate(self, raw_token):
         # TODO
         # validate token after outstanding tokens and blacklist
-        return jwt.decode(raw_token, "secret", algorithms=["HS256"])
+        return jwt.decode(raw_token, settings.SECRET_KEY, algorithms=["HS256"])
 

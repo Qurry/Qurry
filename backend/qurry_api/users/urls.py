@@ -1,9 +1,10 @@
-from django.urls import path, include
+from django.urls import path
 
-from .views import register, activate, UserView, login
+from .views import register, activate, login, UserView
 
 urlpatterns = [
-    path('', include('django.contrib.auth.urls')),
+    
+    path('login/', login, name='login'),
     path('register/', register, name='register'),
     path('activate/<str:uidb64>/<str:token>/',
          activate, name='activate-account'),
@@ -12,7 +13,4 @@ urlpatterns = [
     path('users/<str:id>/', UserView.as_view(), name='view-user-details'),
 
     path('profile/', UserView.as_view(mode='profile'), name='view-own-profile'),
-
-    # this should be login/ but there are some conflicting build in routes I guess
-    path('token/', login, name='login'),
 ]

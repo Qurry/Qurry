@@ -1,6 +1,4 @@
-import json
 import jwt
-import secrets
 import time
 
 from django.contrib.sites.shortcuts import get_current_site
@@ -8,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
+from django.conf import settings
 from django.utils import timezone
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -17,7 +16,7 @@ from qurry_api.base_views import AuthenticatedView
 from qurry_api.decorators import login_required
 
 from .forms import UserCreationForm
-from .models import User, ActivationToken
+from .models import BlockedAccessToken, User, ActivationToken
 
 
 def active_user_exists(function):
@@ -33,12 +32,10 @@ def active_user_exists(function):
 
 
 def activation_token_for(user):
-    token = secrets.token_urlsafe(30)
-    ActivationToken(user=user, token=token).save()
-    return token
+    return ActivationToken.objects.create(user=user).token
 
 
-def is_valid(user, token):
+def is_token_valid(user, token):
     exists = ActivationToken.objects.filter(user=user.id).filter(token=token)
     if len(exists) == 1:
         exists[0].delete()
@@ -78,31 +75,32 @@ def register(request):
 
     return JsonResponse({'message': 'request is not post'}, status=400)
 
-
 def login(request):
     if request.method == 'POST':
-        user = {'email': 'admin@hpi.de', 'password': 'admin'}
-        # user = json.loads(request.body)
-        # fetch db_user from database and compare with user from request, return 4** if no match
-        # hash password and compare with hash from database
-        db_user = {'email': 'admin@hpi.de', 'password': 'admin', 'id': 'afdbd33c-5f31-4672-93f1-8d1cad47bbcf'}
+        try:
+            email = request.POST['email']
+            password = request.POST['password']
 
-        if user['email'] == db_user['email'] and user['password'] == db_user['password']:
-            jwt_validity_period = 60*60
-            encoded_jwt = (jwt.encode({
-                "token_type": "access",
-                "exp": int(time.time()) + jwt_validity_period, # expiration timestamp
-                "jti": "79bc7a6a8c10477485b7cd32c243f109", # JWT ID, unique identifier for this token, not sure if necessary
-                "user_id": db_user['id']
-            }, "secret", algorithm="HS256")).decode('ascii') # secret should be longer and stored in env
-            # regular token stored not in database, blocklisted tokens are added manually 
-            # we should talk about what to do if user logs out. Should we add token to blocklist?
-            return JsonResponse({'access': encoded_jwt}, status=200)
-        else:
-            return JsonResponse({'message': 'no user found'}, status=400)
+            user = User.objects.get(email=email)
+        except KeyError:
+            return JsonResponse({'errors': ['request must contain email and password as strings']}, status=400)  
 
-    return JsonResponse({'message': 'request is not post'}, status=400)
+        except User.DoesNotExist:
+            return JsonResponse({'errors': ['user does not exist']}, status=404)
 
+        if not user.check_password(password):
+            return JsonResponse({'errors': ['password is invalid']}, status=401)
+        
+        token = jwt.encode({
+            "token_type": "access",
+            "exp": int(time.time()) + settings.JWT_VALIDITY_PERIOD,
+            "jti": "79bc7a6a8c10477485b7cd32c243f109",
+            "user_id": str(user.id),
+        }, settings.SECRET_KEY, algorithm="HS256").decode('ascii')
+
+        return JsonResponse({'access': token})
+
+    return JsonResponse({'errors': ['only post method is allowed']}, status=405)
 
 def activate(request, uidb, token):
     try:
@@ -110,7 +108,7 @@ def activate(request, uidb, token):
         user = User.objects.get(pk=uid)
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
-    if user is not None and is_valid(user, token):
+    if user is not None and is_token_valid(user, token):
         user.is_active = True
         user.save()
 
