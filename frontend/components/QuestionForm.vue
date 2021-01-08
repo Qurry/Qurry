@@ -47,6 +47,7 @@
     </v-autocomplete>
 
     <FileUpload :image-ids="question.imageIds" />
+    {{ question.imageIds }}
 
     <v-btn
       color="secondary"

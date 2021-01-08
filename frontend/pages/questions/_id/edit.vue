@@ -34,13 +34,7 @@ export default class QuestionCreate extends Vue {
     return Promise.all([
       QuestionService.getQuestion(this.$axios, this.questionId)
         .then((question) => {
-          this.question = {
-            title: question.title,
-            body: question.body,
-            tagIds: question.tagIds,
-            imageIds: [],
-            documentIds: [],
-          }
+          this.question = question
         })
         .catch((error) => console.log(error)),
     ])
