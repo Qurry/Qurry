@@ -1,8 +1,9 @@
 import jwt
 import time
+import secrets
 
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.mail import send_mail
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
@@ -71,19 +72,19 @@ def login(request):
             password = request.POST['password']
 
             user = User.objects.get(email=email)
+            if not user.check_password(password):
+                raise PermissionDenied()
+
         except KeyError:
             return JsonResponse({'errors': ['request must contain email and password as strings']}, status=400)  
 
-        except User.DoesNotExist:
-            return JsonResponse({'errors': ['user does not exist']}, status=404)
-
-        if not user.check_password(password):
-            return JsonResponse({'errors': ['password is invalid']}, status=401)
+        except (User.DoesNotExist, PermissionDenied):
+            return JsonResponse({'errors': ['user does not exist or password is invalid']}, status=400)
         
         token = jwt.encode({
             "token_type": "access",
             "exp": int(time.time()) + settings.JWT_VALIDITY_PERIOD,
-            "jti": "79bc7a6a8c10477485b7cd32c243f109",
+            "jti": secrets.token_urlsafe(15),
             "user_id": str(user.id),
         }, settings.SECRET_KEY, algorithm="HS256").decode('ascii')
 
