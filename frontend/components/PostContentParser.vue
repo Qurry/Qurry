@@ -14,9 +14,12 @@
           content.text
         }}</code>
       </template>
-      <!-- <template v-else-if="content.type === 'url-image'">
-        <img :key="index" :src="content.text" alt="alt-image" width="200px" />
-      </template> -->
+      <template v-else-if="content.type === 'url-image'">
+        <img :key="index" :src="content.src" :alt="content.alt" />
+      </template>
+      <template v-else-if="content.type === 'uuid-image'">
+        <PostImage :key="index" :uuid="content.src" />
+      </template>
     </template>
   </div>
 </template>

@@ -50,9 +50,11 @@ export class ContentParser extends Vue {
         contents,
         this.parseInlineCodeContents
       )
+      contents = this.parseContentsWithFunction(
+        contents,
+        this.parseImageContents
+      )
     }
-
-    console.log(contents)
 
     return contents
   }
@@ -128,48 +130,36 @@ export class ContentParser extends Vue {
     } as CodeContent
   }
 
+  parseImageContents(unparsedContent: UnparsedContent) {
+    const parsedContents: (ImageContent | UnparsedContent)[] = []
+    const imageRegex = /!\[[^\]]*\]\([^)]*\)/g
+    const unparsedSegments = unparsedContent.text.split(imageRegex)
+    const imageSegments = unparsedContent.text.match(imageRegex)
+    parsedContents.push(this.parseUnparsedContent(unparsedSegments[0]))
+    if (imageSegments) {
+      for (let i = 0; i < imageSegments.length; i++) {
+        parsedContents.push(this.parseImageContent(imageSegments[i]))
+        parsedContents.push(this.parseUnparsedContent(unparsedSegments[i + 1]))
+      }
+    }
+    return parsedContents
+  }
+
+  parseImageContent(segment: string): ImageContent {
+    const uuidRegex = /[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}/
+    const altText = segment.slice(2).split(']')[0]
+    const source = segment.slice(0, -1).split('](')[1]
+    return {
+      type: uuidRegex.test(source) ? 'uuid-image' : 'url-image',
+      src: source,
+      alt: altText,
+    } as ImageContent
+  }
+
   parseUnparsedContent(segment: string): UnparsedContent {
     return {
       type: 'unparsed',
       text: segment,
     } as UnparsedContent
   }
-
-  // parseImages(contentBlock: ContentBlock): ContentBlock[] {
-  //   const contentBlocks: ContentBlock[] = []
-  //   const imageRegex = /!\[[^\]]*\]\([^)]*\)/g
-  //   const otherContentSegments = contentBlock.value.split(imageRegex)
-  //   const imageSegments = contentBlock.value.match(imageRegex)
-  //   if (otherContentSegments[0] !== '') {
-  //     contentBlocks.push({
-  //       type: 'unparsed',
-  //       value: otherContentSegments[0],
-  //     })
-  //   }
-  //   if (imageSegments) {
-  //     for (let i = 0; i < imageSegments.length; i++) {
-  //       contentBlocks.push(this.parseImageSegment(imageSegments[i]))
-  //       contentBlocks.push({
-  //         type: 'unparsed',
-  //         value: otherContentSegments[i + 1],
-  //       })
-  //     }
-  //   }
-
-  //   console.log(otherContentSegments)
-  //   console.log(imageSegments)
-  //   return contentBlocks
-  // }
-
-  // parseImageSegment(imageSegment: string): ContentBlock {
-  //   const uuidRegex = /[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}/
-  //   const altText = imageSegment.slice(2).split(']')[0]
-  //   const source = imageSegment.slice(0, -1).split('](')[1]
-  //   console.log(altText, source)
-  //   const imageBlock: ContentBlock = {
-  //     type: 'url-image',
-  //     value: source,
-  //   }
-  //   return imageBlock
-  // }
 }

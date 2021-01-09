@@ -8,9 +8,15 @@
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
 
 @Component
-export default class ImageUpload extends Vue {
+export default class PostImage extends Vue {
   @Prop()
   uuid!: string
+
+  @Prop()
+  width!: string
+
+  @Prop()
+  height!: string
 
   base64Blob = ''
   isLoading = true

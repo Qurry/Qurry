@@ -38,7 +38,7 @@
     <template v-if="imageIds.length > 0" class="mx-auto">
       <div v-for="imageId in imageIds" :key="imageId">
         <p>{{ imageId }}</p>
-        <PrettyImage :uuid="imageId" />
+        <PostImage :uuid="imageId" />
       </div>
     </template>
   </div>
