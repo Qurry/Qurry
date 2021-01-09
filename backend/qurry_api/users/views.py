@@ -10,30 +10,19 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
+
 from questions.views import json_from, extract_errors
 from qurry_api import settings
 from qurry_api.base_views import AuthenticatedView
-from qurry_api.decorators import login_required
+from qurry_api.decorators import active_user_existence_required
 
 from .forms import UserCreationForm
-from .models import BlockedAccessToken, User, ActivationToken
+from .models import User, ActivationToken
 
-
-def active_user_exists(function):
-    def does_active_exist(self, *args, **kwargs):
-        if 'id' in kwargs:
-            try:
-                User.objects.get(id=kwargs['id'], is_active=True)
-            except Exception as err:
-                return JsonResponse({'errors': [str(err)]}, status=404)
-        return function(self, *args, **kwargs)
-
-    return does_active_exist
-
-
+# aux func
 def activation_token_for(user):
     return ActivationToken.objects.create(user=user).token
-
 
 def is_token_valid(user, token):
     exists = ActivationToken.objects.filter(user=user.id).filter(token=token)
@@ -125,8 +114,7 @@ class UserView(AuthenticatedView):
     Model = User
     mode = None
 
-    @login_required
-    @active_user_exists
+    @active_user_existence_required
     def get(self, *_, **kwargs):
         if self.mode == 'profile':
             return self.profile()
@@ -137,7 +125,6 @@ class UserView(AuthenticatedView):
 
         return JsonResponse(list(user.as_detailed() for user in User.objects.all_active()), safe=False)
 
-    @login_required
     def patch(self, request, *_, **__):
         if self.mode != 'profile':
             return JsonResponse({'errors': ['if you need to edit your profile, PATCH to profile/']}, status=405)

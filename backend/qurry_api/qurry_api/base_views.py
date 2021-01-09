@@ -15,4 +15,9 @@ class AuthenticatedView(View):
             return JsonResponse({'errors': ['invalid access token or user does not exist']}, status=401)
         except Exception as exc:
             return JsonResponse({'errors': [str(exc)]}, status=400)
+
+        if not self.user:
+            return JsonResponse({'errors': ['you have to login to access questions']}, status=401)
+            
         return super().dispatch(request, request, *args, **kwargs)
+

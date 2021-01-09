@@ -84,10 +84,4 @@ class ActivationToken(models.Model):
 
     def save(self, *args, **kwargs):
         self.token = secrets.token_urlsafe(30)
-        super(AccessToken, self).save(*args, **kwargs)
-
-class BlockedAccessToken(models.Model):
-    token = models.TextField('token')
-
-    def __str__(self):
-        return self.token
+        super(ActivationToken, self).save(*args, **kwargs)

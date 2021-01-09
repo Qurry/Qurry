@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .forms import UserCreationForm, UserChangeForm
-from .models import User, ActivationToken, BlockedAccessToken, Profile
+from .models import User, ActivationToken, Profile
 
 
 class ProfileInline(admin.StackedInline):
@@ -33,5 +33,4 @@ class UserAdmin(UserAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(ActivationToken)
-admin.site.register(BlockedAccessToken)
 admin.site.register(Profile)

@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError, PermissionDenied, RequestAbo
 from django.http import JsonResponse
 from media.models import Document, Image
 from qurry_api.base_views import AuthenticatedView
-from qurry_api.decorators import login_required, ownership_required, object_existence_required
+from qurry_api.decorators import ownership_required, object_existence_required
 
 from .models import Question, Answer, Comment, Tag, TagCategory
 
@@ -39,7 +39,6 @@ class AbstractView(AuthenticatedView):
     Model = None
 
     # different HTTP requests
-    @login_required
     @object_existence_required
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
@@ -51,7 +50,6 @@ class AbstractView(AuthenticatedView):
 
         return self.view_list(**(request.GET.dict() | kwargs))
 
-    @login_required
     def post(self, request, *args, **kwargs):
         try:
             id = self.create(json_from(request.body))
@@ -61,7 +59,6 @@ class AbstractView(AuthenticatedView):
         except Exception as exc:
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
-    @login_required
     @object_existence_required
     def patch(self, request, *args, **kwargs):
         if 'id' not in kwargs:
@@ -79,7 +76,6 @@ class AbstractView(AuthenticatedView):
         except Exception as exc:
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
-    @login_required
     @object_existence_required
     def delete(self, request, *args, **kwargs):
         if 'id' not in kwargs:
@@ -353,7 +349,6 @@ class CommentView(AbstractView):
 
 class TagView(AuthenticatedView):
 
-    @login_required
     def get(self, request, *args, **kwargs):
         return self.view_list()
 
