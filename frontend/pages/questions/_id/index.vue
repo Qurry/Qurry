@@ -72,6 +72,7 @@ export default class QuestionDetail extends Vue {
     tagIds: [],
     answers: [],
     comments: [],
+    imageIds: [],
   }
 
   sortAnswers() {

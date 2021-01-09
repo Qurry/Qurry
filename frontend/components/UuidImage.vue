@@ -1,7 +1,10 @@
 <template>
-  <div>
-    <img v-if="!isLoading" :src="'data:image;base64,' + base64Blob" />
-  </div>
+  <img
+    v-if="!isLoading"
+    :src="'data:image;base64,' + base64Blob"
+    :width="width ? width : ''"
+    :height="height ? height : ''"
+  />
 </template>
 
 <script lang="ts">

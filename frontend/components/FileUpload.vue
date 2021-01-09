@@ -37,8 +37,9 @@
     </template> -->
     <template v-if="imageIds.length > 0" class="mx-auto">
       <div v-for="imageId in imageIds" :key="imageId">
-        <p>{{ imageId }}</p>
-        <UuidImage :uuid="imageId" />
+        <UuidImage :uuid="imageId" width="50px" />
+        <span>{{ imageId }}</span>
+        <DeleteDialog object-name="image" @delete="onDelete(imageId)" />
       </div>
     </template>
   </div>
@@ -61,6 +62,11 @@ export default class FileUpload extends Vue {
 
   @Prop()
   imageIds!: string[]
+
+  onDelete(imageId: string) {
+    const index = this.imageIds.indexOf(imageId)
+    if (index >= 0) this.imageIds.splice(index, 1)
+  }
 
   upload() {
     if (!this.currentFile) {

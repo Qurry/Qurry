@@ -47,7 +47,6 @@
     </v-autocomplete>
 
     <FileUpload :image-ids="question.imageIds" />
-    {{ question.imageIds }}
 
     <v-btn
       color="secondary"
@@ -67,7 +66,7 @@ import { CreateEditQuestion } from './../pages/questions/question.model'
 import { Tag } from './../pages/tags/tag.model'
 
 @Component
-export default class QuestionCreate extends Vue {
+export default class QuestionForm extends Vue {
   isFormValid = false
   tags: Tag[] = Object.values(this.$store.state.tags)
 

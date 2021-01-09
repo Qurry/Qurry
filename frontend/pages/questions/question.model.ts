@@ -10,7 +10,7 @@ export interface DetailQuestion {
   editedAt: string
   user: User
   tagIds: string[]
-  imageIds?: string[]
+  imageIds: string[]
   documentIds?: string[]
   answers: Answer[]
   comments: Comment[]
@@ -32,7 +32,7 @@ export interface PreviewQuestion {
 export interface CreateEditQuestion {
   title: string
   body: string
-  imageIds?: string[]
+  imageIds: string[]
   documentIds?: string[]
   tagIds: string[]
 }
