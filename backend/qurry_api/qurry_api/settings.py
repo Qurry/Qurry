@@ -162,8 +162,18 @@ EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PASSWORD')
 
 # STORAGE SETTINGS
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+THUMBNAIL_DEFAULT_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = 'qurry'
 AWS_S3_FILE_OVERWRITE = False
 STORAGE_FOLDER = MODE
+
+# ADMIN THUMBNAIL SETTINGS
+ADMIN_THUMBNAIL_DEFAULT_LABEL = 'Preview'
+ADMIN_THUMBNAIL_FIELD_SUFFIX = '_thumbnail'
+ADMIN_THUMBNAIL_STYLE = {
+    'display': 'block',
+    'width': '100px',
+    'height': 'auto',
+}
