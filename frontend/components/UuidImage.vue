@@ -8,7 +8,7 @@
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
 
 @Component
-export default class PostImage extends Vue {
+export default class UuidImage extends Vue {
   @Prop()
   uuid!: string
 

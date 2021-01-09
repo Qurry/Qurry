@@ -18,7 +18,7 @@
         <img :key="index" :src="content.src" :alt="content.alt" />
       </template>
       <template v-else-if="content.type === 'uuid-image'">
-        <PostImage :key="index" :uuid="content.src" />
+        <UuidImage :key="index" :uuid="content.src" />
       </template>
     </template>
   </div>
