@@ -1,3 +1,4 @@
+import json
 import jwt
 import time
 import secrets
@@ -13,7 +14,7 @@ from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 
-from questions.views import json_from, extract_errors
+from questions.views import extract_errors
 from qurry_api import settings
 from qurry_api.base_views import AuthenticatedView
 from qurry_api.decorators import active_user_existence_required
@@ -21,9 +22,11 @@ from qurry_api.decorators import active_user_existence_required
 from .forms import UserCreationForm
 from .models import User, ActivationToken
 
+
 # aux func
 def activation_token_for(user):
     return ActivationToken.objects.create(user=user).token
+
 
 def is_token_valid(user, token):
     exists = ActivationToken.objects.filter(user=user.id).filter(token=token)
@@ -65,22 +68,28 @@ def register(request):
 
     return JsonResponse({'message': 'request is not post'}, status=400)
 
+
 def login(request):
     if request.method == 'POST':
+        
         try:
-            email = request.POST['email']
-            password = request.POST['password']
+            body = json.loads(request.body.decode('utf-8'))
+            email = body['email']
+            password = body['password']
+
+            if not email or not password:
+                raise ValueError
 
             user = User.objects.get(email=email)
             if not user.check_password(password):
                 raise PermissionDenied()
 
-        except KeyError:
-            return JsonResponse({'errors': ['request must contain email and password as strings']}, status=400)  
+        except ValueError:
+            return JsonResponse({'errors': ['request must contain email and password as strings']}, status=400)
 
         except (User.DoesNotExist, PermissionDenied):
             return JsonResponse({'errors': ['user does not exist or password is invalid']}, status=400)
-        
+
         token = jwt.encode({
             "token_type": "access",
             "exp": int(time.time()) + settings.JWT_VALIDITY_PERIOD,
@@ -91,6 +100,7 @@ def login(request):
         return JsonResponse({'access': token})
 
     return JsonResponse({'errors': ['only post method is allowed']}, status=405)
+
 
 def activate(request, uidb, token):
     try:
@@ -130,7 +140,7 @@ class UserView(AuthenticatedView):
         if self.mode != 'profile':
             return JsonResponse({'errors': ['if you need to edit your profile, PATCH to profile/']}, status=405)
         try:
-            self.change(**json_from(request.body))
+            self.change(**json.loads(request.body.decode('utf-8') or '{}'))
         except ValidationError as exc:
             return JsonResponse({'errors': extract_errors(exc)}, status=400)
         except Exception as exc:

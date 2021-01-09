@@ -9,11 +9,6 @@ from qurry_api.decorators import ownership_required, object_existence_required
 from .models import Question, Answer, Comment, Tag, TagCategory
 
 
-def json_from(post_body):
-    body_unicode = post_body.decode('utf-8')
-    return json.loads(body_unicode or '{}')
-
-
 def objects_from(obj_ids, model):
     objects = []
     for obj_id in obj_ids:
@@ -56,13 +51,12 @@ class AbstractView(AuthenticatedView):
 
     def post(self, request, *args, **kwargs):
         try:
-            id = self.create(json_from(request.body))
+            # extract arguments from body and create element with these arguments
+            id = self.create(json.loads(request.body.decode('utf-8') or '{}'))
             return JsonResponse({'%sId' % self.Model.__name__.lower(): str(id)}, status=201)
         except ValidationError as exc:
-            raise exc
             return JsonResponse({'errors': extract_errors(exc)}, status=400)
         except Exception as exc:
-            raise exc
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
     @object_existence_required
@@ -74,7 +68,8 @@ class AbstractView(AuthenticatedView):
                 status=405)
         obj = self.Model.objects.get(id=kwargs['id'])
         try:
-            self.change(obj, json_from(request.body))
+            # extract arguments from body and change element with these arguments
+            self.change(obj, json.loads(request.body.decode('utf-8') or '{}'))
             return JsonResponse({'%sId' % self.Model.__name__.lower(): str(kwargs['id'])}, status=200)
         except ValidationError as exc:
             return JsonResponse({'errors': extract_errors(exc)}, status=400)
