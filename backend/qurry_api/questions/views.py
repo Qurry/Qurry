@@ -30,14 +30,13 @@ def extract_errors(validation_exception):
     return error_list
 
 
-def reference_images(images, obj):
-    for image in images:
-        obj.images.add(ImageAttach(file=image), bulk=False)
+def reference_files(files, attach_model, obj):
+    attach_model().attaches_from(obj).clear()
+
+    for file in files:
+        attach_model().attaches_from(obj).add(attach_model(file=file), bulk=False)
 
 
-def reference_documents(documents, obj):
-    for document in documents:
-        obj.documents.add(DocumentAttach(file=document), bulk=False)
 
 
 class AbstractView(AuthenticatedView):
@@ -211,12 +210,14 @@ class QuestionView(AbstractView):
         if 'imageIds' in body:
             image_ids = body['imageIds']
             images = objects_from(image_ids, Image)
-            reference_images(images, question)
+            # remove_files_from(question, Image)
+            reference_files(images, ImageAttach, question)
 
         if 'documentIds' in body:
             document_ids = body['documentIds']
             documents = objects_from(document_ids, Document)
-            reference_documents(documents, question)
+            # remove_files_from(question, Document)
+            reference_files(documents, DocumentAttach, question)
 
     def handle(self, bad_request_exception):
         # fields are not valid

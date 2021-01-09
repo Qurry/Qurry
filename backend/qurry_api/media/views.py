@@ -7,7 +7,6 @@ from qurry_api.decorators import object_existence_required
 class FileView(AuthenticatedView):
     Model = None
 
-    @login_required
     @object_existence_required
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
