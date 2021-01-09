@@ -1,5 +1,4 @@
 import os
-from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -10,6 +9,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY')
+
+
+JWT_VALIDITY_PERIOD = 60*60
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -35,8 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'corsheaders',
-    'rest_framework',
-    'rest_framework_simplejwt.token_blacklist',
 
     'storages',
     'media',
@@ -56,6 +56,10 @@ MIDDLEWARE = [
 ]
 
 AUTH_USER_MODEL = 'users.User'
+AUTHENTICATION_BACKENDS = [
+    'users.backends.JWTAuthentication',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 ROOT_URLCONF = 'qurry_api.urls'
 
@@ -122,11 +126,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LOGIN_URL = '/api/login'
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=2),
-}
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -149,23 +148,6 @@ LANGUAGES = (
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media/uploads/')
-
-# MEDIA_URL = 'api/media/'
-
-
-# REST FRAMEWORK SETIINGS
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-    'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.BrowsableAPIRenderer',
-                                 'rest_framework.renderers.JSONRenderer'],
-    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated',
-                                   'rest_framework.permissions.DjangoModelPermissions']
-}
 
 # EMAIL SETTINGS
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

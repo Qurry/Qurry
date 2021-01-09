@@ -1,7 +1,7 @@
 from django.http.response import JsonResponse
 
 from qurry_api.base_views import AuthenticatedView
-from qurry_api.decorators import login_required, object_existence_required
+from qurry_api.decorators import object_existence_required
 
 
 class FileView(AuthenticatedView):
@@ -16,7 +16,6 @@ class FileView(AuthenticatedView):
         else:
             return JsonResponse({'errors': ['you can either add a new file or get a specific file']}, status=405)
 
-    @login_required
     def post(self, request, *args, **kwargs):
         file = request.FILES['file']
         try:

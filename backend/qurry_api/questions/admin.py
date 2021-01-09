@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib.contenttypes import fields
 from django.contrib.contenttypes.admin import GenericTabularInline
 
 from .models import Question, Answer, Tag, Comment, TagCategory

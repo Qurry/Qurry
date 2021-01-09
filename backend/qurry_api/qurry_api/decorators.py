@@ -1,15 +1,7 @@
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 
-
-def login_required(function):
-    def is_authenticated(self, *args, **kwargs):
-        if not self.user:
-            return JsonResponse({'errors': ['you have to login to do this action']}, status=401)
-        return function(self, *args, **kwargs)
-
-    return is_authenticated
-
+from users.models import User
 
 def ownership_required(function):
     def is_owner(self, obj, *args, **kwargs):
@@ -31,3 +23,14 @@ def object_existence_required(function):
         return function(self, *args, **kwargs)
 
     return does_exist
+
+def active_user_existence_required(function):
+    def does_active_exist(self, *args, **kwargs):
+        if 'id' in kwargs:
+            try:
+                User.objects.get(id=kwargs['id'], is_active=True)
+            except Exception as err:
+                return JsonResponse({'errors': [str(err)]}, status=404)
+        return function(self, *args, **kwargs)
+
+    return does_active_exist
