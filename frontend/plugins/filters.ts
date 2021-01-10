@@ -1,6 +1,6 @@
 import Vue from 'vue'
 
-Vue.filter('limit', (value, size) => {
+Vue.filter('limit', (value: string, size: number) => {
   if (!value) return ''
   value = value.toString()
 
@@ -10,7 +10,7 @@ Vue.filter('limit', (value, size) => {
   return value.substr(0, size) + '...'
 })
 
-Vue.filter('prettyDateTime', (rawDateTime) => {
+Vue.filter('prettyDateTime', (rawDateTime: string) => {
   const prettyDateTime =
     rawDateTime.slice(8, 10) +
     '.' +

@@ -3,3 +3,6 @@ python-env
 qurry-db
 migrations/
 __pycache__/
+uploads/
+env.sh
+frontend/

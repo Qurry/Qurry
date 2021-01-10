@@ -1,14 +1,14 @@
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django import forms
 from django.contrib.auth import (
     authenticate, get_user_model, password_validation,
 )
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
+
 from .models import User
-from django import forms
 
 
 class UserCreationForm(forms.ModelForm):
-
     password = forms.CharField(
         label='Password',
         strip=False,
@@ -18,7 +18,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('email' ,'username')
+        fields = ('email', 'username')
 
     def clean_password(self):
         password = self.cleaned_data.get("password")
@@ -44,7 +44,6 @@ class UserCreationForm(forms.ModelForm):
 
 
 class UserChangeForm(UserChangeForm):
-
     class Meta:
         model = User
         fields = ('email', 'username')

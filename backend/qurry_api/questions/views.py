@@ -1,180 +1,360 @@
 import json
 
+from django.core.exceptions import ValidationError, PermissionDenied, RequestAborted
 from django.http import JsonResponse
-from django.views import View
-from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError, PermissionDenied
-from django.contrib.auth.mixins import LoginRequiredMixin
+from media.models import Document, Image, DocumentAttach, ImageAttach
+from qurry_api.base_views import AuthenticatedView
+from qurry_api.decorators import ownership_required, object_existence_required
 
-from .models import Question, Tag
+from .models import Question, Answer, Comment, Tag, TagCategory
 
-# remove us
-from users.models import User
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 
-def to_json(post_body):
-    body_unicode = post_body.decode('utf-8')
-    return json.loads(body_unicode or '{}')
+def objects_from(obj_ids, model):
+    objects = []
+    for obj_id in obj_ids:
+        objects.append(model.objects.get(id=obj_id))
+    return objects
 
-def login_required(func):
-    def is_authenticated(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return JsonResponse({'errors': ['you have to login to access questions']}, status=401)
 
-        self.user = request.user
-        return func(self, request, *args, **kwargs)
-    return is_authenticated
+def extract_errors(validation_exception):
+    error_list = []
+    error_dict = eval(str(validation_exception))
+    for field in error_dict:
+        for error in error_dict[field]:
+            error_list.append('%s: %s' % (field, error))
+    return error_list
 
-@method_decorator(csrf_exempt, name='dispatch')
-class QuestionView(View):
+
+def reference_files(files, attach_model, obj):
+    attach_model().attaches_from(obj).clear()
+
+    for file in files:
+        attach_model().attaches_from(obj).add(attach_model(file=file), bulk=False)
+
+
+
+
+class AbstractView(AuthenticatedView):
+    Model = None
 
     # different HTTP requests
-    @login_required
+    @object_existence_required
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
-            return self.view_details(kwargs['id'])
-        return self.view_list(**request.GET.dict())
-    
-    @login_required
+            obj = self.Model.objects.get(id=kwargs['id'])
+            if 'vote' in request.GET:
+                return self.vote(obj, request.GET['vote'])
+
+            return self.view_detailed(obj)
+
+        return self.view_list(**(request.GET.dict() | kwargs))
+
     def post(self, request, *args, **kwargs):
-        self.user = request.user
-        return self.create(to_json(request.body))
+        try:
+            # extract arguments from body and create element with these arguments
+            id = self.create(json.loads(request.body.decode('utf-8') or '{}'))
+            return JsonResponse({'%sId' % self.Model.__name__.lower(): str(id)}, status=201)
+        except ValidationError as exc:
+            return JsonResponse({'errors': extract_errors(exc)}, status=400)
+        except Exception as exc:
+            return JsonResponse({'errors': self.handle(exc)}, status=400)
 
-    @login_required
+    @object_existence_required
     def patch(self, request, *args, **kwargs):
-        self.user = request.user
-        if not 'id' in kwargs:
-            return JsonResponse({'errors': ['you can not patch to questions, you have to add id to the url']}, status=405)
-        return self.change(kwargs['id'], to_json(request.body))
+        if 'id' not in kwargs:
+            return JsonResponse(
+                {'errors': [
+                    'you can not patch to %ss, you have to add id to the url' % self.Model.__name__]},
+                status=405)
+        obj = self.Model.objects.get(id=kwargs['id'])
+        try:
+            # extract arguments from body and change element with these arguments
+            self.change(obj, json.loads(request.body.decode('utf-8') or '{}'))
+            return JsonResponse({'%sId' % self.Model.__name__.lower(): str(kwargs['id'])}, status=200)
+        except ValidationError as exc:
+            return JsonResponse({'errors': extract_errors(exc)}, status=400)
+        except PermissionDenied as exc:
+            return JsonResponse({'errors': [str(exc)]}, status=401)
+        except Exception as exc:
+            return JsonResponse({'errors': self.handle(exc)}, status=400)
 
-    @login_required
+    @object_existence_required
     def delete(self, request, *args, **kwargs):
-        self.user = request.user
-        if not 'id' in kwargs:
-            return JsonResponse({'errors': ['you can not delete to questions, you have to add id to the url']}, status=405)
-        return self.remove(kwargs['id'])
-
-    def view_list(self, **kwargs): # in preview format
-        limit = int(kwargs.get('limit', Question.objects.count()))
-        offset = int(kwargs.get('offset', 0))
-        questions = Question.objects.all()[offset: offset + limit]
-        
-        return JsonResponse(list(question.as_preview() for question in questions), safe=False)
-    
-    def view_details(self, id):
+        if 'id' not in kwargs:
+            return JsonResponse(
+                {'errors': [
+                    'you can not delete to %ss, you have to add id to the url' % self.Model.__name__]},
+                status=405)
+        obj = self.Model.objects.get(id=kwargs['id'])
         try:
-            response = get_object_or_404(Question, id=id).as_detailed()
-            return JsonResponse(response)
-        except Exception as exception:
-            error_list = self.handle(exception)
-            return JsonResponse({'errors': [error_list]}, status=404)
-     
-    # TODO add login_required
+            self.remove(obj)
+            return JsonResponse({'%sId' % self.Model.__name__.lower(): str(kwargs['id'])}, status=200)
+        except Exception as exc:
+            return JsonResponse({'errors': [str(exc)]}, status=500)
+
+    def view_list(self, **kwargs):  # in preview format
+        pass
+
+    def view_detailed(self, obj):
+        pass
+
     def create(self, body):
+        pass
+
+    def change(self, obj, body):
+        pass
+
+    @ownership_required
+    def remove(self, obj):
+        obj.delete()
+
+    def vote(self, obj, action):
+        # remove user from voters
         try:
-            tagIds = body['tagIds']
-            tags = self.tags_from(tagIds)
+            obj.vote_up_users.remove(self.user)
+        except:
+            pass
 
-            creation_data = {'title': body['title'], 'body': body['body'], 'user': self.user}
-
-            new_question = Question(**creation_data)
-            new_question.full_clean()
-            new_question.save()
-            new_question.tags.set(tags)
-        
-        except Exception as exception:
-            error_list = self.handle(exception)
-            return JsonResponse({'errors': error_list}, status=400)
- 
-        return JsonResponse({'questionId': str(new_question.id)}, status=201)
-
-    # TODO add login_required and permission_required
-    def change(self, id, body):
         try:
-            question = Question.objects.get(id=id)
+            obj.vote_down_users.remove(self.user)
+        except:
+            pass
 
-            if not self.user.is_owner_of(question):
-                raise PermissionDenied
+        if action == '1':
+            obj.vote_up_users.add(self.user)
+        if action == '-1':
+            obj.vote_down_users.add(self.user)
 
-            if 'title' in body:
-                question.title = body['title']
-            if 'body' in body:
-                question.body = body['body']
-            
-            question.full_clean()
-            question.save()
+        return JsonResponse({'%sId' % self.Model.__name__.lower(): str(obj.id)})
 
-            if 'tagIds' in body:
-                tagIds = body['tagIds']
-                tags = self.tags_from(tagIds)
-                question.tags.set(tags)
 
-        except Question.DoesNotExist as err:
-            return JsonResponse({'errors': [str(err)]}, status=404)
+class QuestionView(AbstractView):
+    Model = Question
 
-        except PermissionDenied as err:
-            return JsonResponse({'errors': ['you have to own the object to be able to change it']}, status=401)
-
-        except Exception as exception:
-            error_list = self.handle(exception)
-            return JsonResponse({'errors': error_list}, status=400)
-
-        return JsonResponse({'questionId': str(id)}, status=201)
-
-    # TODO add login_required and permission_required
-    def remove(self, id):
+    def view_list(self, **kwargs):  # in preview format
+        # parse arguments
+        limit = Question.objects.count()
+        offset = 0
+        search_words = None
         try:
-            question = Question.objects.get(id=id)
+            if 'limit' in kwargs:
+                limit = int(kwargs['limit'])
 
-            if not self.user.is_owner_of(question):
-                raise PermissionDenied
+            if 'offset' in kwargs:
+                offset = int(kwargs['offset'])
 
-            question.delete()
+            if 'search' in kwargs:
+                search_words = kwargs['search'].split(' ')
+        except:
+            return JsonResponse({'errors': ['get arguments are invalid']}, status=400)
 
-        except Question.DoesNotExist as err:
-            return JsonResponse({'errors': [str(err)]}, status=404)
+        questions = Question.objects.all()
 
-        except PermissionDenied as err:
-            return JsonResponse({'errors': ['you have to own the object to be able to change it']}, status=401)
+        search_result = Question.objects.none()
+        if search_words:
+            for word in search_words:
+                search_result |= questions.filter(title__icontains=word)
+                search_result |= questions.filter(body__icontains=word)
 
-        except Exception as exception:
-            error_list = self.handle(exception)
-            return JsonResponse({'errors': error_list}, status=400)
+            questions = search_result
 
-        return JsonResponse({'questionId': str(id)}, status=200)
-    
-    # aux functions
+        return JsonResponse(list(question.as_preview(self.user) for question in questions[offset: offset + limit]),
+                            safe=False)
 
-    def tags_from(self, tag_ids):
-        tags = []
-        for tag_id in tag_ids:
-            tags.append(Tag.objects.get(id=int(tag_id)))
-        return tags
+    def view_detailed(self, question):
+        return JsonResponse(question.as_detailed(self.user))
 
-    def handle(self, bad_request_exception): 
-        # fields are not valid 
-        if isinstance(bad_request_exception, ValidationError):
-            error_list = []
-            error_dict = eval(str(bad_request_exception))
-            for field in error_dict:
-                for error in error_dict[field]:
-                    error_list.append('%s: %s' % (field, error))
-            return error_list
+    def create(self, body):
+        tag_ids = list(int(tag_id) for tag_id in body['tagIds'])
+        tags = objects_from(tag_ids, Tag)
 
+        image_ids = body['imageIds']
+        images = objects_from(image_ids, Image)
+
+        document_ids = body['documentIds']
+        documents = objects_from(document_ids, Document)
+
+        creation_data = {'title': body['title'],
+                         'body': body['body'], 'user': self.user}
+
+        new_question = Question(**creation_data)
+        new_question.full_clean()
+        new_question.save()
+
+        new_question.tags.set(tags)
+        reference_images(images, new_question)
+        reference_documents(documents, new_question)
+        return new_question.id
+
+    @ownership_required
+    def change(self, question, body):
+
+        if 'title' in body:
+            question.title = body['title']
+        if 'body' in body:
+            question.body = body['body']
+
+        question.full_clean()
+        question.save()
+
+        if 'tagIds' in body:
+            tag_ids = list(int(tag_id) for tag_id in body['tagIds'])
+            tags = objects_from(tag_ids, Tag)
+            question.tags.set(tags)
+
+        if 'imageIds' in body:
+            image_ids = body['imageIds']
+            images = objects_from(image_ids, Image)
+            # remove_files_from(question, Image)
+            reference_files(images, ImageAttach, question)
+
+        if 'documentIds' in body:
+            document_ids = body['documentIds']
+            documents = objects_from(document_ids, Document)
+            # remove_files_from(question, Document)
+            reference_files(documents, DocumentAttach, question)
+
+    def handle(self, bad_request_exception):
+        # fields are not valid
         message_dict = {
             # one argument is not given
-            KeyError: 'request must contain title, body and tagIds, even it is blank.',
+            KeyError: 'request must contain title, body, tagIds, imageIds and documentIds, even if they are blank.',
             # tagIds is not a list
-            TypeError: 'tagIds should be a list of strings.',
+            TypeError: 'tagIds, imageIds and documentIds should be a list of strings.',
         }
         return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
 
 
-class TagView(View):
-    @login_required
+class AnswerView(AbstractView):
+    Model = Answer
+    question = None
+
+    def setup(self, request, *args, **kwargs):
+        if 'qid' in kwargs:
+            try:
+                self.question = Question.objects.get(id=kwargs['qid'])
+            except:
+                pass
+        return super().setup(request, *args, **kwargs)
+
+    def view_list(self, **kwargs):  # in preview format
+        if self.question:
+            return JsonResponse(list(answer.as_preview(self.user) for answer in self.question.answer_set.all()),
+                                safe=False)
+        return JsonResponse(list(answer.as_preview(self.user) for answer in Answer.objects.all()), safe=False)
+
+    def view_detailed(self, answer):
+        return JsonResponse(answer.as_detailed(self.user))
+
+    def create(self, body):
+
+        if not self.question:
+            raise RequestAborted(
+                'you can create an answer with questions/<id>/answers/')
+
+        image_ids = body['imageIds']
+        images = objects_from(image_ids, Image)
+
+        document_ids = body['documentIds']
+        documents = objects_from(document_ids, Document)
+
+        creation_data = {
+            'body': body['body'], 'user': self.user, 'question': self.question}
+
+        new_answer = Answer(**creation_data)
+        new_answer.full_clean()
+        new_answer.save()
+
+        reference_images(images, new_answer)
+        reference_documents(documents, new_answer)
+
+        return new_answer.id
+
+    @ownership_required
+    def change(self, answer, body):
+
+        if 'body' in body:
+            answer.body = body['body']
+
+        answer.full_clean()
+        answer.save()
+
+    def handle(self, bad_request_exception):
+        # fields are not valid
+
+        message_dict = {
+            # one argument is not given
+            KeyError: 'request must contain body',
+        }
+        return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
+
+
+class CommentView(AbstractView):
+    Model = Comment
+    reference = None
+
+    def setup(self, request, *args, **kwargs):
+        if 'qid' in kwargs:
+            try:
+                self.reference = Question.objects.get(id=kwargs['qid'])
+            except:
+                pass
+        if 'aid' in kwargs:
+            try:
+                self.reference = Answer.objects.get(id=kwargs['aid'])
+            except:
+                pass
+        return super().setup(request, *args, **kwargs)
+
+    def view_list(self, **kwargs):  # in preview format
+        if self.reference:
+            return JsonResponse(list(comment.as_preview() for comment in self.reference.comments.all()), safe=False)
+        return JsonResponse(list(comment.as_preview() for comment in Comment.objects.all()), safe=False)
+
+    def view_detailed(self, comment):
+        return JsonResponse(comment.as_detailed())
+
+    def create(self, body):
+
+        if not self.reference:
+            raise RequestAborted(
+                'you can create a comment with questions/<id>/comments/ or answers/<id>/comments')
+
+        creation_data = {
+            'body': body['body'], 'user': self.user, 'reference_object': self.reference}
+
+        new_comment = Comment(**creation_data)
+        new_comment.full_clean()
+        new_comment.save()
+
+        return new_comment.id
+
+    @ownership_required
+    def change(self, comment, body):
+
+        if 'body' in body:
+            comment.body = body['body']
+
+        comment.full_clean()
+        comment.save()
+
+    def vote(self, answer, action):
+        return JsonResponse({'error': ['you can not vote comments now']}, status=405)
+
+    def handle(self, bad_request_exception):
+        # fields are not valid
+
+        message_dict = {
+            # one argument is not given
+            KeyError: 'request must contain body',
+        }
+        return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
+
+
+class TagView(AuthenticatedView):
+
     def get(self, request, *args, **kwargs):
         return self.view_list()
 
     def view_list(self):
-        return JsonResponse(list(tag.as_preview() for tag in Tag.objects.all()), safe=False)
+        return JsonResponse(list(tag_category.as_preview() for tag_category in TagCategory.objects.all()), safe=False)

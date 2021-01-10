@@ -1,0 +1,4 @@
+{
+    "python.pythonPath": "python-env/bin/python3.9",
+    "python.terminal.activateEnvironment": true
+}

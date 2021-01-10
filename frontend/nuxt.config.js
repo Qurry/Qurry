@@ -9,12 +9,16 @@ export default {
 
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
-    titleTemplate: '%s - qurry-frontend',
-    title: 'qurry-frontend',
+    title: 'Qurry',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' },
+      {
+        hid: 'description',
+        name: 'description',
+        content:
+          'Qurry is the place where students can ask their questions in an uncomplicated and informal way. The questions can be organisational or content-related. Together, the best approaches to solving assignments can be discussed.',
+      },
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
@@ -23,7 +27,7 @@ export default {
   css: [],
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
-  plugins: ['~plugins/filters.js'],
+  plugins: [{ src: '~/plugins/prism', mode: 'client' }, '~plugins/filters.ts'],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
   components: true,
@@ -43,7 +47,7 @@ export default {
       local: {
         endpoints: {
           login: {
-            url: '/token/',
+            url: '/login/',
             method: 'post',
             propertyName: 'access',
           },
@@ -54,20 +58,9 @@ export default {
     },
   },
 
-  // auth: {
-  //   strategies: {
-  //     local: {
-  //       cookie: {
-  //         // (optional) If set we check this cookie exsistence for loggedIn check
-  //         name: 'sessionid',
-  //       },
-  //     },
-  //   },
-  // },
-
-  // router: {
-  //   middleware: ['auth'],
-  // },
+  router: {
+    middleware: ['auth'],
+  },
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
   axios: {
@@ -98,6 +91,29 @@ export default {
     },
   },
 
+  env: {
+    API_URL: process.env.VUE_APP_API_URL || 'http://localhost:8000',
+  },
+
   // Build Configuration (https://go.nuxtjs.dev/config-build)
-  build: {},
+  build: {
+    // * You can extend webpack config here
+    vendor: ['axios', 'prismjs'],
+
+    extend(config, ctx) {
+      if (ctx.isServer) {
+        config.externals = [
+          nodeExternals({
+            whitelist: [/^vuetify/],
+          }),
+        ]
+      }
+    },
+
+    publicPath: '/static/',
+  },
+
+  generate: {
+    dir: './../backend/qurry_api/frontend/dist/',
+  },
 }
