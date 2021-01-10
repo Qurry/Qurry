@@ -109,5 +109,11 @@ export default {
         ]
       }
     },
+
+    publicPath: '/static/',
+  },
+
+  generate: {
+    dir: './../backend/qurry_api/frontend/dist/',
   },
 }

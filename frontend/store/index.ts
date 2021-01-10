@@ -29,7 +29,7 @@ export const actions: ActionTree<RootState, RootState> = {
       7: '#bdb2ff',
       8: '#ffc6ff',
     }
-    const rawTagCategories: any[] = await this.$axios.$get('/tags')
+    const rawTagCategories: any[] = await this.$axios.$get('/tags/')
     const tagCategories: TagCategory[] = []
     const tags: { [key: string]: Tag } = {}
 
@@ -54,7 +54,7 @@ export const actions: ActionTree<RootState, RootState> = {
     commit('SAVE_TAGS', tags)
   },
   async fetchProfile({ commit }) {
-    const profile: Profile = await this.$axios.$get('/profile')
+    const profile: Profile = await this.$axios.$get('/profile/')
     commit('SAVE_PROFILE', profile)
   },
 }
