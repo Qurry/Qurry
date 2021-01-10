@@ -1,13 +1,14 @@
+import base64
+
 from django.http.response import JsonResponse
 
 from qurry_api.base_views import AuthenticatedView
-from qurry_api.decorators import login_required, object_existence_required
+from qurry_api.decorators import object_existence_required
 
 
 class FileView(AuthenticatedView):
     Model = None
 
-    @login_required
     @object_existence_required
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
@@ -16,7 +17,6 @@ class FileView(AuthenticatedView):
         else:
             return JsonResponse({'errors': ['you can either add a new file or get a specific file']}, status=405)
 
-    @login_required
     def post(self, request, *args, **kwargs):
         file = request.FILES['file']
         try:
@@ -34,4 +34,4 @@ class FileView(AuthenticatedView):
         return file_object.id
 
     def response_with(self, file):
-        return JsonResponse({'data': file.src.read().hex()})
+        return JsonResponse({'data': base64.b64encode(file.src.read()).decode('ascii')})

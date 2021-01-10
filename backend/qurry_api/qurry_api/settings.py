@@ -1,6 +1,7 @@
 import os
-from datetime import timedelta
 from pathlib import Path
+
+MODE = os.environ.get('MOD', 'development')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -11,8 +12,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+JWT_VALIDITY_PERIOD = 60*60
+
+if MODE == 'development':
+    DEBUG = True
+else:
+    DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -35,8 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'corsheaders',
-    'rest_framework',
-    'rest_framework_simplejwt.token_blacklist',
 
     'storages',
     'media',
@@ -56,6 +59,10 @@ MIDDLEWARE = [
 ]
 
 AUTH_USER_MODEL = 'users.User'
+AUTHENTICATION_BACKENDS = [
+    'users.backends.JWTAuthentication',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 ROOT_URLCONF = 'qurry_api.urls'
 
@@ -122,11 +129,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LOGIN_URL = '/api/login'
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=2),
-}
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -170,19 +172,6 @@ TEMPLATES[0]['DIRS'] += [
 
 # MEDIA_URL = 'api/media/'
 
-
-# REST FRAMEWORK SETIINGS
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-    'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.BrowsableAPIRenderer',
-                                 'rest_framework.renderers.JSONRenderer'],
-    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated',
-                                   'rest_framework.permissions.DjangoModelPermissions']
-}
-
 # EMAIL SETTINGS
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -193,6 +182,18 @@ EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PASSWORD')
 
 # STORAGE SETTINGS
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+THUMBNAIL_DEFAULT_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = 'qurry'
+AWS_S3_FILE_OVERWRITE = False
+STORAGE_FOLDER = MODE
+
+# ADMIN THUMBNAIL SETTINGS
+ADMIN_THUMBNAIL_DEFAULT_LABEL = 'Preview'
+ADMIN_THUMBNAIL_FIELD_SUFFIX = '_thumbnail'
+ADMIN_THUMBNAIL_STYLE = {
+    'display': 'block',
+    'width': '100px',
+    'height': 'auto',
+}

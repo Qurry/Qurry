@@ -32,7 +32,7 @@ export default class UuidImage extends Vue {
     const { data }: { data: any } = await this.$axios.get(
       '/media/images/' + this.uuid + '/'
     )
-    this.base64Blob = Buffer.from(data.data, 'hex').toString('base64')
+    this.base64Blob = data.data
     this.isLoading = false
   }
 }

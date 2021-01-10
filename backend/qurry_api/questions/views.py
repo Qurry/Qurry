@@ -4,14 +4,9 @@ from django.core.exceptions import ValidationError, PermissionDenied, RequestAbo
 from django.http import JsonResponse
 from media.models import Document, Image, DocumentAttach, ImageAttach
 from qurry_api.base_views import AuthenticatedView
-from qurry_api.decorators import login_required, ownership_required, object_existence_required
+from qurry_api.decorators import ownership_required, object_existence_required
 
 from .models import Question, Answer, Comment, Tag, TagCategory
-
-
-def json_from(post_body):
-    body_unicode = post_body.decode('utf-8')
-    return json.loads(body_unicode or '{}')
 
 
 def objects_from(obj_ids, model):
@@ -30,21 +25,19 @@ def extract_errors(validation_exception):
     return error_list
 
 
-def reference_images(images, obj):
-    for image in images:
-        obj.images.add(ImageAttach(file=image), bulk=False)
+def reference_files(files, attach_model, obj):
+    attach_model().attaches_from(obj).clear()
+
+    for file in files:
+        attach_model().attaches_from(obj).add(attach_model(file=file), bulk=False)
 
 
-def reference_documents(documents, obj):
-    for document in documents:
-        obj.documents.add(DocumentAttach(file=document), bulk=False)
 
 
 class AbstractView(AuthenticatedView):
     Model = None
 
     # different HTTP requests
-    # @login_required
     @object_existence_required
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
@@ -56,19 +49,16 @@ class AbstractView(AuthenticatedView):
 
         return self.view_list(**(request.GET.dict() | kwargs))
 
-    # @login_required
     def post(self, request, *args, **kwargs):
         try:
-            id = self.create(json_from(request.body))
+            # extract arguments from body and create element with these arguments
+            id = self.create(json.loads(request.body.decode('utf-8') or '{}'))
             return JsonResponse({'%sId' % self.Model.__name__.lower(): str(id)}, status=201)
         except ValidationError as exc:
-            raise exc
             return JsonResponse({'errors': extract_errors(exc)}, status=400)
         except Exception as exc:
-            raise exc
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
-    @login_required
     @object_existence_required
     def patch(self, request, *args, **kwargs):
         if 'id' not in kwargs:
@@ -78,7 +68,8 @@ class AbstractView(AuthenticatedView):
                 status=405)
         obj = self.Model.objects.get(id=kwargs['id'])
         try:
-            self.change(obj, json_from(request.body))
+            # extract arguments from body and change element with these arguments
+            self.change(obj, json.loads(request.body.decode('utf-8') or '{}'))
             return JsonResponse({'%sId' % self.Model.__name__.lower(): str(kwargs['id'])}, status=200)
         except ValidationError as exc:
             return JsonResponse({'errors': extract_errors(exc)}, status=400)
@@ -87,7 +78,6 @@ class AbstractView(AuthenticatedView):
         except Exception as exc:
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
-    @login_required
     @object_existence_required
     def delete(self, request, *args, **kwargs):
         if 'id' not in kwargs:
@@ -215,12 +205,14 @@ class QuestionView(AbstractView):
         if 'imageIds' in body:
             image_ids = body['imageIds']
             images = objects_from(image_ids, Image)
-            reference_images(images, question)
+            # remove_files_from(question, Image)
+            reference_files(images, ImageAttach, question)
 
         if 'documentIds' in body:
             document_ids = body['documentIds']
             documents = objects_from(document_ids, Document)
-            reference_documents(documents, question)
+            # remove_files_from(question, Document)
+            reference_files(documents, DocumentAttach, question)
 
     def handle(self, bad_request_exception):
         # fields are not valid
@@ -361,7 +353,6 @@ class CommentView(AbstractView):
 
 class TagView(AuthenticatedView):
 
-    @login_required
     def get(self, request, *args, **kwargs):
         return self.view_list()
 
