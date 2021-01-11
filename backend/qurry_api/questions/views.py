@@ -182,8 +182,8 @@ class QuestionView(AbstractView):
         new_question.save()
 
         new_question.tags.set(tags)
-        reference_images(images, new_question)
-        reference_documents(documents, new_question)
+        reference_files(images, ImageAttach, new_question)
+        reference_files(documents, DocumentAttach, new_question)
         return new_question.id
 
     @ownership_required
@@ -265,8 +265,8 @@ class AnswerView(AbstractView):
         new_answer.full_clean()
         new_answer.save()
 
-        reference_images(images, new_answer)
-        reference_documents(documents, new_answer)
+        reference_files(images, ImageAttach, new_answer)
+        reference_files(documents, DocumentAttach, new_answer)
 
         return new_answer.id
 
