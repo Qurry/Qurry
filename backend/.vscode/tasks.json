@@ -20,9 +20,15 @@
         "problemMatcher": []
       },
       {
-        "label": "Make & Install Migrations",
+        "label": "Build Database (for first time)",
         "type": "shell",
         "command": "source python-env/bin/activate; python3.9 qurry_api/manage.py makemigrations --empty users questions media; python3.9 qurry_api/manage.py makemigrations users questions media; python3.9 qurry_api/manage.py migrate users; python3.9 qurry_api/manage.py makemigrations; python3.9 qurry_api/manage.py migrate;",
+        "problemMatcher": []
+      },
+      {
+        "label": "Make & Install Migrations",
+        "type": "shell",
+        "command": "source python-env/bin/activate; python3.9 qurry_api/manage.py makemigrations users questions media; python3.9 qurry_api/manage.py migrate users; python3.9 qurry_api/manage.py makemigrations; python3.9 qurry_api/manage.py migrate;",
         "problemMatcher": []
       },
       {
