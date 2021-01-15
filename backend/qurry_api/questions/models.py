@@ -36,16 +36,16 @@ class Comment(Post):
         return 'comment from %s' % self.user
 
     def as_preview(self):
-        return self.time_info() | {
+        return {**self.time_info(), **{
             'id': str(self.id),
             'body': self.body,
             'user': self.user.as_preview()
-        }
+        }}
 
     def as_detailed(self):
-        return self.as_preview() | {
+        return {**self.as_preview(), **{
             '%sId' % self.content_type.model: self.object_id,
-        }
+        }}
 
 
 class TagCategory(models.Model):
@@ -125,7 +125,7 @@ class Question(Post):
         return 0
 
     def as_preview(self, user):
-        return self.time_info() | {
+        return {**self.time_info(), **{
             'id': str(self.id),
             'title': self.title,
             'votes': self.count_votes(),
@@ -134,16 +134,16 @@ class Question(Post):
             'tagIds': self.tag_id_list(),
             'user': self.user.as_preview(),
             'userVote': self.vote_of(user)
-        }
+        }}
 
     def as_detailed(self, user):
-        return self.as_preview(user) | {
+        return {**self.as_preview(user), **{
             'body': self.body,
             'answers': list(answer.as_detailed(user) for answer in self.answer_set.all()),
             'comments': list(comment.as_preview() for comment in self.comments.all()),
             'imageIds': list(image.file.id for image in self.images.all()),
             'documentIds': list(document.file.id for document in self.documents.all()),
-        }
+        }}
 
 
 class Answer(Post):
@@ -174,17 +174,17 @@ class Answer(Post):
         return 0
 
     def as_preview(self, user):
-        return self.time_info() | {
+        return {**self.time_info(), **{
             'id': str(self.id),
             'body': self.body,
             'votes': self.count_votes(),
             'user': self.user.as_preview(),
             'userVote': self.vote_of(user)
-        }
+        }}
 
     def as_detailed(self, user):
-        return self.as_preview(user) | {
+        return {**self.as_preview(user), **{
             'comments': list(comment.as_preview() for comment in self.comments.all()),
             'imageIds': list(image.file.id for image in self.images.all()),
             'documentIds': list(document.file.id for document in self.documents.all()),
-        }
+        }}
