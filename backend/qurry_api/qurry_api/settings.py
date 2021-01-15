@@ -20,10 +20,11 @@ JWT_VALIDITY_PERIOD = 60*60
 
 if MODE == 'development':
     DEBUG = True
+    ALLOWED_HOSTS = ['localhost']
 else:
     DEBUG = False
+    ALLOWED_HOSTS = ['www.qurry.de']
 
-ALLOWED_HOSTS = ['www.qurry.de']
 
 # Application definition
 
@@ -83,7 +84,7 @@ WSGI_APPLICATION = 'qurry_api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-if MODE == 'devolopment':
+if MODE == 'development':
     DATABASES = {
 
         'default': {
