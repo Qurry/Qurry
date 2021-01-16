@@ -457,6 +457,6 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 
-@Component({ middleware: 'guest', auth: false })
+@Component({ auth: false })
 export default class Datenschutz extends Vue {}
 </script>
