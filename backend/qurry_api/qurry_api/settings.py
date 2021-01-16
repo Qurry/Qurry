@@ -21,6 +21,8 @@ JWT_VALIDITY_PERIOD = 60*60
 if MODE == 'development':
     DEBUG = True
     ALLOWED_HOSTS = ['localhost']
+    CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
+    CORS_ALLOW_CREDENTIALS = True
 else:
     DEBUG = False
     ALLOWED_HOSTS = ['www.qurry.de']
