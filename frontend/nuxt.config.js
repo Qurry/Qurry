@@ -68,7 +68,7 @@ export default {
     init(axios) {
       axios.defaults.withCredentials = true
     },
-    baseURL: 'http://localhost:8000/api',
+    baseURL: process.env.API_URL,
   },
 
   // Vuetify module configuration (https://go.nuxtjs.dev/config-vuetify)
@@ -91,9 +91,9 @@ export default {
     },
   },
 
-  env: {
-    API_URL: process.env.VUE_APP_API_URL || 'http://localhost:8000',
-  },
+  // env: {
+  //   API_URL: process.env.VUE_APP_API_URL || 'http://localhost:8000',
+  // },
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
