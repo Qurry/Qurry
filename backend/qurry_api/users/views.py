@@ -29,12 +29,11 @@ def activation_token_for(user):
 
 
 def is_token_valid(user, token):
-    exists = ActivationToken.objects.filter(user=user.id).filter(token=token)
-    if len(exists) == 1:
-        exists[0].delete()
-        return True
-    else:
+    try:
+        ActivationToken.objects.get(user=user.id, token=token).delete()
+    except ActivationToken.DoesNotExist:
         return False
+    return True
 
 
 def register(request):
@@ -45,18 +44,15 @@ def register(request):
             user.is_active = False
             user.save()
 
-            token = activation_token_for(user)
             mail_subject = 'Activate your account.'
-            current_site = get_current_site(request)
             message = render_to_string('email_template.html', {
                 'user': user,
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                'token': token,
-                'domain': current_site.domain,
+                'token': activation_token_for(user),
+                'domain': get_current_site(request),
             })
             to_email = form.cleaned_data.get('email')
-            send_mail(mail_subject, message,
-                      settings.EMAIL_HOST_USER, [to_email])
+            send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [to_email], html_message=message)
 
             return JsonResponse({}, status=201)
         else:
@@ -71,7 +67,7 @@ def register(request):
 
 def login(request):
     if request.method == 'POST':
-        
+
         try:
             body = json.loads(request.body.decode('utf-8'))
             email = body['email']
@@ -102,18 +98,15 @@ def login(request):
     return JsonResponse({'errors': ['only post method is allowed']}, status=405)
 
 
-def activate(request, uidb, token):
+def activate(request, uidb64, token):
     try:
-        uid = force_text(urlsafe_base64_decode(uidb))
+        uid = force_text(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
     if user is not None and is_token_valid(user, token):
         user.is_active = True
         user.save()
-
-        # create profile for user
-        user.get_default_profile()
 
         return HttpResponse(
             'Thank you for your email confirmation. Now you can <a href="localhost:3000/login">login</a> your account.')
