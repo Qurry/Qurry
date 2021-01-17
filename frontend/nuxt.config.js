@@ -20,7 +20,7 @@ export default {
           'Qurry is the place where students can ask their questions in an uncomplicated and informal way. The questions can be organisational or content-related. Together, the best approaches to solving assignments can be discussed.',
       },
     ],
-    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+    link: [{ rel: 'icon', type: 'image/x-icon', href: '/static/favicon.ico' }],
   },
 
   // Global CSS (https://go.nuxtjs.dev/config-css)
@@ -68,7 +68,7 @@ export default {
     init(axios) {
       axios.defaults.withCredentials = true
     },
-    baseURL: 'http://localhost:8000/api',
+    baseURL: process.env.API_URL,
   },
 
   // Vuetify module configuration (https://go.nuxtjs.dev/config-vuetify)
@@ -91,9 +91,9 @@ export default {
     },
   },
 
-  env: {
-    API_URL: process.env.VUE_APP_API_URL || 'http://localhost:8000',
-  },
+  // env: {
+  //   API_URL: process.env.VUE_APP_API_URL || 'http://localhost:8000',
+  // },
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
@@ -114,6 +114,6 @@ export default {
   },
 
   generate: {
-    dir: './../backend/qurry_api/frontend/dist/',
+    dir: './../backend/qurry_api/frontend/',
   },
 }

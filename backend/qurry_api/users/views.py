@@ -149,10 +149,10 @@ class UserView(AuthenticatedView):
         return JsonResponse({'userId': self.user.id})
 
     def profile(self):
-        return JsonResponse(self.user.as_detailed() | {
+        return JsonResponse({**self.user.as_detailed(), **{
             'email': self.user.email,
             'registeredAt': timezone.localtime(self.user.registered_at)
-        })
+        }})
 
     def change(self, **kwargs):
         if 'username' in kwargs:

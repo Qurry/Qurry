@@ -7,7 +7,7 @@
           <v-list-item :key="index" class="pl-0">
             <v-list-item-avatar>
               <v-img v-if="user.image" :src="apiUrl + user.image"></v-img>
-              <v-img v-else src="/default-profile-image.png"></v-img>
+              <v-img v-else src="/static/default-profile-image.png"></v-img>
             </v-list-item-avatar>
 
             <v-list-item-content>

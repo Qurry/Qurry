@@ -48,10 +48,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         }
 
     def as_detailed(self):
-        return self.as_preview() | {
+        return {**self.as_preview(), **{
             'score': self.score(),
             'image': self.profile_image(),
-        }
+        }}
 
     def is_owner_of(self, obj):
         return obj.user == self

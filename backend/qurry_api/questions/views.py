@@ -47,7 +47,7 @@ class AbstractView(AuthenticatedView):
 
             return self.view_detailed(obj)
 
-        return self.view_list(**(request.GET.dict() | kwargs))
+        return self.view_list(**({**request.GET.dict(),** kwargs}))
 
     def post(self, request, *args, **kwargs):
         try:
@@ -150,13 +150,13 @@ class QuestionView(AbstractView):
 
         questions = Question.objects.all()
 
-        search_result = Question.objects.none()
-        if search_words:
-            for word in search_words:
-                search_result |= questions.filter(title__icontains=word)
-                search_result |= questions.filter(body__icontains=word)
+        # search_result = Question.objects.none()
+        # if search_words:
+        #     for word in search_words:
+        #         search_result |= questions.filter(title__icontains=word)
+        #         search_result |= questions.filter(body__icontains=word)
 
-            questions = search_result
+        #     questions = search_result
 
         return JsonResponse(list(question.as_preview(self.user) for question in questions[offset: offset + limit]),
                             safe=False)
@@ -182,8 +182,8 @@ class QuestionView(AbstractView):
         new_question.save()
 
         new_question.tags.set(tags)
-        reference_images(images, new_question)
-        reference_documents(documents, new_question)
+        reference_files(images, ImageAttach, new_question)
+        reference_files(documents, DocumentAttach, new_question)
         return new_question.id
 
     @ownership_required
@@ -265,8 +265,8 @@ class AnswerView(AbstractView):
         new_answer.full_clean()
         new_answer.save()
 
-        reference_images(images, new_answer)
-        reference_documents(documents, new_answer)
+        reference_files(images, ImageAttach, new_answer)
+        reference_files(documents, DocumentAttach, new_answer)
 
         return new_answer.id
 
