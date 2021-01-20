@@ -9,6 +9,7 @@ from django.core.mail import send_mail
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
 from django.conf import settings
+from django.shortcuts import redirect
 from django.utils import timezone
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -84,7 +85,7 @@ def login(request):
             return JsonResponse({'errors': ['request must contain email and password as strings']}, status=400)
 
         except (User.DoesNotExist, PermissionDenied):
-            return JsonResponse({'errors': ['user does not exist or password is invalid']}, status=400)
+            return JsonResponse({'errors': ['This user does not exist, has not confirmed their email or the password is invalid.']}, status=400)
 
         token = jwt.encode({
             "token_type": "access",
@@ -107,11 +108,9 @@ def activate(request, uidb64, token):
     if user is not None and is_token_valid(user, token):
         user.is_active = True
         user.save()
-
-        return HttpResponse(
-            'Thank you for your email confirmation. Now you can <a href="localhost:3000/login">login</a> your account.')
+        return redirect('/register/success')
     else:
-        return HttpResponse('Activation link is invalid!')
+        return redirect('/register/invalid')
 
 
 class UserView(AuthenticatedView):

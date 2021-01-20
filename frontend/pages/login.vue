@@ -71,7 +71,13 @@ export default class Register extends Vue {
         this.$router.push('/questions')
       })
       .catch((error) => {
-        this.errors.push(error.response.data.detail)
+        if (error.response.data.errors) {
+          this.errors.push(
+            ...Object.values(error.response.data.errors as string)
+          )
+        } else {
+          console.log(error)
+        }
       })
   }
 }
