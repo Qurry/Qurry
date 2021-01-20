@@ -1,8 +1,8 @@
 <template>
   <v-row>
     <v-col>
-      <h1>Email Confirmation</h1>
-      <p>Please confirm your HPI email.</p>
+      <h1>Confirmation Link Invalid</h1>
+      <p>This confirmation link is invalid, please contact us.</p>
     </v-col>
   </v-row>
 </template>
@@ -11,5 +11,5 @@
 import { Vue, Component } from 'nuxt-property-decorator'
 
 @Component({ middleware: 'guest', auth: false })
-export default class ConfirmRegistration extends Vue {}
+export default class InvalidRegistration extends Vue {}
 </script>

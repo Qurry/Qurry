@@ -1,6 +1,6 @@
 import base64
 
-from django.http.response import JsonResponse
+from django.http.response import HttpResponse, JsonResponse
 
 from qurry_api.base_views import AuthenticatedView
 from qurry_api.decorators import object_existence_required
@@ -34,4 +34,5 @@ class FileView(AuthenticatedView):
         return file_object.id
 
     def response_with(self, file):
-        return JsonResponse({'data': base64.b64encode(file.src.read()).decode('ascii')})
+        # return JsonResponse({'data': base64.b64encode(file.src.read()).decode('ascii')})
+        return HttpResponse(file.src.read(), content_type="image/*")

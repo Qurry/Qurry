@@ -1,11 +1,12 @@
 from django import forms
 from django.contrib.auth import (
-    authenticate, get_user_model, password_validation,
+    authenticate, get_user_model, password_validation
 )
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserChangeForm
 from django.core.exceptions import ValidationError
 
 from .models import User
+from .validators import HPIEmailValidator
 
 
 class UserCreationForm(forms.ModelForm):
@@ -26,6 +27,12 @@ class UserCreationForm(forms.ModelForm):
 
     def _post_clean(self):
         super()._post_clean()
+        email = self.cleaned_data.get('email')
+        if email:
+            try:
+                HPIEmailValidator()(email)
+            except ValidationError as error:
+                self.add_error('email', error)
         # Validate the password after self.instance is updated with form data
         # by super().
         password = self.cleaned_data.get('password')

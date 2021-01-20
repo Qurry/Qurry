@@ -68,7 +68,7 @@ export default {
     init(axios) {
       axios.defaults.withCredentials = true
     },
-    baseURL: process.env.API_URL,
+    baseURL: process.env.BASE_URL + '/api',
   },
 
   // Vuetify module configuration (https://go.nuxtjs.dev/config-vuetify)
