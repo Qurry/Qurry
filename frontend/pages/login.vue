@@ -51,8 +51,8 @@ export default class Register extends Vue {
   rules = {
     required: (value: string) => !!value || 'Required.',
     email: (value: string) => {
-      const pattern = /^[\w\.-]*@([\w\.-]+\.)?(hpi\.de|hpi\.uni-potsdam\.de)$/
-      return pattern.test(value) || 'Please use a HPI Email.'
+      const pattern = /^[\w.-]*@([\w.-]+\.)?(hpi\.de|hpi\.uni-potsdam\.de)$/
+      return pattern.test(value) || 'Please use an HPI Email.'
     },
   }
 

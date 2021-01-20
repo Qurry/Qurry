@@ -13,7 +13,7 @@
           <v-row>
             <v-col cols="12">
               <v-text-field
-                v-model="username"
+                v-model="user.username"
                 :rules="[
                   rules.required,
                   rules.minLengthUsername,
@@ -29,7 +29,7 @@
 
             <v-col cols="12">
               <v-text-field
-                v-model="email"
+                v-model="user.email"
                 :rules="[rules.required, rules.email]"
                 label="Email"
                 required
@@ -39,7 +39,7 @@
             </v-col>
             <v-col cols="12">
               <v-text-field
-                v-model="password"
+                v-model="user.password"
                 :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
                 :rules="[
                   rules.required,
@@ -56,7 +56,12 @@
                 @click:append="showPassword = !showPassword"
               ></v-text-field>
             </v-col>
-            <v-btn :disabled="!isFormValid" color="secondary" @click="onSubmit">
+            <v-btn
+              :disabled="!isFormValid || loading"
+              :loading="loading"
+              color="secondary"
+              @click="onSubmit"
+            >
               Register
             </v-btn>
           </v-row>
@@ -68,16 +73,21 @@
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
+import { RegistrationUser } from '../users/user.model'
 import UserService from './../../services/UserService'
 
 @Component({ middleware: 'guest', auth: false })
 export default class Register extends Vue {
+  user: RegistrationUser = {
+    username: '',
+    email: '',
+    password: '',
+  }
+
   errors: string[] = []
   isFormValid = false
-  username = ''
-  email = ''
-  password = ''
   showPassword = false
+  loading = false
   rules = {
     required: (value: string) => !!value || 'Required.',
     minLengthPassword: (value: string) =>
@@ -94,16 +104,17 @@ export default class Register extends Vue {
     maxLength: (value: string) =>
       value.length <= 100 || 'Maximum 100 characters.',
     email: (value: string) => {
-      const pattern = /^[a-zA-Z.-]*@[a-zA-Z.-]*(hpi.de|hpi.uni-potsdam.de)$/
+      const pattern = /^[\w.-]*@([\w.-]+\.)?(hpi\.de|hpi\.uni-potsdam\.de)$/
       return pattern.test(value) || 'Invalid email.'
     },
   }
 
   onSubmit() {
+    this.loading = true
     this.errors = []
-    UserService.register(this.username, this.email, this.password)
-      .then((res: any) => {
-        console.log(res)
+    UserService.register(this.$axios, this.user)
+      .then((_res: any) => {
+        this.$router.push('/register/confirm')
       })
       .catch((error) => {
         if (error.response.data.errors) {
@@ -113,6 +124,7 @@ export default class Register extends Vue {
         } else {
           console.log(error)
         }
+        this.loading = false
       })
   }
 }

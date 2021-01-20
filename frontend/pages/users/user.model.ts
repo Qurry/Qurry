@@ -4,3 +4,9 @@ export interface User {
   score?: number
   image?: string
 }
+
+export interface RegistrationUser {
+  username: string
+  email: string
+  password: string
+}
