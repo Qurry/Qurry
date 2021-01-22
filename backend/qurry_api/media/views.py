@@ -34,5 +34,4 @@ class FileView(AuthenticatedView):
         return file_object.id
 
     def response_with(self, file):
-        # return JsonResponse({'data': base64.b64encode(file.src.read()).decode('ascii')})
-        return HttpResponse(file.src.read(), content_type="image/*")
+        return JsonResponse({'%sUrl' % self.Model.__name__.lower(): file.src.url})

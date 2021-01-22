@@ -1,7 +1,7 @@
 <template>
   <img
     v-if="!isLoading"
-    :src="'data:image;base64,' + base64Blob"
+    :src="url"
     :width="width ? width : ''"
     :height="height ? height : ''"
   />
@@ -21,7 +21,7 @@ export default class UuidImage extends Vue {
   @Prop()
   height!: string
 
-  base64Blob = ''
+  url = ''
   isLoading = true
 
   created() {
@@ -32,7 +32,7 @@ export default class UuidImage extends Vue {
     const { data }: { data: any } = await this.$axios.get(
       '/media/images/' + this.uuid + '/'
     )
-    this.base64Blob = data.data
+    this.url = data.imageUrl
     this.isLoading = false
   }
 }

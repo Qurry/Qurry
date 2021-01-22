@@ -141,8 +141,8 @@ class Question(Post):
             'body': self.body,
             'answers': list(answer.as_detailed(user) for answer in self.answer_set.all()),
             'comments': list(comment.as_preview() for comment in self.comments.all()),
-            'imageIds': list(image.file.id for image in self.images.all()),
-            'documentIds': list(document.file.id for document in self.documents.all()),
+            'imageUrls': list(image.file.src.url for image in self.images.all()),
+            'documentUrls': list(document.file.src.url for document in self.documents.all()),
         }}
 
 
@@ -185,6 +185,6 @@ class Answer(Post):
     def as_detailed(self, user):
         return {**self.as_preview(user), **{
             'comments': list(comment.as_preview() for comment in self.comments.all()),
-            'imageIds': list(image.file.id for image in self.images.all()),
-            'documentIds': list(document.file.id for document in self.documents.all()),
+            'imageIds': list(image.file.src.url for image in self.images.all()),
+            'documentIds': list(document.file.src.url for document in self.documents.all()),
         }}
