@@ -15,10 +15,18 @@
         }}</code>
       </template>
       <template v-else-if="content.type === 'url-image'">
-        <img :key="index" :src="content.src" :alt="content.alt" />
+        <img
+          :key="index"
+          :src="content.src"
+          :alt="'<<< NO IMAGE FOUND WITH URL=' + content.src + ' >>>'"
+        />
       </template>
-      <template v-else-if="content.type === 'uuid-image'">
-        <UuidImage :key="index" :uuid="content.src" />
+      <template v-else-if="content.type === 'id-image'">
+        <img
+          :key="index"
+          :src="imageUrls[parseInt(content.src) - 1]"
+          :alt="'<<< NO IMAGE FOUND WITH ID=' + content.src + ' >>>'"
+        />
       </template>
     </template>
   </div>
@@ -33,6 +41,9 @@ import { ContentParser, Content } from '../mixins/contentParser'
 export default class PostContentParser extends mixins(ContentParser) {
   @Prop()
   content!: string
+
+  @Prop()
+  imageUrls!: string[]
 
   @Prop()
   mode!: string

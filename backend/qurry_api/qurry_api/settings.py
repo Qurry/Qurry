@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 
-JWT_VALIDITY_PERIOD = 60*60
+JWT_VALIDITY_PERIOD = 60*60*24*30
 
 if MODE == 'development':
     DEBUG = True
