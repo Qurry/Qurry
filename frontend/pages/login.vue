@@ -51,8 +51,8 @@ export default class Register extends Vue {
   rules = {
     required: (value: string) => !!value || 'Required.',
     email: (value: string) => {
-      const pattern = /^[\w\.-]*@([\w\.-]+\.)?(hpi\.de|hpi\.uni-potsdam\.de)$/
-      return pattern.test(value) || 'Please use a HPI Email.'
+      const pattern = /^[\w.-]*@([\w.-]+\.)?(hpi\.de|hpi\.uni-potsdam\.de)$/
+      return pattern.test(value) || 'Please use an HPI Email.'
     },
   }
 
@@ -71,7 +71,13 @@ export default class Register extends Vue {
         this.$router.push('/questions')
       })
       .catch((error) => {
-        this.errors.push(error.response.data.detail)
+        if (error.response.data.errors) {
+          this.errors.push(
+            ...Object.values(error.response.data.errors as string)
+          )
+        } else {
+          console.log(error)
+        }
       })
   }
 }

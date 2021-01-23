@@ -1,25 +1,17 @@
 import { NuxtAxiosInstance } from '@nuxtjs/axios'
-import axios from 'axios'
-import { User } from '~/pages/users/user.model'
-
-const apiClient = axios.create({
-  baseURL: 'http://localhost:8000/api',
-})
+import { User, RegistrationUser } from '~/pages/users/user.model'
 
 export default {
-  async register(username: string, email: string, password: string) {
+  async register($axios: NuxtAxiosInstance, user: RegistrationUser) {
     const bodyFormData = new FormData()
-    bodyFormData.append('username', username)
-    bodyFormData.append('email', email)
-    bodyFormData.append('password', password)
+    bodyFormData.append('username', user.username)
+    bodyFormData.append('email', user.email)
+    bodyFormData.append('password', user.password)
 
-    const res = await apiClient({
-      method: 'post',
-      url: '/register/',
-      data: bodyFormData,
+    const response = await $axios.post('/register/', bodyFormData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
-    return res
+    return response
   },
   async getUsers($axios: NuxtAxiosInstance) {
     const { data }: { data: User[] } = await $axios.get('/users/')
