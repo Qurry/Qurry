@@ -7,6 +7,6 @@ urlpatterns = [
     path('images/', FileView.as_view(Model=Image), name='view-images'),
     path('images/<str:id>/', FileView.as_view(Model=Image), name='view-images'),
 
-    path('documetns/', FileView.as_view(Model=Document), name='view-documents'),
-    path('documetns/<str:id>/', FileView.as_view(Model=Document), name='view-documents'),
+    path('documents/', FileView.as_view(Model=Document), name='view-documents'),
+    path('documents/<str:id>/', FileView.as_view(Model=Document), name='view-documents'),
 ]
