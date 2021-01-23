@@ -2,7 +2,7 @@
   <div>
     <template v-for="(content, index) in contents">
       <template v-if="content.type === 'unparsed'">
-        <MathJaxParser :key="index" :content="content.text" />
+        <span :key="index" style="white-space: pre">{{ content.text }}</span>
       </template>
       <template v-else-if="content.type === 'block-code'">
         <pre :key="index"><code :class="'lang-' + content.language">{{
