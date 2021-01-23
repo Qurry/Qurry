@@ -59,26 +59,10 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 
-@Component({
-  head: {
-    script: [
-      {
-        src:
-          'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_HTML',
-      },
-    ],
-  },
-})
+@Component
 export default class DefaultLayout extends Vue {
   userScore = ''
   isLoading = false
-
-  items = [
-    { title: 'Click Me' },
-    { title: 'Click Me' },
-    { title: 'Click Me' },
-    { title: 'Click Me 2' },
-  ]
 
   created() {
     this.$nuxt.$on('reload', () => {

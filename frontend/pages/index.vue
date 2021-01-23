@@ -17,7 +17,16 @@
       <h2>Exercise/Exam Questions</h2>
 
       <ul>
-        <li>Prove that L is co-RE complete.</li>
+        <li>
+          Prove
+          <katex-element
+            expression="\forall a,b \in \mathbb{N},~ a,b >1 : \log_a(n) \in \Theta(\log_b(n))"
+          />.
+        </li>
+        <li>
+          Explain this C declaration:
+          <code class="lang-c">char* (*(*foo[5])(char*))[];</code>
+        </li>
       </ul>
       <br />
       <h2>Let's chat 😄</h2>
@@ -31,7 +40,12 @@
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
+import Prism from 'prismjs'
 
 @Component({ auth: false })
-export default class Dashboard extends Vue {}
+export default class Home extends Vue {
+  mounted() {
+    Prism.highlightAll()
+  }
+}
 </script>
