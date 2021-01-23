@@ -6,14 +6,29 @@
       <v-btn to="/" text rounded>Qurry</v-btn>
       <v-spacer></v-spacer>
       <template v-if="$store.state.auth.loggedIn">
-        <v-btn to="/logout" text rounded>Logout</v-btn>
         <v-btn to="/questions" text rounded>Questions</v-btn>
         <v-btn to="/tags" text rounded>Tags</v-btn>
-        <v-btn to="/users" text rounded>Users</v-btn>
-        <v-btn to="/profile" text rounded>Profile</v-btn>
         <span>
           {{ userScore }} <v-icon color="accent"> mdi-trophy </v-icon>
         </span>
+        <v-menu offset-y>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn icon v-bind="attrs" v-on="on">
+              <v-icon>mdi-menu</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item>
+              <v-btn to="/profile" text rounded>Profile</v-btn>
+            </v-list-item>
+            <v-list-item>
+              <v-btn to="/users" text rounded>Users</v-btn>
+            </v-list-item>
+            <v-list-item>
+              <v-btn to="/logout" text rounded>Logout</v-btn>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </template>
       <template v-else>
         <v-btn to="/login" text rounded>Login</v-btn>
@@ -57,6 +72,13 @@ import { Vue, Component } from 'nuxt-property-decorator'
 export default class DefaultLayout extends Vue {
   userScore = ''
   isLoading = false
+
+  items = [
+    { title: 'Click Me' },
+    { title: 'Click Me' },
+    { title: 'Click Me' },
+    { title: 'Click Me 2' },
+  ]
 
   created() {
     this.$nuxt.$on('reload', () => {

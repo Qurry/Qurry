@@ -7,7 +7,7 @@
         uncomplicated and informal way.
       </p>
 
-      <h2>Organisational Questions</h2>
+      <h2>Organizational Questions</h2>
 
       <ul>
         <li>Until when can I revoke my lecture enrollment?</li>
@@ -22,8 +22,8 @@
       <br />
       <h2>Let's chat 😄</h2>
       <p>
-        Do you have questions, ideas or feature requests? Please send us an
-        email to <strong> qurry.info@gmail.com </strong>
+        Do you have questions, ideas or feature requests? Please email us to
+        <strong> qurry.info@gmail.com </strong>
       </p>
     </v-col>
   </v-row>
