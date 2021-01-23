@@ -14,6 +14,16 @@
           content.text
         }}</code>
       </template>
+      <template v-else-if="content.type === 'block-latex'">
+        <katex-element
+          :key="index"
+          :expression="content.text"
+          :display-mode="true"
+        />
+      </template>
+      <template v-else-if="content.type === 'inline-latex'">
+        <katex-element :key="index" :expression="content.text" />
+      </template>
       <template v-else-if="content.type === 'url-image'">
         <img
           :key="index"

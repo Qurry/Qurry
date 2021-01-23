@@ -89,6 +89,56 @@ describe('ContentParser', () => {
       },
     ])
   })
+  test('parseLatexContents', () => {
+    const Component = {
+      render() {},
+      mixins: [ContentParser],
+    }
+    const wrapper = shallowMount(Component)
+    expect(
+      wrapper.vm.parseLatexContents(
+        { type: 'unparsed', text: 'some content' },
+        'inline',
+        '$'
+      )
+    ).toMatchObject([
+      {
+        type: 'unparsed',
+        text: 'some content',
+      },
+    ])
+    expect(
+      wrapper.vm.parseLatexContents(
+        {
+          type: 'unparsed',
+          text: 'let $a\\$bc$ be \\$and $$\\sum_a$$ not $$34\\$$$',
+        },
+        'block',
+        '$$'
+      )
+    ).toMatchObject([
+      {
+        type: 'unparsed',
+        text: 'let $a\\$bc$ be \\$and ',
+      },
+      {
+        type: 'block-latex',
+        text: '\\sum_a',
+      },
+      {
+        type: 'unparsed',
+        text: ' not ',
+      },
+      {
+        type: 'block-latex',
+        text: '34\\$',
+      },
+      {
+        type: 'unparsed',
+        text: '',
+      },
+    ])
+  })
   test('parseImageContent', () => {
     const Component = {
       render() {},

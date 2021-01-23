@@ -54,7 +54,16 @@ export class ContentParser extends Vue {
         contents,
         this.parseImageContents
       )
+      contents = this.parseContentsWithFunction(
+        contents,
+        this.parseBlockLatexContents
+      )
     }
+
+    contents = this.parseContentsWithFunction(
+      contents,
+      this.parseInlineLatexContents
+    )
 
     return contents
   }
@@ -154,6 +163,43 @@ export class ContentParser extends Vue {
       src: source,
       alt: altText,
     } as ImageContent
+  }
+
+  parseInlineLatexContents(
+    unparsedContent: UnparsedContent
+  ): (LatexContent | UnparsedContent)[] {
+    return this.parseLatexContents(unparsedContent, 'inline')
+  }
+
+  parseBlockLatexContents(
+    unparsedContent: UnparsedContent
+  ): (LatexContent | UnparsedContent)[] {
+    return this.parseLatexContents(unparsedContent, 'block')
+  }
+
+  parseLatexContents(
+    unparsedContent: UnparsedContent,
+    mode: 'inline' | 'block'
+  ): (LatexContent | UnparsedContent)[] {
+    const parsedContents: (LatexContent | UnparsedContent)[] = []
+    const latexRegex =
+      mode === 'inline'
+        ? /(?<!\\)\$(?:[^$]+|(?<=\\)\$)+\$/g
+        : /(?<!\\)\$\$(?:[^$]+|(?<=\\)\$)+\$\$/g
+    const delimiterLength = mode === 'inline' ? 1 : 2
+    const unparsedSegments = unparsedContent.text.split(latexRegex)
+    const latexSegments = unparsedContent.text.match(latexRegex)
+    parsedContents.push(this.parseUnparsedContent(unparsedSegments[0]))
+    if (latexSegments) {
+      for (let i = 0; i < latexSegments.length; i++) {
+        parsedContents.push({
+          type: mode + '-latex',
+          text: latexSegments[i].slice(delimiterLength, -1 * delimiterLength),
+        } as LatexContent)
+        parsedContents.push(this.parseUnparsedContent(unparsedSegments[i + 1]))
+      }
+    }
+    return parsedContents
   }
 
   parseUnparsedContent(segment: string): UnparsedContent {
