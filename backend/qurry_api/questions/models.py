@@ -34,6 +34,12 @@ class Comment(Post):
 
     def __str__(self):
         return 'comment from %s' % self.user
+    
+    def score_up(self, user):
+        user.add_to_score(5)
+    
+    def score_down(self, user):
+        user.add_to_score(-5)
 
     def as_preview(self):
         return {**self.time_info(), **{
@@ -123,6 +129,12 @@ class Question(Post):
         if user in self.vote_down_users.all():
             return -1
         return 0
+    
+    def score_up(self, user):
+        user.add_to_score(10)
+    
+    def score_down(self, user):
+        user.add_to_score(-10)
 
     def as_preview(self, user):
         return {**self.time_info(), **{
@@ -141,8 +153,8 @@ class Question(Post):
             'body': self.body,
             'answers': list(answer.as_detailed(user) for answer in self.answer_set.all()),
             'comments': list(comment.as_preview() for comment in self.comments.all()),
-            'imageIds': list(image.file.id for image in self.images.all()),
-            'documentIds': list(document.file.id for document in self.documents.all()),
+            'imageUrls': list(image.file.src.url for image in self.images.all()),
+            'documentUrls': list(document.file.src.url for document in self.documents.all()),
         }}
 
 
@@ -173,6 +185,12 @@ class Answer(Post):
             return -1
         return 0
 
+    def score_up(self, user):
+        user.add_to_score(10)
+    
+    def score_down(self, user):
+        user.add_to_score(-10)
+
     def as_preview(self, user):
         return {**self.time_info(), **{
             'id': str(self.id),
@@ -185,6 +203,6 @@ class Answer(Post):
     def as_detailed(self, user):
         return {**self.as_preview(user), **{
             'comments': list(comment.as_preview() for comment in self.comments.all()),
-            'imageIds': list(image.file.id for image in self.images.all()),
-            'documentIds': list(document.file.id for document in self.documents.all()),
+            'imageIds': list(image.file.src.url for image in self.images.all()),
+            'documentIds': list(document.file.src.url for document in self.documents.all()),
         }}
