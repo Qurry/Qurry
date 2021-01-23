@@ -37,6 +37,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def score(self):
         return self.get_profile().score
+    
+    def add_to_score(self, number):
+        self.get_profile().score += number
+        self.get_profile().save()
 
     def profile_image(self):
         return self.get_profile().image_url()
@@ -49,7 +53,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def as_detailed(self):
         return {**self.as_preview(), **{
-            'score': self.score(),
+            'score': max(self.score(), 0),
             'image': self.profile_image(),
         }}
 

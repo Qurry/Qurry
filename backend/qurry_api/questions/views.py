@@ -109,21 +109,29 @@ class AbstractView(AuthenticatedView):
         obj.delete()
 
     def vote(self, obj, action):
+        if self.user == obj.user:
+            return JsonResponse({'errors': ['you can not vote your own %s' % self.Model.__name__.lower()]}, status=400)
         # remove user from voters
         try:
+            obj.vote_up_users.get(id = self.user.id)
             obj.vote_up_users.remove(self.user)
+            obj.score_down(self.user)
         except:
             pass
 
         try:
+            obj.vote_down_users.get(id = self.user.id)
             obj.vote_down_users.remove(self.user)
+            obj.score_up(self.user)
         except:
             pass
 
         if action == '1':
             obj.vote_up_users.add(self.user)
+            obj.score_up(self.user)
         if action == '-1':
             obj.vote_down_users.add(self.user)
+            obj.score_down(self.user)
 
         return JsonResponse({'%sId' % self.Model.__name__.lower(): str(obj.id)})
 
@@ -150,13 +158,13 @@ class QuestionView(AbstractView):
 
         questions = Question.objects.all()
 
-        # search_result = Question.objects.none()
-        # if search_words:
-        #     for word in search_words:
-        #         search_result |= questions.filter(title__icontains=word)
-        #         search_result |= questions.filter(body__icontains=word)
+        search_result = Question.objects.none()
+        if search_words:
+            for word in search_words:
+                search_result |= questions.filter(title__icontains=word)
+                search_result |= questions.filter(body__icontains=word)
 
-        #     questions = search_result
+            questions = search_result
 
         return JsonResponse(list(question.as_preview(self.user) for question in questions[offset: offset + limit]),
                             safe=False)

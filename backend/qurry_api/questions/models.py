@@ -34,6 +34,12 @@ class Comment(Post):
 
     def __str__(self):
         return 'comment from %s' % self.user
+    
+    def score_up(self, user):
+        user.add_to_score(5)
+    
+    def score_down(self, user):
+        user.add_to_score(-5)
 
     def as_preview(self):
         return {**self.time_info(), **{
@@ -123,6 +129,12 @@ class Question(Post):
         if user in self.vote_down_users.all():
             return -1
         return 0
+    
+    def score_up(self, user):
+        user.add_to_score(10)
+    
+    def score_down(self, user):
+        user.add_to_score(-10)
 
     def as_preview(self, user):
         return {**self.time_info(), **{
@@ -172,6 +184,12 @@ class Answer(Post):
         if user in self.vote_down_users.all():
             return -1
         return 0
+
+    def score_up(self, user):
+        user.add_to_score(10)
+    
+    def score_down(self, user):
+        user.add_to_score(-10)
 
     def as_preview(self, user):
         return {**self.time_info(), **{
