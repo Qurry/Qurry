@@ -22,6 +22,7 @@
           New Question
         </v-btn>
       </div>
+      <TagSelection />
       <div class="mb-3">
         <v-form @submit.prevent="onSubmitSearch">
           <v-text-field
