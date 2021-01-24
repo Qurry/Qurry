@@ -199,3 +199,6 @@ ADMIN_THUMBNAIL_STYLE = {
     'width': '100px',
     'height': 'auto',
 }
+
+# IMAGE QUALITY AFTER COMPRESSING (%)
+COMPRESSION_IMAGE_QUALITY = 60

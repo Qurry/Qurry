@@ -1,5 +1,9 @@
 import uuid
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+import sys
+from PIL import Image as PIL_Image
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.fields.related import ForeignKey
@@ -7,6 +11,7 @@ from django.utils import timezone
 from django.conf import settings
 
 from .validators import validate_image_size, validate_document_size
+
 
 class File(models.Model):
     id = models.UUIDField('UUID',
@@ -33,12 +38,24 @@ class File(models.Model):
 
 class Image(File):
     src = models.ImageField(
-        'Image', upload_to='%s/images/'%settings.STORAGE_FOLDER, validators=[validate_image_size])
+        'Image', upload_to='%s/images/' % settings.STORAGE_FOLDER, validators=[validate_image_size])
+
+    def full_clean(self, *args, **kwargs):
+        super(Image, self).full_clean(*args, **kwargs)
+        self.compressImage()
+
+    def compressImage(self):
+        imageTemproary = PIL_Image.open(self.src)
+        outputIoStream = BytesIO()
+        imageTemproary.save(outputIoStream, format='JPEG', quality=settings.COMPRESSION_IMAGE_QUALITY)
+        outputIoStream.seek(0)
+        self.src = InMemoryUploadedFile(outputIoStream, 'ImageField', "%s.jpg" % self.src.name.split(
+            '.')[0], 'image/jpeg', sys.getsizeof(outputIoStream), None)
 
 
 class Document(File):
     src = models.FileField(
-        'Documet', upload_to='%s/documents/'%settings.STORAGE_FOLDER, validators=[validate_document_size])
+        'Documet', upload_to='%s/documents/' % settings.STORAGE_FOLDER, validators=[validate_document_size])
 
 
 class Attach(models.Model):
@@ -52,11 +69,13 @@ class Attach(models.Model):
     def __str__(self):
         return str(self.file)
 
+
 class ImageAttach(Attach):
     file = ForeignKey(Image, on_delete=models.CASCADE)
 
     def attaches_from(self, obj):
         return obj.images
+
 
 class DocumentAttach(Attach):
     file = ForeignKey(Document, on_delete=models.CASCADE)
