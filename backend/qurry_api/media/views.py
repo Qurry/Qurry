@@ -1,6 +1,4 @@
-import base64
-
-from django.http.response import HttpResponse, JsonResponse
+from django.http.response import JsonResponse
 
 from qurry_api.base_views import AuthenticatedView
 from qurry_api.decorators import object_existence_required
