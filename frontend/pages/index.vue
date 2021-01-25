@@ -34,6 +34,18 @@
         Do you have questions, ideas or feature requests? Please email us to
         <strong> qurry.info@gmail.com </strong>
       </p>
+      <katex-element class="ex" expression="\hat A" />.
+      <div v-katex="'\\hat A'"></div>
+      <div>
+        <p class="accent">Hello</p>
+        <span>
+          <span>
+            <span>
+              <p class="accent">Hello</p>
+            </span>
+          </span>
+        </span>
+      </div>
     </v-col>
   </v-row>
 </template>
@@ -49,3 +61,22 @@ export default class Home extends Vue {
   }
 }
 </script>
+
+<style scoped>
+/* #ex .accent {
+  background-color: red !important;
+  border: 5px solid black !important;
+} */
+.v-application .accent {
+  all: unset !important;
+  /* background-color: red !important; */
+}
+/* Or with increased specificity */
+/* .v-application code.code--custom {
+  all: unset;
+  color: #eee;
+} */
+/* ::v-deep p .accent {
+  background-color: red !important;
+} */
+</style>
