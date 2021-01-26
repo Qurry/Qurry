@@ -24,7 +24,7 @@ export default class QuestionCreate extends Vue {
     title: '',
     body: '',
     tagIds: [],
-    // imageUrls: [],
+    images: [],
   }
 
   onSubmit() {
