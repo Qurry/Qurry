@@ -19,7 +19,7 @@
             </tr>
             <tr>
               <td>Register Date</td>
-              <td>{{ profile.registeredAt }}</td>
+              <td>{{ prettifyDate(profile.registeredAt) }}</td>
             </tr>
           </tbody>
         </template>
@@ -35,5 +35,12 @@ import { Profile } from './profile.model'
 @Component
 export default class Dashboard extends Vue {
   profile: Profile = this.$store.state.profile
+
+  prettifyDate(utcDate: string) {
+    const date = new Date(utcDate)
+    return (
+      date.getDate() + '.' + (date.getMonth() + 1) + '.' + date.getFullYear()
+    )
+  }
 }
 </script>

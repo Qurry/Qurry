@@ -47,7 +47,7 @@ export interface TagCategory {
 @Component
 export default class TagImpSelection extends Vue {
   selectedTagIds = []
-  activeCategoryIds = ['1']
+  activeCategoryIds = new Set('1')
   categories: TagCategory[] = [
     {
       id: '1',
@@ -55,18 +55,23 @@ export default class TagImpSelection extends Vue {
       color: 'blue',
       tags: [
         {
+          id: '2',
+          name: 'LV-Spezifisch',
+          categoryImplications: ['3', '4', '5'],
+        },
+        {
+          id: '22',
+          name: 'Organisation',
+          categoryImplications: ['7'],
+        },
+        {
           id: '1',
-          name: 'qurry',
+          name: 'Qurry',
           categoryImplications: ['2'],
         },
         {
-          id: '2',
-          name: 'LV-Spezifisch',
-          categoryImplications: ['3', '4'],
-        },
-        {
           id: '3',
-          name: 'other',
+          name: 'Other',
           categoryImplications: [],
         },
       ],
@@ -79,17 +84,22 @@ export default class TagImpSelection extends Vue {
         {
           id: '4',
           name: 'faq',
-          categoryImplications: ['2'],
+          categoryImplications: [],
         },
         {
           id: '5',
           name: 'feature-request',
-          categoryImplications: ['2'],
+          categoryImplications: [],
+        },
+        {
+          id: '29',
+          name: 'discussion',
+          categoryImplications: [],
         },
         {
           id: '6',
           name: 'other',
-          categoryImplications: ['2'],
+          categoryImplications: [],
         },
       ],
     },
@@ -101,17 +111,17 @@ export default class TagImpSelection extends Vue {
         {
           id: '7',
           name: 'wt20/21',
-          categoryImplications: ['3', '4'],
+          categoryImplications: [],
         },
         {
           id: '8',
           name: 'st20',
-          categoryImplications: ['3', '4'],
+          categoryImplications: [],
         },
         {
           id: '9',
           name: 'other',
-          categoryImplications: ['3', '4'],
+          categoryImplications: [],
         },
       ],
     },
@@ -123,17 +133,113 @@ export default class TagImpSelection extends Vue {
         {
           id: '10',
           name: 'Algorithm Engineering',
-          categoryImplications: ['3', '4'],
+          categoryImplications: [],
         },
         {
           id: '11',
           name: 'Internet Technologies and Systems',
-          categoryImplications: ['3', '4'],
+          categoryImplications: [],
         },
         {
           id: '12',
           name: 'other',
-          categoryImplications: ['3', '4'],
+          categoryImplications: [],
+        },
+      ],
+    },
+    {
+      id: '5',
+      name: 'Courses',
+      color: 'pink',
+      tags: [
+        {
+          id: '13',
+          name: 'Theoretische Informatik I',
+          categoryImplications: ['6'],
+        },
+        {
+          id: '14',
+          name: 'Internet Security - Weaknesses and Targets',
+          categoryImplications: [],
+        },
+        {
+          id: '15',
+          name: 'Einführung in die Programmiertechnik I',
+          categoryImplications: [],
+        },
+        {
+          id: '16',
+          name: 'other',
+          categoryImplications: [],
+        },
+      ],
+    },
+    {
+      id: '6',
+      name: 'Theoretische Informatik I',
+      color: 'orange',
+      tags: [
+        {
+          id: '17',
+          name: 'Berechenbarkeit',
+          categoryImplications: [],
+        },
+        {
+          id: '18',
+          name: 'Algorithmik',
+          categoryImplications: [],
+        },
+        {
+          id: '19',
+          name: 'Suchalgorithmen',
+          categoryImplications: [],
+        },
+        {
+          id: '20',
+          name: 'Greedy',
+          categoryImplications: [],
+        },
+        {
+          id: '28',
+          name: 'Meta',
+          categoryImplications: [],
+        },
+        {
+          id: '21',
+          name: 'other',
+          categoryImplications: [],
+        },
+      ],
+    },
+    {
+      id: '7',
+      name: 'Organisation',
+      color: 'pink',
+      tags: [
+        {
+          id: '23',
+          name: 'Studienreferat',
+          categoryImplications: [],
+        },
+        {
+          id: '24',
+          name: 'Wohnheim',
+          categoryImplications: [],
+        },
+        {
+          id: '25',
+          name: 'Auslandssemester',
+          categoryImplications: [],
+        },
+        {
+          id: '26',
+          name: 'Studentenclubs',
+          categoryImplications: [],
+        },
+        {
+          id: '27',
+          name: 'other',
+          categoryImplications: [],
         },
       ],
     },
@@ -158,16 +264,14 @@ export default class TagImpSelection extends Vue {
   }
 
   updateActiveCategoryIds() {
-    const updatedActiveCategoryIds: string[] = []
+    const updatedActiveCategoryIds = new Set('1')
     for (const selectedTagId of this.selectedTagIds) {
-      updatedActiveCategoryIds.push(
-        ...this.getTag(selectedTagId)!.categoryImplications
+      this.getTag(selectedTagId)!.categoryImplications.forEach(
+        updatedActiveCategoryIds.add,
+        updatedActiveCategoryIds
       )
     }
     this.activeCategoryIds = updatedActiveCategoryIds
-    if (!this.activeCategoryIds.includes('1')) {
-      this.activeCategoryIds.push('1')
-    }
   }
 }
 </script>
