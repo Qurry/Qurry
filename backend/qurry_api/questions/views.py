@@ -6,7 +6,7 @@ from media.models import Document, Image, DocumentAttach, ImageAttach
 from qurry_api.base_views import AuthenticatedView
 from qurry_api.decorators import ownership_required, object_existence_required
 
-from .models import Question, Answer, Comment, Tag, TagCategory
+from .models import Question, Answer, Comment, Tag
 
 
 def objects_from(obj_ids, model):
@@ -365,4 +365,4 @@ class TagView(AuthenticatedView):
         return self.view_list()
 
     def view_list(self):
-        return JsonResponse(list(tag_category.as_preview() for tag_category in TagCategory.objects.all()), safe=False)
+        return JsonResponse(Tag.all_as_preview(), safe=False)

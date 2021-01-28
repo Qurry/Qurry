@@ -1,11 +1,10 @@
-from media.models import Image
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
+from mptt.models import MPTTModel, TreeForeignKey
 
 from media.models import ImageAttach, DocumentAttach
-from django.contrib.contenttypes.fields import GenericRelation
 
 
 class Post(models.Model):
@@ -34,10 +33,10 @@ class Comment(Post):
 
     def __str__(self):
         return 'comment from %s' % self.user
-    
+
     def score_up(self, user):
         user.add_to_score(5)
-    
+
     def score_down(self, user):
         user.add_to_score(-5)
 
@@ -54,44 +53,34 @@ class Comment(Post):
         }}
 
 
-class TagCategory(models.Model):
+class Tag(MPTTModel):
     name = models.CharField('Name', max_length=20)
-    description = models.TextField('Description', default='')
+    description = models.TextField('Description', blank=True, default='')
 
-    def __str__(self):
-        return self.name
+    parent = TreeForeignKey('self', on_delete=models.CASCADE,
+                            null=True, blank=True, related_name='children')
 
-    def tags_as_preview(self):
-        return list(tag.as_preview() for tag in self.tag_set.all())
+    class MPTTMeta:
+        order_insertion_by = ['name']
+
+    @classmethod
+    def get_all_roots(cls):
+        return cls.objects.filter(level=0)
+
+    @classmethod
+    def all_as_preview(cls):
+        return list(root.as_preview() for root in cls.get_all_roots())
 
     def as_preview(self):
         return {
-            'id': str(self.id),
+            'id': self.id,
             'name': self.name,
             'description': self.description,
-            'tags': self.tags_as_preview()
+            'children': list(child_tag.as_preview() for child_tag in self.get_children())
         }
-
-
-class Tag(models.Model):
-    name = models.CharField('Name', max_length=20)
-    description = models.TextField('Description', default='')
-
-    def default_category():
-        return TagCategory.objects.get_or_create(name='other')[0].id
-
-    category = models.ForeignKey(
-        TagCategory, verbose_name='Category', default=default_category, on_delete=models.SET_DEFAULT)
 
     def __str__(self):
         return self.name
-
-    def as_preview(self):
-        return {
-            'id': str(self.id),
-            'name': self.name,
-            'description': self.description,
-        }
 
 
 class Question(Post):
@@ -111,28 +100,16 @@ class Question(Post):
     def __str__(self):
         return '%d: %s' % (self.id, self.title)
 
-    def count_votes(self):
-        return self.vote_up_users.count() - self.vote_down_users.count()
-
-    def count_answers(self):
-        return self.answer_set.count()
-
-    def count_comments(self):
-        return self.comments.count()
-
-    def tag_id_list(self):
-        return list(str(id) for id in self.tags.values_list('id', flat=True))
-
     def vote_of(self, user):
         if user in self.vote_up_users.all():
             return 1
         if user in self.vote_down_users.all():
             return -1
         return 0
-    
+
     def score_up(self, user):
         user.add_to_score(10)
-    
+
     def score_down(self, user):
         user.add_to_score(-10)
 
@@ -140,10 +117,10 @@ class Question(Post):
         return {**self.time_info(), **{
             'id': str(self.id),
             'title': self.title,
-            'votes': self.count_votes(),
-            'answers': self.count_answers(),
-            'comments': self.count_comments(),
-            'tagIds': self.tag_id_list(),
+            'votes': self.vote_up_users.count() - self.vote_down_users.count(),
+            'answers': self.answers.count(),
+            'comments': self.comments.count(),
+            'tagIds': list(str(tag.id) for tag in self.tags.all()),
             'user': self.user.as_preview(),
             'userVote': self.vote_of(user)
         }}
@@ -187,7 +164,7 @@ class Answer(Post):
 
     def score_up(self, user):
         user.add_to_score(10)
-    
+
     def score_down(self, user):
         user.add_to_score(-10)
 
