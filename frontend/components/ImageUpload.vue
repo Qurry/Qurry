@@ -1,18 +1,24 @@
 <template>
   <div>
     <v-row justify="center" align="center">
-      <v-col cols="8">
+      <v-col cols="12" md="4">
         <v-file-input
-          v-model="currentFile"
+          v-model="image.file"
           show-size
           label="Select File"
           color="secondary"
         ></v-file-input>
       </v-col>
-
-      <v-col cols="4" class="pl-2">
+      <v-col cols="12" md="6">
+        <v-text-field
+          v-model="image.description"
+          label="Image Description"
+          required
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="2" class="pl-2">
         <v-btn
-          :disabled="!currentFile || isUploading"
+          :disabled="!image || isUploading"
           :loading="isUploading"
           color="secondary"
           small
@@ -27,9 +33,10 @@
     <MessageList :messages="errors" />
 
     <template v-if="images.length > 0" class="mx-auto">
-      <div v-for="image in images" :key="image.id">
-        <img :src="image.url" alt="Couldn't load image" />
-        <span>{{ image.id }}</span>
+      <div v-for="(image, index) in images" :key="image.id">
+        <img :src="image.url" alt="Couldn't load image" width="50px" />
+        <span>{{ index + 1 }}</span>
+        <span>{{ image.description }}</span>
         <DeleteDialog object-name="image" @delete="onDelete(image.id)" />
       </div>
     </template>
@@ -40,9 +47,18 @@
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
 import { Image } from './../pages/questions/question.model'
 
+interface UploadImage {
+  file: any
+  description: string
+}
+
 @Component
 export default class ImageUpload extends Vue {
-  currentFile: any = null
+  image: UploadImage = {
+    file: null,
+    description: '',
+  }
+
   errors: string[] = []
   isUploading = false
 
@@ -58,7 +74,7 @@ export default class ImageUpload extends Vue {
   }
 
   upload() {
-    if (!this.currentFile) {
+    if (!this.image) {
       this.errors.push('Please select a file!')
       return
     }
@@ -66,13 +82,18 @@ export default class ImageUpload extends Vue {
     this.isUploading = true
 
     const fd = new FormData()
-    fd.append('file', this.currentFile, this.currentFile.name)
+    fd.append('file', this.image.file)
+    fd.append('description', this.image.description)
 
     this.$axios
       .post('/media/images/', fd)
       .then((res) => {
-        this.images.push({ id: res.data.imageId })
-        this.currentFile = null
+        console.log(res.data)
+        this.images.push(res.data)
+        this.image = {
+          file: null,
+          description: '',
+        }
         this.isUploading = false
       })
       .catch((error) => {
@@ -83,7 +104,10 @@ export default class ImageUpload extends Vue {
         } else {
           console.log(error)
         }
-        this.currentFile = null
+        this.image = {
+          file: null,
+          description: '',
+        }
         this.isUploading = false
       })
   }
