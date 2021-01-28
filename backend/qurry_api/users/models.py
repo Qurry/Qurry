@@ -2,9 +2,7 @@ import secrets
 import uuid
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, Permission, _user_get_permissions
 from django.db import models
-from django.db.models.fields.related import ForeignKey
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
 from media.models import Image
 
 from .managers import UserManager
@@ -37,7 +35,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def score(self):
         return self.get_profile().score
-    
+
     def add_to_score(self, number):
         self.get_profile().score += number
         self.get_profile().save()
@@ -84,8 +82,5 @@ class Profile(models.Model):
 class ActivationToken(models.Model):
     user = models.OneToOneField(User, verbose_name='user',
                                 on_delete=models.CASCADE)
-    token = models.TextField('token', blank=True)
-
-    def save(self, *args, **kwargs):
-        self.token = secrets.token_urlsafe(30)
-        super(ActivationToken, self).save(*args, **kwargs)
+    token = models.TextField(
+        'token', blank=True, default=secrets.token_urlsafe(30))

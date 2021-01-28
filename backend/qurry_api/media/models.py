@@ -18,7 +18,7 @@ class File(models.Model):
                           primary_key=True, default=uuid.uuid4, editable=False,
                           )
 
-    description = models.TextField('Description', blank=True, null=True)
+    description = models.TextField('Description', blank=True, default='')
     uploaded_at = models.DateTimeField('Upload Date', auto_now_add=True)
 
     user = models.ForeignKey(
