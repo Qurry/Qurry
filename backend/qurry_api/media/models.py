@@ -34,23 +34,30 @@ class File(models.Model):
         return {
             'uploadedAt': timezone.localtime(self.uploaded_at),
         }
+    
+    def as_preview(self):
+        return {
+            'id': self.id,
+            'url': self.src.url,
+            'description': self.description
+        }
 
 
 class Image(File):
     src = models.ImageField(
         'Image', upload_to='%s/images/' % settings.STORAGE_FOLDER, validators=[validate_image_size])
 
-    def full_clean(self, *args, **kwargs):
-        super(Image, self).full_clean(*args, **kwargs)
-        self.compressImage()
+    # def full_clean(self, *args, **kwargs):
+    #     super(Image, self).full_clean(*args, **kwargs)
+    #     self.compressImage()
 
-    def compressImage(self):
-        imageTemproary = PIL_Image.open(self.src)
-        outputIoStream = BytesIO()
-        imageTemproary.save(outputIoStream, format='JPEG', quality=settings.COMPRESSION_IMAGE_QUALITY)
-        outputIoStream.seek(0)
-        self.src = InMemoryUploadedFile(outputIoStream, 'ImageField', "%s.jpg" % self.src.name.split(
-            '.')[0], 'image/jpeg', sys.getsizeof(outputIoStream), None)
+    # def compressImage(self):
+    #     imageTemproary = PIL_Image.open(self.src)
+    #     outputIoStream = BytesIO()
+    #     imageTemproary.save(outputIoStream, format='JPEG', quality=settings.COMPRESSION_IMAGE_QUALITY)
+    #     outputIoStream.seek(0)
+    #     self.src = InMemoryUploadedFile(outputIoStream, 'ImageField', "%s.jpg" % self.src.name.split(
+    #         '.')[0], 'image/jpeg', sys.getsizeof(outputIoStream), None)
 
 
 class Document(File):

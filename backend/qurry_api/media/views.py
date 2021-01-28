@@ -1,3 +1,4 @@
+import json
 from django.http.response import JsonResponse
 
 from qurry_api.base_views import AuthenticatedView
@@ -18,18 +19,23 @@ class FileView(AuthenticatedView):
     def post(self, request, *args, **kwargs):
         file = request.FILES['file']
         try:
-            file_id = self.create(file)
+            file_obj = self.create(file, description=request.POST.get('description'))
         except Exception as exc:
             return JsonResponse({'errors': [str(exc)]}, status=400)
 
-        return JsonResponse({'%sId' % (self.Model.__name__.lower()): file_id})
+        return JsonResponse(file_obj.as_preview())
 
-    def create(self, file):
-        file_object = self.Model(src=file, user=self.user)
+    def create(self, file, **kwargs):
+        file_object = self.Model(src=file, user=self.user, description=kwargs.get('description'))
         file_object.full_clean()
         file_object.save()
 
-        return file_object.id
+        return file_object
+    
+    # TODO def change(self, file, **kwargs):
+    #     if
+
+    # TODO def remove
 
     def response_with(self, file):
         return JsonResponse({'%sUrl' % self.Model.__name__.lower(): file.src.url})
