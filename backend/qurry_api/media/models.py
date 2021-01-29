@@ -30,6 +30,12 @@ class File(models.Model):
     def __str__(self):
         return str(self.src)
 
+    def delete(self):
+        # to delete file on AWS S3
+        self.src.delete(save=False)
+        # to delete file in database
+        super().delete()
+
     def time_info(self):
         return {
             'uploadedAt': timezone.localtime(self.uploaded_at),
