@@ -118,7 +118,7 @@ class Question(Post):
             'id': str(self.id),
             'title': self.title,
             'votes': self.vote_up_users.count() - self.vote_down_users.count(),
-            'answers': self.answers.count(),
+            'answers': self.answer_set.count(),
             'comments': self.comments.count(),
             'tagIds': list(str(tag.id) for tag in self.tags.all()),
             'user': self.user.as_preview(),
