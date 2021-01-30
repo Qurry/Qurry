@@ -17,8 +17,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 from questions.views import extract_errors
 from qurry_api import settings
-from qurry_api.base_views import AuthenticatedView
-from qurry_api.decorators import active_user_existence_required
+from qurry_api.base import AuthenticatedView, active_user_existence_required
 
 from .forms import UserCreationForm
 from .models import User, ActivationToken

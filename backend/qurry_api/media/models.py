@@ -18,7 +18,7 @@ class File(models.Model):
                           primary_key=True, default=uuid.uuid4, editable=False,
                           )
 
-    description = models.TextField('Description', blank=True, null=True)
+    description = models.TextField('Description', blank=True, default='')
     uploaded_at = models.DateTimeField('Upload Date', auto_now_add=True)
 
     user = models.ForeignKey(
@@ -29,6 +29,12 @@ class File(models.Model):
 
     def __str__(self):
         return str(self.src)
+
+    def delete(self):
+        # to delete file on AWS S3
+        self.src.delete(save=False)
+        # to delete file in database
+        super().delete()
 
     def time_info(self):
         return {

@@ -3,10 +3,9 @@ import json
 from django.core.exceptions import ValidationError, PermissionDenied, RequestAborted
 from django.http import JsonResponse
 from media.models import Document, Image, DocumentAttach, ImageAttach
-from qurry_api.base_views import AuthenticatedView
-from qurry_api.decorators import ownership_required, object_existence_required
+from qurry_api.base import AuthenticatedView, ownership_required, object_existence_required
 
-from .models import Question, Answer, Comment, Tag, TagCategory
+from .models import Question, Answer, Comment, Tag
 
 
 def objects_from(obj_ids, model):
@@ -60,6 +59,7 @@ class AbstractView(AuthenticatedView):
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
     @object_existence_required
+    @ownership_required
     def patch(self, request, *args, **kwargs):
         if 'id' not in kwargs:
             return JsonResponse(
@@ -79,6 +79,7 @@ class AbstractView(AuthenticatedView):
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
     @object_existence_required
+    @ownership_required
     def delete(self, request, *args, **kwargs):
         if 'id' not in kwargs:
             return JsonResponse(
@@ -87,7 +88,7 @@ class AbstractView(AuthenticatedView):
                 status=405)
         obj = self.Model.objects.get(id=kwargs['id'])
         try:
-            self.remove(obj)
+            obj.delete()
             return JsonResponse({'%sId' % self.Model.__name__.lower(): str(kwargs['id'])}, status=200)
         except Exception as exc:
             return JsonResponse({'errors': [str(exc)]}, status=500)
@@ -103,10 +104,6 @@ class AbstractView(AuthenticatedView):
 
     def change(self, obj, body):
         pass
-
-    @ownership_required
-    def remove(self, obj):
-        obj.delete()
 
     def vote(self, obj, action):
         if self.user == obj.user:
@@ -194,7 +191,6 @@ class QuestionView(AbstractView):
         reference_files(documents, DocumentAttach, new_question)
         return new_question.id
 
-    @ownership_required
     def change(self, question, body):
 
         if 'title' in body:
@@ -278,7 +274,6 @@ class AnswerView(AbstractView):
 
         return new_answer.id
 
-    @ownership_required
     def change(self, answer, body):
 
         if 'body' in body:
@@ -337,7 +332,6 @@ class CommentView(AbstractView):
 
         return new_comment.id
 
-    @ownership_required
     def change(self, comment, body):
 
         if 'body' in body:
@@ -365,4 +359,4 @@ class TagView(AuthenticatedView):
         return self.view_list()
 
     def view_list(self):
-        return JsonResponse(list(tag_category.as_preview() for tag_category in TagCategory.objects.all()), safe=False)
+        return JsonResponse(Tag.all_as_preview(), safe=False)
