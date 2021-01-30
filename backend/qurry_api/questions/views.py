@@ -106,23 +106,23 @@ class AbstractView(AuthenticatedView):
         try:
             obj.vote_up_users.get(id=self.user.id)
             obj.vote_up_users.remove(self.user)
-            obj.score_down(self.user)
+            obj.score_down()
         except:
             pass
 
         try:
             obj.vote_down_users.get(id=self.user.id)
             obj.vote_down_users.remove(self.user)
-            obj.score_up(self.user)
+            obj.score_up()
         except:
             pass
 
         if action == '1':
             obj.vote_up_users.add(self.user)
-            obj.score_up(self.user)
+            obj.score_up()
         if action == '-1':
             obj.vote_down_users.add(self.user)
-            obj.score_down(self.user)
+            obj.score_down()
 
         return JsonResponse({'%sId' % self.Model.__name__.lower(): str(obj.id)})
 
