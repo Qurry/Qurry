@@ -34,8 +34,9 @@
       <template v-else-if="content.type === 'id-image'">
         <img
           :key="index"
-          :src="imageUrls[parseInt(content.src) - 1]"
+          :src="images[parseInt(content.src) - 1].url"
           :alt="'<<< NO IMAGE FOUND WITH ID=' + content.src + ' >>>'"
+          :title="images[parseInt(content.src) - 1].description"
         />
       </template>
     </template>
@@ -46,6 +47,7 @@
 import { Component, Prop, mixins } from 'nuxt-property-decorator'
 import Prism from 'prismjs'
 import { ContentParser, Content } from '../mixins/contentParser'
+import { Image } from './../pages/questions/question.model'
 
 @Component
 export default class PostContentParser extends mixins(ContentParser) {
@@ -53,7 +55,7 @@ export default class PostContentParser extends mixins(ContentParser) {
   content!: string
 
   @Prop()
-  imageUrls!: string[]
+  images!: Image[]
 
   @Prop()
   mode!: string

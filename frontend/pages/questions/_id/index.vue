@@ -27,7 +27,7 @@
           <PostContentParser
             :content="question.body"
             mode="body"
-            :image-urls="question.imageUrls"
+            :images="question.images"
           />
 
           <div>
