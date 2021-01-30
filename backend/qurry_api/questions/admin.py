@@ -33,7 +33,11 @@ class AnswerAdmin(admin.ModelAdmin):
     inlines = (CommentsInline,)
 
 
+class TagAdmin(DraggableMPTTAdmin):
+    list_display = ('tree_actions', 'indented_title', 'id',)
+
+
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Answer, AnswerAdmin)
-admin.site.register(Tag, DraggableMPTTAdmin)
+admin.site.register(Tag, TagAdmin)
 admin.site.register(Comment)
