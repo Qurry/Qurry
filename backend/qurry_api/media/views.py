@@ -17,25 +17,7 @@ class FileView(AuthenticatedView):
     def post(self, request, *args, **kwargs):
         file_data = request.FILES.get('file')
         try:
-            file_obj = self.create(
-                file_data, description=request.POST.get('description', ''))
-        except Exception as exc:
-            return JsonResponse({'errors': [str(exc)]}, status=400)
-
-        return JsonResponse(file_obj.as_preview())
-
-    @object_existence_required
-    @ownership_required
-    def patch(self, request, *args, **kwargs):
-        if 'id' not in kwargs:
-            return JsonResponse(
-                {'errors': [
-                    'you can not patch to %ss, you have to add id to the url' % self.Model.__name__]},
-                status=405)
-        file_obj = self.Model.objects.get(id=kwargs['id'])
-        try:
-            self.change(file_obj,
-                        description=request.POST.get('description', ''))
+            file_obj = self.create(file_data)
         except Exception as exc:
             return JsonResponse({'errors': [str(exc)]}, status=400)
 
@@ -57,19 +39,11 @@ class FileView(AuthenticatedView):
             return JsonResponse({'errors': [str(exc)]}, status=500)
 
     def create(self, file, **kwargs):
-        file_object = self.Model(
-            src=file, user=self.user, description=kwargs.get('description', ''))
+        file_object = self.Model(src=file, user=self.user)
         file_object.full_clean()
         file_object.save()
 
         return file_object
-
-    def change(self, file_object, file_data, **kwargs):
-        if kwargs.get('description'):
-            file_object.description = kwargs.get('description')
-
-        file_object.full_clean()
-        file_object.save()
 
     def response_with(self, file):
         return JsonResponse({'%sUrl' % self.Model.__name__.lower(): file.src.url})

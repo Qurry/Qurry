@@ -6,7 +6,7 @@ from .models import Image, Document
 
 @admin_thumbnail('src')
 class FileAdmin(admin.ModelAdmin):
-    list_display = ('id', 'src', 'description',)
+    list_display = ('id', 'src',)
 
 
 admin.site.register(Image, FileAdmin)

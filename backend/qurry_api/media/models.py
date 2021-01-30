@@ -17,8 +17,6 @@ class File(models.Model):
     id = models.UUIDField('UUID',
                           primary_key=True, default=uuid.uuid4, editable=False,
                           )
-
-    description = models.TextField('Description', blank=True, default='')
     uploaded_at = models.DateTimeField('Upload Date', auto_now_add=True)
 
     user = models.ForeignKey(
@@ -40,12 +38,11 @@ class File(models.Model):
         return {
             'uploadedAt': timezone.localtime(self.uploaded_at),
         }
-    
+
     def as_preview(self):
         return {
             'id': self.id,
             'url': self.src.url,
-            'description': self.description
         }
 
 
