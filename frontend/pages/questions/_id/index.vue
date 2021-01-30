@@ -31,7 +31,7 @@
           />
 
           <div>
-            <TagsList :tag-ids="question.tagIds" />
+            <TagList :tag-ids="question.tagIds" />
             <PostToolbar
               :post="question"
               post-type="question"

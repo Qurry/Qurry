@@ -16,15 +16,16 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 import QuestionService from './../../services/QuestionService'
-import { CreateEditQuestion } from './question.model'
+// import { CreateEditQuestion } from './question.model'
 
 @Component
 export default class QuestionCreate extends Vue {
-  question: CreateEditQuestion = {
+  question: any = {
     title: '',
     body: '',
     tagIds: [],
-    images: [],
+    imageIds: [],
+    documentIds: [],
   }
 
   onSubmit() {

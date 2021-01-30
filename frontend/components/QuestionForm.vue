@@ -22,31 +22,9 @@
       color="secondary"
     ></v-textarea>
 
-    <v-autocomplete
-      v-model="question.tagIds"
-      :items="tags"
-      chips
-      deletable-chips
-      multiple
-      item-text="name"
-      item-value="id"
-      label="Tags"
-      color="secondary"
-    >
-      <template v-slot:selection="data">
-        <v-chip
-          close
-          @click:close="removeTagIdFromQuestionTagIds(data.item.id)"
-        >
-          <template> {{ data.item.name }} </template>
-        </v-chip>
-      </template>
-      <template v-slot:item="data">
-        <template> {{ data.item.name }} </template>
-      </template>
-    </v-autocomplete>
+    <TagSelection :selected-tag-ids="question.tagIds" />
 
-    <ImageUpload :images="question.images" />
+    <!-- <ImageUpload :images="question.images" /> -->
 
     <v-btn
       color="secondary"
@@ -63,12 +41,10 @@
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
 import { CreateEditQuestion } from './../pages/questions/question.model'
-import { Tag } from './../pages/tags/tag.model'
 
 @Component
 export default class QuestionForm extends Vue {
   isFormValid = false
-  tags: Tag[] = Object.values(this.$store.state.tags)
 
   @Prop()
   question!: CreateEditQuestion
@@ -76,11 +52,6 @@ export default class QuestionForm extends Vue {
   rules = {
     required: (value: string) => !!value || 'Required',
     minLength: (value: string) => value.length >= 3 || 'At least 3 characters',
-  }
-
-  removeTagIdFromQuestionTagIds(tagId: string) {
-    const index = this.question.tagIds.indexOf(tagId)
-    if (index >= 0) this.question.tagIds.splice(index, 1)
   }
 
   onSubmit() {

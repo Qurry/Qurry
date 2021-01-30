@@ -20,7 +20,7 @@
           <PostContentParser :content="question.title" mode="title" />
         </nuxt-link>
       </h1>
-      <TagsList :tag-ids="question.tagIds" />
+      <TagList :tag-ids="question.tagIds" />
       <div>
         <p class="footer">
           by

@@ -1,39 +1,35 @@
 <template>
   <div class="tags">
-    <v-tooltip v-for="tag in selectedTags" :key="tag.id" bottom>
+    <v-tooltip v-for="tagId in tagIds" :key="tagId" bottom>
       <template v-slot:activator="{ on, attrs }">
         <v-chip
           v-bind="attrs"
           class="chip"
-          :color="tag.color"
+          :color="tags[tagId].color"
           v-on="on"
           @click="onClick"
         >
-          {{ tag.name }}
+          {{ tags[tagId].name }}
         </v-chip>
       </template>
-      <span>{{ tag.tagCategoryName }}: {{ tag.description }}</span>
+      <span
+        >{{ tags[tags[tagId].parentId].name }}:
+        {{ tags[tagId].description }}</span
+      >
     </v-tooltip>
   </div>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { Tag } from './../pages/tags/tag.model'
+import { ObjectTag } from './../pages/tags/tag.model'
 
 @Component
-export default class TagsList extends Vue {
+export default class TagList extends Vue {
   @Prop()
   tagIds!: string[]
 
-  tags: { [key: string]: Tag } = this.$store.state.tags
-  selectedTags: Tag[] = []
-
-  created() {
-    for (const tagId of this.tagIds) {
-      this.selectedTags.push(this.tags[tagId])
-    }
-  }
+  tags: { [key: string]: ObjectTag } = this.$store.state.tags
 
   onClick() {
     this.$router.push('/tags')
