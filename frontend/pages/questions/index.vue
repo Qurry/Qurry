@@ -22,7 +22,7 @@
           New Question
         </v-btn>
       </div>
-      <TagImpSelection />
+      <TagSelection />
       <div class="mb-3">
         <v-form @submit.prevent="onSubmitSearch">
           <v-text-field

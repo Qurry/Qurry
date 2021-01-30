@@ -73,7 +73,7 @@ class Tag(MPTTModel):
 
     def as_preview(self):
         return {
-            'id': self.id,
+            'id': str(self.id),
             'name': self.name,
             'description': self.description,
             'children': list(child_tag.as_preview() for child_tag in self.get_children())

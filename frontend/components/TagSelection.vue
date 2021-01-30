@@ -1,31 +1,33 @@
 <template>
   <div class="tags">
-    <p>{{ selected }}</p>
+    {{ selectedTagIds }}
     <v-row>
-      <v-col v-for="tagCategory of tagCategories" :key="tagCategory.id" col="4">
-        <h3>{{ tagCategory.name }}</h3>
-        <v-checkbox
-          v-for="tag of tagCategory.tags"
-          :key="tag.id"
-          v-model="selected"
-          :label="tag.name"
-          :value="tag.id"
-          hide-details
-          class="mt-0"
-        ></v-checkbox>
-      </v-col>
+      <template v-for="tagId in ['1', ...selectedTagIds]">
+        <v-col v-if="tags[tagId].childrenIds.length" :key="tagId" col="4">
+          <h3>{{ tags[tagId].name }}</h3>
+          <v-checkbox
+            v-for="childId in tags[tagId].childrenIds"
+            :key="childId"
+            v-model="selectedTagIds"
+            :label="tags[childId].name"
+            :value="childId"
+            hide-details
+            class="mt-0"
+          ></v-checkbox>
+        </v-col>
+      </template>
     </v-row>
   </div>
 </template>
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
-import { TagCategory } from './../pages/tags/tag.model'
+import { ObjectTag } from './../pages/tags/tag.model'
 
 @Component
 export default class TagSelection extends Vue {
-  selected = []
-  tagCategories: TagCategory[] = this.$store.state.tagCategories
+  selectedTagIds = []
+  tags: ObjectTag[] = this.$store.state.tags
 }
 </script>
 

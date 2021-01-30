@@ -5,7 +5,7 @@
       <v-treeview open-all :items="tagTree">
         <template v-slot:label="{ item }">
           <span>
-            <v-chip class="ma-2" :color="item.color ? item.color : '888'">
+            <v-chip class="ma-2" :color="item.color">
               {{ item.name }}
             </v-chip>
             {{ item.description }}
@@ -18,10 +18,10 @@
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
-import { Tag } from './tag.model'
+import { TreeNodeTag } from './tag.model'
 
 @Component
 export default class Dashboard extends Vue {
-  tagTree: Tag[] = this.$store.state.tagTree
+  tagTree: TreeNodeTag[] = this.$store.state.tagTree
 }
 </script>
