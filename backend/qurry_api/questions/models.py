@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 from mptt.models import MPTTModel, TreeForeignKey
 
+from .managers import QuestionManager
 from media.models import ImageAttach, DocumentAttach
 
 
@@ -60,9 +61,6 @@ class Tag(MPTTModel):
     parent = TreeForeignKey('self', on_delete=models.CASCADE,
                             null=True, blank=True, related_name='children')
 
-    class MPTTMeta:
-        order_insertion_by = ['name']
-
     @classmethod
     def get_all_roots(cls):
         return cls.objects.filter(level=0)
@@ -96,6 +94,8 @@ class Question(Post):
         "users.User", verbose_name='Users who voted up this question', related_name='question_upvotes', blank=True)
     vote_down_users = models.ManyToManyField(
         "users.User", verbose_name='Users who voted down this question', related_name='question_downvotes', blank=True)
+
+    objects = QuestionManager
 
     def __str__(self):
         return '%d: %s' % (self.id, self.title)
