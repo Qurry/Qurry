@@ -17,25 +17,12 @@
         <v-btn
           to="/questions/create"
           color="secondary"
-          class="ask-question-btn"
+          class="new-question-btn"
         >
           New Question
         </v-btn>
       </div>
-      <TagSelection />
-      <div class="mb-3">
-        <v-form @submit.prevent="onSubmitSearch">
-          <v-text-field
-            v-model.trim="search"
-            label="Search"
-            append-icon="mdi-magnify"
-            outlined
-            color="secondary"
-          ></v-text-field>
-
-          <v-btn color="secondary" class="mr-2" type="submit"> Submit </v-btn>
-        </v-form>
-      </div>
+      <QuestionSearchForm @submit="onSubmitSearch" />
       <div v-if="questions.length">
         <PreviewQuestionCard
           v-for="question in questions"
@@ -53,12 +40,11 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 import QuestionService from './../../services/QuestionService'
-import { PreviewQuestion } from './question.model'
+import { PreviewQuestion, QuestionSearch } from './question.model'
 
 @Component
 export default class QuestionList extends Vue {
   questions: PreviewQuestion[] = []
-  search = ''
 
   sortQuestions() {
     this.questions.sort((a: PreviewQuestion, b: PreviewQuestion) =>
@@ -70,8 +56,8 @@ export default class QuestionList extends Vue {
     return Promise.all([this.getQuestions()])
   }
 
-  getQuestions() {
-    QuestionService.getQuestions(this.$axios, this.search)
+  getQuestions(search: QuestionSearch = { text: '', tagIds: [] }) {
+    QuestionService.getQuestions(this.$axios, search)
       .then((questions) => {
         this.questions = questions
         this.sortQuestions()
@@ -79,8 +65,8 @@ export default class QuestionList extends Vue {
       .catch((error) => console.log(error))
   }
 
-  onSubmitSearch() {
-    this.getQuestions()
+  onSubmitSearch(search: QuestionSearch) {
+    this.getQuestions(search)
   }
 }
 </script>
@@ -90,7 +76,7 @@ export default class QuestionList extends Vue {
   display: flex;
   margin-bottom: 10px;
 }
-.ask-question-btn {
+.new-question-btn {
   margin-left: auto;
   margin-top: 7px;
 }

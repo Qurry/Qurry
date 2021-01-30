@@ -42,6 +42,11 @@ export interface CreateEditQuestion {
   tagIds: string[]
 }
 
+export interface QuestionSearch {
+  text: string
+  tagIds: string[]
+}
+
 export interface Answer {
   id: string
   createdAt: string

@@ -5,12 +5,13 @@ import {
   CreateEditQuestion,
   DetailQuestion,
   PreviewQuestion,
+  QuestionSearch,
 } from '~/pages/questions/question.model'
 
 export default {
-  async getQuestions($axios: NuxtAxiosInstance, search: string) {
+  async getQuestions($axios: NuxtAxiosInstance, search: QuestionSearch) {
     const { data }: { data: PreviewQuestion[] } = await $axios.get(
-      '/questions/?search=' + search
+      '/questions/?search=' + search.text
     )
     return data
   },
