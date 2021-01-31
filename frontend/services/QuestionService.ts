@@ -31,7 +31,7 @@ function imagesAndDocumentsToIds(post: CreateEditQuestion | CreateEditAnswer) {
 export default {
   async getQuestions($axios: NuxtAxiosInstance, search: QuestionSearch) {
     const { data }: { data: PreviewQuestion[] } = await $axios.get(
-      '/questions/?search=' + search.text
+      '/questions/?search=' + search.text + '&tags=' + search.tagIds.join()
     )
     return data
   },
