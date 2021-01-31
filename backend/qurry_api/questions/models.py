@@ -17,8 +17,23 @@ class Post(models.Model):
     user = models.ForeignKey(
         "users.User", verbose_name='Owner', on_delete=models.CASCADE)
 
+    upvote_reward = 0
+    downvote_penalty = 0
+
     class Meta:
         abstract = True
+
+    def score_up(self, reverse=False):
+        if reverse:
+            self.user.add_to_score(-self.upvote_reward)
+        else:
+            self.user.add_to_score(self.upvote_reward)
+
+    def score_down(self, reverse=False):
+        if reverse:
+            self.user.add_to_score(self.downvote_penalty)
+        else:
+            self.user.add_to_score(-self.downvote_penalty)
 
     def time_info(self):
         return {
@@ -32,14 +47,11 @@ class Comment(Post):
     object_id = models.PositiveIntegerField()
     reference_object = GenericForeignKey('content_type', 'object_id')
 
+    upvote_reward = 5
+    downvote_penalty = 0
+
     def __str__(self):
         return 'comment from %s' % self.user
-
-    def score_up(self):
-        self.user.add_to_score(5)
-
-    def score_down(self):
-        self.user.add_to_score(-5)
 
     def as_preview(self):
         return {**self.time_info(), **{
@@ -97,6 +109,9 @@ class Question(Post):
 
     objects = QuestionManager
 
+    upvote_reward = 10
+    downvote_penalty = 0
+
     def __str__(self):
         return '%d: %s' % (self.id, self.title)
 
@@ -106,12 +121,6 @@ class Question(Post):
         if user in self.vote_down_users.all():
             return -1
         return 0
-
-    def score_up(self):
-        self.user.add_to_score(10)
-
-    def score_down(self):
-        self.user.add_to_score(-10)
 
     def as_preview(self, user):
         return {**self.time_info(), **{
@@ -144,6 +153,9 @@ class Answer(Post):
     images = GenericRelation(ImageAttach)
     documents = GenericRelation(DocumentAttach)
 
+    upvote_reward = 10
+    downvote_penalty = 0
+
     vote_up_users = models.ManyToManyField(
         "users.User", verbose_name='Users who voted up this answer', related_name='answer_upvotes', blank=True)
     vote_down_users = models.ManyToManyField(
@@ -161,12 +173,6 @@ class Answer(Post):
         if user in self.vote_down_users.all():
             return -1
         return 0
-
-    def score_up(self):
-        self.user.add_to_score(10)
-
-    def score_down(self):
-        self.user.add_to_score(-10)
 
     def as_preview(self, user):
         return {**self.time_info(), **{
