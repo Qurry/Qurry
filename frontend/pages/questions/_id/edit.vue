@@ -27,6 +27,7 @@ export default class QuestionCreate extends Vue {
     body: '',
     tagIds: [],
     images: [],
+    documents: [],
   }
 
   fetch() {

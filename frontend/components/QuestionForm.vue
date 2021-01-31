@@ -24,7 +24,7 @@
 
     <TagSelection :selected-tag-ids="question.tagIds" />
 
-    <!-- <ImageUpload :images="question.images" /> -->
+    <ImageUpload :images="question.images" />
 
     <v-btn
       color="secondary"
@@ -35,6 +35,8 @@
       Submit
     </v-btn>
     <v-btn color="gray" @click="onCancel"> Cancel </v-btn>
+
+    {{ question }}
   </v-form>
 </template>
 

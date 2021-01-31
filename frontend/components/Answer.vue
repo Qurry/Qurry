@@ -18,7 +18,7 @@
           />
         </div>
         <div v-else>
-          <PostContentParser :content="answer.body" mode="body" /><br />
+          <PostContentParser :content="answer.body" mode="body" />
           <PostToolbar
             :post="answer"
             post-type="answer"
@@ -51,6 +51,8 @@ export default class AnswerDiv extends Vue {
 
   editAnswer: CreateEditAnswer = {
     body: '',
+    images: [],
+    documents: [],
   }
 
   onEdit() {
