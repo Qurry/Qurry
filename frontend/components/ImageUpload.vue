@@ -3,15 +3,15 @@
     <v-row justify="center" align="center">
       <v-col cols="10">
         <v-file-input
-          v-model="image.file"
+          v-model="selectedImage"
           show-size
-          label="Select File"
+          label="Select Image"
           color="secondary"
         ></v-file-input>
       </v-col>
       <v-col cols="2" class="pl-2">
         <v-btn
-          :disabled="!image || isUploading"
+          :disabled="!selectedImage || isUploading"
           :loading="isUploading"
           color="secondary"
           small
@@ -39,20 +39,11 @@
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
 import { Image } from './../pages/questions/question.model'
 
-interface UploadImage {
-  file: any
-  description: string
-}
-
 @Component
 export default class ImageUpload extends Vue {
-  image: UploadImage = {
-    file: null,
-    description: '',
-  }
-
-  errors: string[] = []
+  selectedImage = null
   isUploading = false
+  errors: string[] = []
 
   @Prop()
   images!: Image[]
@@ -66,42 +57,34 @@ export default class ImageUpload extends Vue {
   }
 
   upload() {
-    if (!this.image) {
+    if (!this.selectedImage) {
       this.errors.push('Please select a file!')
-      return
+    } else {
+      this.errors = []
+      this.isUploading = true
+
+      const fd = new FormData()
+      fd.append('file', this.selectedImage!)
+
+      this.$axios
+        .post('/media/images/', fd)
+        .then((res) => {
+          this.images.push(res.data)
+          this.selectedImage = null
+          this.isUploading = false
+        })
+        .catch((error) => {
+          if (error.response.data.errors) {
+            this.errors.push(
+              ...Object.values(error.response.data.errors as string)
+            )
+          } else {
+            console.log(error)
+          }
+          this.selectedImage = null
+          this.isUploading = false
+        })
     }
-    this.errors = []
-    this.isUploading = true
-
-    const fd = new FormData()
-    fd.append('file', this.image.file)
-    fd.append('description', this.image.description)
-
-    this.$axios
-      .post('/media/images/', fd)
-      .then((res) => {
-        console.log(res.data)
-        this.images.push(res.data)
-        this.image = {
-          file: null,
-          description: '',
-        }
-        this.isUploading = false
-      })
-      .catch((error) => {
-        if (error.response.data.errors) {
-          this.errors.push(
-            ...Object.values(error.response.data.errors as string)
-          )
-        } else {
-          console.log(error)
-        }
-        this.image = {
-          file: null,
-          description: '',
-        }
-        this.isUploading = false
-      })
   }
 }
 </script>

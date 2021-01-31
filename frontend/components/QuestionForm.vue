@@ -35,8 +35,6 @@
       Submit
     </v-btn>
     <v-btn color="gray" @click="onCancel"> Cancel </v-btn>
-
-    {{ question }}
   </v-form>
 </template>
 
