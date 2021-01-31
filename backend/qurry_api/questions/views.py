@@ -106,14 +106,14 @@ class AbstractView(AuthenticatedView):
         try:
             obj.vote_up_users.get(id=self.user.id)
             obj.vote_up_users.remove(self.user)
-            obj.score_down()
+            obj.score_down(reverse=True)
         except:
             pass
 
         try:
             obj.vote_down_users.get(id=self.user.id)
             obj.vote_down_users.remove(self.user)
-            obj.score_up()
+            obj.score_up(reverse=True)
         except:
             pass
 
