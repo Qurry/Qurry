@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-row>
-      <template v-for="tagId in ['1', ...selectedTagIds]">
+      <template v-for="tagId in localSelectedTagIds">
         <v-col
           v-if="tags[tagId].childrenIds.length"
           :key="tagId"
@@ -34,16 +34,30 @@ export default class TagSelection extends Vue {
   @Prop()
   selectedTagIds!: string[]
 
-  localSelectedTagIds: string[] = []
-  tags: ObjectTag[] = this.$store.state.tags
+  localSelectedTagIds: string[] = ['1']
+  tags: { [key: string]: ObjectTag } = this.$store.state.tags
 
   // hotfix for 'Avoid mutating a prop directly since the value will be overwritten whenever the parent component re-renders.'
   updateTagIds() {
+    const updatedTags: string[] = ['1']
+
+    for (const tagId of this.localSelectedTagIds) {
+      if (this.localSelectedTagIds.includes(this.tags[tagId].parentId)) {
+        if (!updatedTags.includes(tagId)) {
+          updatedTags.push(tagId)
+        }
+      }
+    }
+
+    this.localSelectedTagIds = updatedTags
+
     while (this.selectedTagIds.length) {
       this.selectedTagIds.pop()
     }
     for (const tagId of this.localSelectedTagIds) {
-      this.selectedTagIds.push(tagId)
+      if (tagId !== '1') {
+        this.selectedTagIds.push(tagId)
+      }
     }
   }
 }
