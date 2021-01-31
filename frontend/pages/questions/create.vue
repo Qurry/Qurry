@@ -29,22 +29,7 @@ export default class QuestionCreate extends Vue {
   }
 
   onSubmit() {
-    const imageIds = []
-
-    for (const image of this.question.images) {
-      imageIds.push(image.id)
-    }
-
-    // improve this
-    const requestQuestion = {
-      title: this.question.title,
-      body: this.question.body,
-      tagIds: this.question.tagIds,
-      imageIds,
-      documentIds: [],
-    }
-
-    QuestionService.createQuestion(this.$axios, requestQuestion)
+    QuestionService.createQuestion(this.$axios, this.question)
       .then((res) => {
         if (res.status === 201) {
           this.$router.push('/questions/' + res.data.questionId)

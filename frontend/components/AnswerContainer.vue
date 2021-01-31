@@ -40,6 +40,7 @@ export default class AnswerContainer extends Vue {
   createAnswer: CreateEditAnswer = {
     body: '',
     images: [],
+    documents: [],
   }
 
   onDeleteAnswer(answerId: string) {
