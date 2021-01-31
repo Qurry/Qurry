@@ -139,12 +139,12 @@ class QuestionView(AbstractView):
             if search_words:
                 search_words = search_words.split(' ')
             tag_id_list = kwargs.get('tags')
+            filter_tags = Tag.objects.none()
             if tag_id_list:
-                tag_id_list = list(int(id) for id in tag_id_list.split(','))
+                filter_tags = Tag.objects.filter(id__in=list(
+                    int(id) for id in tag_id_list.split(',')))
         except:
             return JsonResponse({'errors': ['get arguments are invalid. be sure that limit and offset are integers and tagIds are seperated with a ´,´']}, status=400)
-
-        filter_tags = Tag.objects.filter(id__in=tag_id_list)
 
         questions = Question.objects.all().tag_filter(filter_tags)
 
