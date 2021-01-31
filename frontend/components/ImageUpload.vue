@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-row justify="center" align="center">
-      <v-col cols="12" md="4">
+      <v-col cols="10">
         <v-file-input
           v-model="image.file"
           show-size
@@ -9,14 +9,7 @@
           color="secondary"
         ></v-file-input>
       </v-col>
-      <v-col cols="12" md="6">
-        <v-text-field
-          v-model="image.description"
-          label="Image Description"
-          required
-        ></v-text-field>
-      </v-col>
-      <v-col cols="12" md="2" class="pl-2">
+      <v-col cols="2" class="pl-2">
         <v-btn
           :disabled="!image || isUploading"
           :loading="isUploading"
@@ -36,7 +29,6 @@
       <div v-for="(image, index) in images" :key="image.id">
         <img :src="image.url" alt="Couldn't load image" width="50px" />
         <span>{{ index + 1 }}</span>
-        <span>{{ image.description }}</span>
         <DeleteDialog object-name="image" @delete="onDelete(image.id)" />
       </div>
     </template>

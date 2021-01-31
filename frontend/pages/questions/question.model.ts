@@ -4,7 +4,6 @@ export interface Image {
   id: string
   localId?: string
   url?: string
-  description?: string
 }
 
 export interface DetailQuestion {
@@ -18,6 +17,7 @@ export interface DetailQuestion {
   user: User
   tagIds: string[]
   images: Image[]
+  documents: any[]
   answers: Answer[]
   comments: Comment[]
 }
@@ -39,6 +39,7 @@ export interface CreateEditQuestion {
   title: string
   body: string
   images: Image[]
+  documents: any[]
   tagIds: string[]
 }
 
@@ -55,13 +56,15 @@ export interface Answer {
   votes: number
   user: User
   userVote: number
-  images?: Image[]
+  images: Image[]
+  documents: any[]
   comments: Comment[]
 }
 
 export interface CreateEditAnswer {
   body: string
-  images?: Image[]
+  images: Image[]
+  documents: any[]
 }
 
 export interface Comment {

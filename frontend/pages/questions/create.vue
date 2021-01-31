@@ -16,20 +16,35 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 import QuestionService from './../../services/QuestionService'
-// import { CreateEditQuestion } from './question.model'
+import { CreateEditQuestion } from './question.model'
 
 @Component
 export default class QuestionCreate extends Vue {
-  question: any = {
+  question: CreateEditQuestion = {
     title: '',
     body: '',
     tagIds: [],
-    imageIds: [],
-    documentIds: [],
+    images: [],
+    documents: [],
   }
 
   onSubmit() {
-    QuestionService.createQuestion(this.$axios, this.question)
+    const imageIds = []
+
+    for (const image of this.question.images) {
+      imageIds.push(image.id)
+    }
+
+    // improve this
+    const requestQuestion = {
+      title: this.question.title,
+      body: this.question.body,
+      tagIds: this.question.tagIds,
+      imageIds,
+      documentIds: [],
+    }
+
+    QuestionService.createQuestion(this.$axios, requestQuestion)
       .then((res) => {
         if (res.status === 201) {
           this.$router.push('/questions/' + res.data.questionId)

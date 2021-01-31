@@ -21,10 +21,7 @@ export default {
     )
     return data
   },
-  async createQuestion(
-    $axios: NuxtAxiosInstance,
-    question: CreateEditQuestion
-  ) {
+  async createQuestion($axios: NuxtAxiosInstance, question: any) {
     const response = await $axios.post('/questions/', question)
     return response
   },
