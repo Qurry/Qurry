@@ -5,6 +5,7 @@
         <h1 class="mb-5">New Question</h1>
         <QuestionForm
           :question="question"
+          :in-create-mode="true"
           @submit="onSubmit"
           @cancel="onCancel"
         />

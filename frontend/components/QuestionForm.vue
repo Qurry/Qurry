@@ -23,7 +23,7 @@
     ></v-textarea>
 
     <TagSelection
-      v-if="loaded"
+      v-if="loaded || inCreateMode"
       :selected-tag-ids="question.tagIds"
       @update-selected-tag-ids="updateSelectedTagIds"
     />
@@ -43,18 +43,23 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from 'nuxt-property-decorator'
+import { Vue, Component, Prop, Watch } from 'nuxt-property-decorator'
 import { CreateEditQuestion } from './../pages/questions/question.model'
 
 @Component
 export default class QuestionForm extends Vue {
   isFormValid = false
+  loaded = false
 
   @Prop()
   question!: CreateEditQuestion
 
-  get loaded() {
-    return !!this.question.body
+  @Prop()
+  inCreateMode!: boolean
+
+  @Watch('question')
+  onChildChanged() {
+    this.loaded = true
   }
 
   rules = {
