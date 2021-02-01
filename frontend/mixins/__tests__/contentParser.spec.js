@@ -149,7 +149,7 @@ describe('ContentParser', () => {
       {
         type: 'id-image',
         src: '56',
-        alt: 'My awesome cat',
+        description: 'My awesome cat',
       }
     )
     expect(
@@ -159,7 +159,7 @@ describe('ContentParser', () => {
     ).toMatchObject({
       type: 'url-image',
       src: 'https://octodex.github.com/images/yaktocat.png',
-      alt: 'Image of Yaktocat',
+      description: 'Image of Yaktocat',
     })
   })
   test('parseImageContents', () => {
@@ -190,7 +190,7 @@ describe('ContentParser', () => {
       {
         type: 'url-image',
         src: 'https://example.com/image.png',
-        alt: 'desc',
+        description: 'desc',
       },
       {
         type: 'unparsed',
@@ -199,7 +199,7 @@ describe('ContentParser', () => {
       {
         type: 'id-image',
         src: '4',
-        alt: '',
+        description: '',
       },
       {
         type: 'unparsed',

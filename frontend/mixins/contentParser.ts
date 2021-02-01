@@ -20,10 +20,10 @@ interface LatexContent extends Content {
   text: string
 }
 
-interface ImageContent extends Content {
+export interface ImageContent extends Content {
   type: 'id-image' | 'url-image'
   src: string
-  alt: string
+  description: string
 }
 
 interface TextContent extends Content {
@@ -155,13 +155,13 @@ export class ContentParser extends Vue {
   }
 
   parseImageContent(segment: string): ImageContent {
-    const idRegex = /[0-9]+/
-    const altText = segment.slice(2).split(']')[0]
+    const idRegex = /^[0-9]+$/
+    const description = segment.slice(2).split(']')[0]
     const source = segment.slice(0, -1).split('](')[1]
     return {
       type: idRegex.test(source) ? 'id-image' : 'url-image',
       src: source,
-      alt: altText,
+      description,
     } as ImageContent
   }
 

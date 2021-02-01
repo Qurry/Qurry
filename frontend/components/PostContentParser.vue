@@ -25,18 +25,13 @@
         <katex-element :key="index" :expression="content.text" />
       </template>
       <template v-else-if="content.type === 'url-image'">
-        <img
-          :key="index"
-          :src="content.src"
-          :alt="'<<< NO IMAGE FOUND WITH URL=' + content.src + ' >>>'"
-        />
+        <PostImage :key="index" :image="content" />
       </template>
       <template v-else-if="content.type === 'id-image'">
-        <img
+        <PostImage
           :key="index"
-          :src="images[parseInt(content.src) - 1].url"
-          :alt="'<<< NO IMAGE FOUND WITH ID=' + content.src + ' >>>'"
-          :title="images[parseInt(content.src) - 1].description"
+          :image="content"
+          :id-image="idImage(content.src)"
         />
       </template>
     </template>
@@ -68,6 +63,13 @@ export default class PostContentParser extends mixins(ContentParser) {
 
   mounted() {
     Prism.highlightAll()
+  }
+
+  idImage(imageId: string) {
+    if (parseInt(imageId) >= 1 && parseInt(imageId) <= this.images.length) {
+      return this.images[parseInt(imageId) - 1]
+    }
+    return null
   }
 }
 </script>
