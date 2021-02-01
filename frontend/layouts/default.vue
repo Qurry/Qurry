@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app :style="{ background: $vuetify.theme.themes[theme].background }">
     <MessageSnackbar />
 
     <v-app-bar app color="primary" dark>
@@ -56,7 +56,7 @@
   </v-app>
 </template>
 
-<script lang="ts">
+<script>
 import { Vue, Component } from 'nuxt-property-decorator'
 
 @Component
@@ -89,5 +89,11 @@ export default class DefaultLayout extends Vue {
       this.reload()
     }
   }
+
+  get theme() {
+    return this.$vuetify.theme.dark ? 'dark' : 'light'
+  }
 }
 </script>
+
+<style scoped></style>

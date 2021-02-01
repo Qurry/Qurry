@@ -17,10 +17,10 @@ export const mutations: MutationTree<RootState> = {
 }
 
 const tagColors: { [key: string]: string } = {
-  1: '#ffadad',
-  2: '#ffd6a5',
-  3: '#fdffb6',
-  4: '#caffbf',
+  1: '#006909',
+  2: '#00179c',
+  3: '#007175',
+  4: '#640166',
 }
 
 function addColors(tag: TreeTag) {

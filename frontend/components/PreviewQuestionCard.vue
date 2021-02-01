@@ -62,12 +62,11 @@ export default class QuestionListCard extends Vue {
   text-decoration: underline;
 }
 .question-link {
-  color: #222222;
+  color: #eee;
   text-decoration: none;
 }
 .footer {
   text-align: right;
-  color: #888888;
   margin-bottom: 5px;
   margin-right: 10px;
 }

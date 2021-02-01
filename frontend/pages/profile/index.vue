@@ -14,12 +14,20 @@
               <td>{{ profile.email }}</td>
             </tr>
             <tr>
+              <td>Password</td>
+              <td>••••••••</td>
+            </tr>
+            <tr>
               <td>Score</td>
               <td>{{ profile.score }}</td>
             </tr>
             <tr>
               <td>Register Date</td>
               <td>{{ prettifyDate(profile.registeredAt) }}</td>
+            </tr>
+            <tr>
+              <td>Theme</td>
+              <td>dark</td>
             </tr>
           </tbody>
         </template>
