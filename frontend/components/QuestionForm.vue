@@ -22,7 +22,11 @@
       color="secondary"
     ></v-textarea>
 
-    <TagSelection :selected-tag-ids="question.tagIds" />
+    <TagSelection
+      v-if="loaded"
+      :selected-tag-ids="question.tagIds"
+      @update-selected-tag-ids="updateSelectedTagIds"
+    />
 
     <ImageUpload :images="question.images" />
 
@@ -49,9 +53,17 @@ export default class QuestionForm extends Vue {
   @Prop()
   question!: CreateEditQuestion
 
+  get loaded() {
+    return !!this.question.body
+  }
+
   rules = {
     required: (value: string) => !!value || 'Required',
     minLength: (value: string) => value.length >= 3 || 'At least 3 characters',
+  }
+
+  updateSelectedTagIds(selectedTagIds: string[]) {
+    this.question.tagIds = selectedTagIds
   }
 
   onSubmit() {

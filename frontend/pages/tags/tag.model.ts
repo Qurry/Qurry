@@ -5,8 +5,8 @@ export interface Tag {
   color: string
 }
 
-export interface TreeNodeTag extends Tag {
-  children: TreeNodeTag[]
+export interface TreeTag extends Tag {
+  children: TreeTag[]
 }
 
 export interface ObjectTag extends Tag {

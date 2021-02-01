@@ -1,28 +1,37 @@
 <template>
-  <div>
-    <v-row>
-      <template v-for="tagId in localSelectedTagIds">
-        <v-col
-          v-if="tags[tagId].childrenIds.length"
-          :key="tagId"
-          col="4"
-          class="pt-0"
-        >
-          <h3>{{ tags[tagId].name }}</h3>
-          <v-checkbox
-            v-for="childId in tags[tagId].childrenIds"
-            :key="childId"
-            v-model="localSelectedTagIds"
-            :label="tags[childId].name"
-            :value="childId"
-            hide-details
-            class="mt-0"
-            @click="updateTagIds"
-          ></v-checkbox>
-        </v-col>
+  <v-row>
+    <v-col>
+      <h3>Kategorie</h3>
+      <template v-for="tag in tags">
+        <v-checkbox
+          v-if="tag.parentId === '-1'"
+          :key="tag.id"
+          v-model="localSelectedTagIds"
+          :label="tag.name"
+          :value="tag.id"
+          hide-details
+          class="mt-0"
+          @click="updateSelectedTagIds"
+        ></v-checkbox>
       </template>
-    </v-row>
-  </div>
+    </v-col>
+
+    <template v-for="tagId in localSelectedTagIds">
+      <v-col v-if="tags[tagId].childrenIds.length" :key="tagId + 'child'">
+        <h3>{{ tags[tagId].name }}</h3>
+        <v-checkbox
+          v-for="childTagId in tags[tagId].childrenIds"
+          :key="childTagId"
+          v-model="localSelectedTagIds"
+          :label="tags[childTagId].name"
+          :value="tags[childTagId].id"
+          hide-details
+          class="mt-0"
+          @click="updateSelectedTagIds"
+        ></v-checkbox>
+      </v-col>
+    </template>
+  </v-row>
 </template>
 
 <script lang="ts">
@@ -34,31 +43,22 @@ export default class TagSelection extends Vue {
   @Prop()
   selectedTagIds!: string[]
 
-  localSelectedTagIds: string[] = ['1']
+  localSelectedTagIds: string[] = this.selectedTagIds
+
   tags: { [key: string]: ObjectTag } = this.$store.state.tags
 
-  // hotfix for 'Avoid mutating a prop directly since the value will be overwritten whenever the parent component re-renders.'
-  updateTagIds() {
-    const updatedTags: string[] = ['1']
-
+  updateSelectedTagIds() {
+    const tagIds: string[] = []
     for (const tagId of this.localSelectedTagIds) {
-      if (this.localSelectedTagIds.includes(this.tags[tagId].parentId)) {
-        if (!updatedTags.includes(tagId)) {
-          updatedTags.push(tagId)
-        }
+      if (
+        this.localSelectedTagIds.includes(this.tags[tagId].parentId) ||
+        this.tags[tagId].parentId === '-1'
+      ) {
+        tagIds.push(tagId)
       }
     }
-
-    this.localSelectedTagIds = updatedTags
-
-    while (this.selectedTagIds.length) {
-      this.selectedTagIds.pop()
-    }
-    for (const tagId of this.localSelectedTagIds) {
-      if (tagId !== '1') {
-        this.selectedTagIds.push(tagId)
-      }
-    }
+    this.localSelectedTagIds = tagIds
+    this.$emit('update-selected-tag-ids', tagIds)
   }
 }
 </script>

@@ -12,10 +12,14 @@
           {{ tags[tagId].name }}
         </v-chip>
       </template>
-      <span
-        >{{ tags[tags[tagId].parentId].name }}:
-        {{ tags[tagId].description }}</span
-      >
+      <span>
+        {{
+          tags[tagId].parentId != '-1'
+            ? tags[tags[tagId].parentId].name
+            : 'Kategorie'
+        }}:
+        {{ tags[tagId].description }}
+      </span>
     </v-tooltip>
   </div>
 </template>

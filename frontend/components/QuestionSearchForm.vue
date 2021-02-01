@@ -9,7 +9,10 @@
         color="secondary"
       ></v-text-field>
 
-      <TagSelection :selected-tag-ids="search.tagIds" />
+      <TagSelection
+        :selected-tag-ids="search.tagIds"
+        @update-selected-tag-ids="updateSelectedTagIds"
+      />
 
       <v-btn color="secondary" class="mr-2" type="submit"> Search </v-btn>
     </v-form>
@@ -25,6 +28,10 @@ export default class QuestionSearchForm extends Vue {
   search: QuestionSearch = {
     text: '',
     tagIds: [],
+  }
+
+  updateSelectedTagIds(selectedTagIds: string[]) {
+    this.search.tagIds = selectedTagIds
   }
 
   onSubmit() {
