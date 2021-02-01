@@ -27,7 +27,7 @@
             </tr>
             <tr>
               <td>Theme</td>
-              <td>dark</td>
+              <td>light</td>
             </tr>
           </tbody>
         </template>

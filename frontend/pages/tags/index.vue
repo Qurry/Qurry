@@ -5,7 +5,7 @@
       <v-treeview open-all :items="treeTags">
         <template v-slot:label="{ item }">
           <span>
-            <v-chip class="ma-2" :color="item.color">
+            <v-chip class="ma-2" color="secondary">
               {{ item.name }}
             </v-chip>
             {{ item.description }}

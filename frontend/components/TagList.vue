@@ -5,7 +5,7 @@
         <v-chip
           v-bind="attrs"
           class="chip"
-          :color="tags[tagId].color"
+          color="secondary"
           v-on="on"
           @click="onClick"
         >
