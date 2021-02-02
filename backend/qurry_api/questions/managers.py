@@ -23,5 +23,16 @@ class QuestionQuerySet(models.QuerySet):
             result &= result.filter(tags__in=tag_group)
         return result
 
+    def search(self, words):
+        if words == '':
+            return self.all()
+
+        search_result = self.none()
+        for word in words:
+            search_result |= self.filter(title__icontains=word)
+            search_result |= self.filter(body__icontains=word)
+            search_result |= self.filter(answer__body__icontains=word)
+            search_result |= self.filter(comments__body__icontains=word)
+        return search_result.distinct()
 
 QuestionManager = QuestionQuerySet.as_manager()

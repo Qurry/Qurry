@@ -135,26 +135,20 @@ class QuestionView(AbstractView):
         try:
             limit = abs(int(kwargs.get('limit', DEFAULT_LIMIT)))
             offset = abs(int(kwargs.get('offset', 0)))
-            search_words = kwargs.get('search')
-            if search_words:
+            
+            search_words = kwargs.get('search', '')
+            if search_words != '':
                 search_words = search_words.split(' ')
-            tag_id_list = kwargs.get('tags')
+            
+            tag_id_list = kwargs.get('tags', '')
             filter_tags = Tag.objects.none()
-            if tag_id_list:
+            if tag_id_list != '':
                 filter_tags = Tag.objects.filter(id__in=list(
                     int(id) for id in tag_id_list.split(',')))
         except:
             return JsonResponse({'errors': ['get arguments are invalid. be sure that limit and offset are integers and tagIds are seperated with a ´,´']}, status=400)
 
-        questions = Question.objects.all().tag_filter(filter_tags)
-
-        search_result = Question.objects.none()
-        if search_words:
-            for word in search_words:
-                search_result |= questions.filter(title__icontains=word)
-                search_result |= questions.filter(body__icontains=word)
-
-            questions = search_result
+        questions = Question.objects.all().tag_filter(filter_tags).search(search_words)
 
         return JsonResponse(list(question.as_preview(self.user) for question in questions[offset: offset + limit]),
                             safe=False)
