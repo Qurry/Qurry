@@ -19,10 +19,15 @@
           :key="index"
           :expression="content.text"
           :display-mode="true"
+          :throw-on-error="false"
         />
       </template>
       <template v-else-if="content.type === 'inline-latex'">
-        <katex-element :key="index" :expression="content.text" />
+        <katex-element
+          :key="index"
+          :expression="content.text"
+          :throw-on-error="false"
+        />
       </template>
       <template v-else-if="content.type === 'url-image'">
         <PostImage :key="index" :image="content" />
