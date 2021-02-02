@@ -186,6 +186,6 @@ class Answer(Post):
     def as_detailed(self, user):
         return {**self.as_preview(user), **{
             'comments': list(comment.as_preview() for comment in self.comments.all()),
-            'images': list(image.as_preview() for image in self.images.all()),
+            'images': list(image.file.as_preview() for image in self.images.all()),
             'documents': list(document.as_preview() for document in self.documents.all()),
         }}

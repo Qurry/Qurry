@@ -2,14 +2,16 @@
   <v-form v-model="isFormValid">
     <v-textarea
       v-model.trim="answer.body"
-      rows="1"
-      label="Answer"
+      rows="5"
+      label="Answer Description"
       :rules="[rules.required, rules.minLength]"
       auto-grow
       required
       outlined
       color="secondary"
     ></v-textarea>
+
+    <ImageUpload :images="answer.images" />
 
     <v-btn color="secondary" :disabled="!isFormValid" @click="onSubmit">
       Submit

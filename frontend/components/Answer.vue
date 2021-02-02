@@ -18,7 +18,11 @@
           />
         </div>
         <div v-else>
-          <PostContentParser :content="answer.body" mode="body" />
+          <PostContentParser
+            :content="answer.body"
+            mode="body"
+            :images="answer.images"
+          />
           <PostToolbar
             :post="answer"
             post-type="answer"
