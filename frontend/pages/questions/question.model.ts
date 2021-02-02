@@ -1,5 +1,11 @@
 import { User } from './../users/user.model'
 
+export interface Image {
+  id: string
+  localId?: string
+  url?: string
+}
+
 export interface DetailQuestion {
   id: string
   title: string
@@ -10,8 +16,8 @@ export interface DetailQuestion {
   editedAt: string
   user: User
   tagIds: string[]
-  imageIds: string[]
-  documentIds?: string[]
+  images: Image[]
+  documents: any[]
   answers: Answer[]
   comments: Comment[]
 }
@@ -32,8 +38,13 @@ export interface PreviewQuestion {
 export interface CreateEditQuestion {
   title: string
   body: string
-  imageIds: string[]
-  documentIds?: string[]
+  images: Image[]
+  documents: any[]
+  tagIds: string[]
+}
+
+export interface QuestionSearch {
+  text: string
   tagIds: string[]
 }
 
@@ -45,20 +56,20 @@ export interface Answer {
   votes: number
   user: User
   userVote: number
-  imageIds?: string[]
-  documentIds?: string[]
+  images: Image[]
+  documents: any[]
   comments: Comment[]
 }
 
 export interface CreateEditAnswer {
   body: string
-  imageIds?: string[]
-  documentIds?: string[]
+  images: Image[]
+  documents: any[]
 }
 
 export interface Comment {
   id: string
-  createDcreatedAtate: string
+  createdAt: string
   editedAt: string
   body: string
   user: User

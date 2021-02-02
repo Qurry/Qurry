@@ -1,11 +1,11 @@
-from media.models import Image
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
+from mptt.models import MPTTModel, TreeForeignKey
 
+from .managers import QuestionManager
 from media.models import ImageAttach, DocumentAttach
-from django.contrib.contenttypes.fields import GenericRelation
 
 
 class Post(models.Model):
@@ -17,8 +17,23 @@ class Post(models.Model):
     user = models.ForeignKey(
         "users.User", verbose_name='Owner', on_delete=models.CASCADE)
 
+    upvote_reward = 0
+    downvote_penalty = 0
+
     class Meta:
         abstract = True
+
+    def score_up(self, reverse=False):
+        if reverse:
+            self.user.add_to_score(-self.upvote_reward)
+        else:
+            self.user.add_to_score(self.upvote_reward)
+
+    def score_down(self, reverse=False):
+        if reverse:
+            self.user.add_to_score(self.downvote_penalty)
+        else:
+            self.user.add_to_score(-self.downvote_penalty)
 
     def time_info(self):
         return {
@@ -31,6 +46,9 @@ class Comment(Post):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     reference_object = GenericForeignKey('content_type', 'object_id')
+
+    upvote_reward = 5
+    downvote_penalty = 0
 
     def __str__(self):
         return 'comment from %s' % self.user
@@ -48,44 +66,31 @@ class Comment(Post):
         }}
 
 
-class TagCategory(models.Model):
+class Tag(MPTTModel):
     name = models.CharField('Name', max_length=20)
-    description = models.TextField('Description', default='')
+    description = models.TextField('Description', blank=True, default='')
 
-    def __str__(self):
-        return self.name
+    parent = TreeForeignKey('self', on_delete=models.CASCADE,
+                            null=True, blank=True, related_name='children')
 
-    def tags_as_preview(self):
-        return list(tag.as_preview() for tag in self.tag_set.all())
+    @classmethod
+    def get_all_roots(cls):
+        return cls.objects.filter(level=0)
+
+    @classmethod
+    def all_as_preview(cls):
+        return list(root.as_preview() for root in cls.get_all_roots())
 
     def as_preview(self):
         return {
             'id': str(self.id),
             'name': self.name,
             'description': self.description,
-            'tags': self.tags_as_preview()
+            'children': list(child_tag.as_preview() for child_tag in self.get_children())
         }
-
-
-class Tag(models.Model):
-    name = models.CharField('Name', max_length=20)
-    description = models.TextField('Description', default='')
-
-    def default_category():
-        return TagCategory.objects.get_or_create(name='other')[0].id
-
-    category = models.ForeignKey(
-        TagCategory, verbose_name='Category', default=default_category, on_delete=models.SET_DEFAULT)
 
     def __str__(self):
         return self.name
-
-    def as_preview(self):
-        return {
-            'id': str(self.id),
-            'name': self.name,
-            'description': self.description,
-        }
 
 
 class Question(Post):
@@ -102,20 +107,13 @@ class Question(Post):
     vote_down_users = models.ManyToManyField(
         "users.User", verbose_name='Users who voted down this question', related_name='question_downvotes', blank=True)
 
+    objects = QuestionManager
+
+    upvote_reward = 10
+    downvote_penalty = 0
+
     def __str__(self):
         return '%d: %s' % (self.id, self.title)
-
-    def count_votes(self):
-        return self.vote_up_users.count() - self.vote_down_users.count()
-
-    def count_answers(self):
-        return self.answer_set.count()
-
-    def count_comments(self):
-        return self.comments.count()
-
-    def tag_id_list(self):
-        return list(str(id) for id in self.tags.values_list('id', flat=True))
 
     def vote_of(self, user):
         if user in self.vote_up_users.all():
@@ -128,10 +126,10 @@ class Question(Post):
         return {**self.time_info(), **{
             'id': str(self.id),
             'title': self.title,
-            'votes': self.count_votes(),
-            'answers': self.count_answers(),
-            'comments': self.count_comments(),
-            'tagIds': self.tag_id_list(),
+            'votes': self.vote_up_users.count() - self.vote_down_users.count(),
+            'answers': self.answer_set.count(),
+            'comments': self.comments.count(),
+            'tagIds': list(str(tag.id) for tag in self.tags.all()),
             'user': self.user.as_preview(),
             'userVote': self.vote_of(user)
         }}
@@ -141,8 +139,8 @@ class Question(Post):
             'body': self.body,
             'answers': list(answer.as_detailed(user) for answer in self.answer_set.all()),
             'comments': list(comment.as_preview() for comment in self.comments.all()),
-            'imageIds': list(image.file.id for image in self.images.all()),
-            'documentIds': list(document.file.id for document in self.documents.all()),
+            'images': list(image.file.as_preview() for image in self.images.all()),
+            'documents': list(document.file.as_preview() for document in self.documents.all()),
         }}
 
 
@@ -154,6 +152,9 @@ class Answer(Post):
 
     images = GenericRelation(ImageAttach)
     documents = GenericRelation(DocumentAttach)
+
+    upvote_reward = 10
+    downvote_penalty = 0
 
     vote_up_users = models.ManyToManyField(
         "users.User", verbose_name='Users who voted up this answer', related_name='answer_upvotes', blank=True)
@@ -185,6 +186,6 @@ class Answer(Post):
     def as_detailed(self, user):
         return {**self.as_preview(user), **{
             'comments': list(comment.as_preview() for comment in self.comments.all()),
-            'imageIds': list(image.file.id for image in self.images.all()),
-            'documentIds': list(document.file.id for document in self.documents.all()),
+            'images': list(image.file.as_preview() for image in self.images.all()),
+            'documents': list(document.as_preview() for document in self.documents.all()),
         }}

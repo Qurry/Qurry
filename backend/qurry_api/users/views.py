@@ -6,7 +6,7 @@ import secrets
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.mail import send_mail
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.shortcuts import redirect
@@ -17,8 +17,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 from questions.views import extract_errors
 from qurry_api import settings
-from qurry_api.base_views import AuthenticatedView
-from qurry_api.decorators import active_user_existence_required
+from qurry_api.base import AuthenticatedView, active_user_existence_required
 
 from .forms import UserCreationForm
 from .models import User, ActivationToken

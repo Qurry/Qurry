@@ -5,12 +5,33 @@ import {
   CreateEditQuestion,
   DetailQuestion,
   PreviewQuestion,
+  QuestionSearch,
 } from '~/pages/questions/question.model'
 
+// improve this
+function imagesAndDocumentsToIds(post: CreateEditQuestion | CreateEditAnswer) {
+  const { images, documents, ...postWithoutFiles } = post
+  const imageIds = []
+  const documentIds = []
+
+  for (const image of images) {
+    imageIds.push(image.id)
+  }
+  for (const document of documents) {
+    documentIds.push(document.id)
+  }
+
+  return {
+    ...postWithoutFiles,
+    imageIds,
+    documentIds,
+  }
+}
+
 export default {
-  async getQuestions($axios: NuxtAxiosInstance, search: string) {
+  async getQuestions($axios: NuxtAxiosInstance, search: QuestionSearch) {
     const { data }: { data: PreviewQuestion[] } = await $axios.get(
-      '/questions/?search=' + search
+      '/questions/?search=' + search.text + '&tags=' + search.tagIds.join()
     )
     return data
   },
@@ -24,7 +45,10 @@ export default {
     $axios: NuxtAxiosInstance,
     question: CreateEditQuestion
   ) {
-    const response = await $axios.post('/questions/', question)
+    const response = await $axios.post(
+      '/questions/',
+      imagesAndDocumentsToIds(question)
+    )
     return response
   },
   async editQuestion(
@@ -34,7 +58,7 @@ export default {
   ) {
     const response = await $axios.patch(
       '/questions/' + questionId + '/',
-      question
+      imagesAndDocumentsToIds(question)
     )
     return response
   },
@@ -73,7 +97,10 @@ export default {
     answer: CreateEditAnswer,
     path: string
   ) {
-    const response = await $axios.post(path + '/answers/', answer)
+    const response = await $axios.post(
+      path + '/answers/',
+      imagesAndDocumentsToIds(answer)
+    )
     return response
   },
   async editAnswer(
@@ -81,7 +108,10 @@ export default {
     answerId: string,
     answer: CreateEditAnswer
   ) {
-    const response = await $axios.patch('/answers/' + answerId + '/', answer)
+    const response = await $axios.patch(
+      '/answers/' + answerId + '/',
+      imagesAndDocumentsToIds(answer)
+    )
     return response
   },
   async deleteAnswer($axios: NuxtAxiosInstance, answerId: string) {

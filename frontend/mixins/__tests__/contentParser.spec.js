@@ -89,21 +89,69 @@ describe('ContentParser', () => {
       },
     ])
   })
-  test('parseImageContent', () => {
+  test('parseLatexContents', () => {
     const Component = {
       render() {},
       mixins: [ContentParser],
     }
     const wrapper = shallowMount(Component)
     expect(
-      wrapper.vm.parseImageContent(
-        '![My awesome cat](b1d1c9ef-c72f-4325-8c49-639278bf718d)'
+      wrapper.vm.parseLatexContents(
+        { type: 'unparsed', text: 'some content' },
+        'inline',
+        '$'
       )
-    ).toMatchObject({
-      type: 'uuid-image',
-      src: 'b1d1c9ef-c72f-4325-8c49-639278bf718d',
-      alt: 'My awesome cat',
-    })
+    ).toMatchObject([
+      {
+        type: 'unparsed',
+        text: 'some content',
+      },
+    ])
+    expect(
+      wrapper.vm.parseLatexContents(
+        {
+          type: 'unparsed',
+          text: 'let $a\\$bc$ be \\$and $$\\sum_a$$ not $$34\\$$$',
+        },
+        'block',
+        '$$'
+      )
+    ).toMatchObject([
+      {
+        type: 'unparsed',
+        text: 'let $a\\$bc$ be \\$and ',
+      },
+      {
+        type: 'block-latex',
+        text: '\\sum_a',
+      },
+      {
+        type: 'unparsed',
+        text: ' not ',
+      },
+      {
+        type: 'block-latex',
+        text: '34\\$',
+      },
+      {
+        type: 'unparsed',
+        text: '',
+      },
+    ])
+  })
+  test('parseImageContent', () => {
+    const Component = {
+      render() {},
+      mixins: [ContentParser],
+    }
+    const wrapper = shallowMount(Component)
+    expect(wrapper.vm.parseImageContent('![My awesome cat](56)')).toMatchObject(
+      {
+        type: 'id-image',
+        src: '56',
+        description: 'My awesome cat',
+      }
+    )
     expect(
       wrapper.vm.parseImageContent(
         '![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png)'
@@ -111,7 +159,7 @@ describe('ContentParser', () => {
     ).toMatchObject({
       type: 'url-image',
       src: 'https://octodex.github.com/images/yaktocat.png',
-      alt: 'Image of Yaktocat',
+      description: 'Image of Yaktocat',
     })
   })
   test('parseImageContents', () => {
@@ -132,7 +180,7 @@ describe('ContentParser', () => {
       wrapper.vm.parseImageContents({
         type: 'unparsed',
         text:
-          'Lerom ![desc](https://example.com/image.png) ipsum ![](eb286442-c745-4ee1-9f5c-0d9ac0a341f8) content',
+          'Lerom ![desc](https://example.com/image.png) ipsum ![](4) content',
       })
     ).toMatchObject([
       {
@@ -142,16 +190,16 @@ describe('ContentParser', () => {
       {
         type: 'url-image',
         src: 'https://example.com/image.png',
-        alt: 'desc',
+        description: 'desc',
       },
       {
         type: 'unparsed',
         text: ' ipsum ',
       },
       {
-        type: 'uuid-image',
-        src: 'eb286442-c745-4ee1-9f5c-0d9ac0a341f8',
-        alt: '',
+        type: 'id-image',
+        src: '4',
+        description: '',
       },
       {
         type: 'unparsed',

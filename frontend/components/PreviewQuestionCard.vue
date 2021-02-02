@@ -20,7 +20,7 @@
           <PostContentParser :content="question.title" mode="title" />
         </nuxt-link>
       </h1>
-      <TagsList :tag-ids="question.tagIds" />
+      <TagList :tag-ids="question.tagIds" />
       <div>
         <p class="footer">
           by
@@ -62,12 +62,11 @@ export default class QuestionListCard extends Vue {
   text-decoration: underline;
 }
 .question-link {
-  color: #222222;
+  color: #111;
   text-decoration: none;
 }
 .footer {
   text-align: right;
-  color: #888888;
   margin-bottom: 5px;
   margin-right: 10px;
 }

@@ -11,6 +11,7 @@
       @update="$emit('update')"
     />
     <div v-if="inCreateMode">
+      <h3>New Answer</h3>
       <AnswerForm
         :answer="createAnswer"
         class="my-2"
@@ -39,8 +40,8 @@ export default class AnswerContainer extends Vue {
 
   createAnswer: CreateEditAnswer = {
     body: '',
-    imageIds: [],
-    documentIds: [],
+    images: [],
+    documents: [],
   }
 
   onDeleteAnswer(answerId: string) {

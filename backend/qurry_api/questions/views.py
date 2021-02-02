@@ -2,18 +2,13 @@ import json
 
 from django.core.exceptions import ValidationError, PermissionDenied, RequestAborted
 from django.http import JsonResponse
+
 from media.models import Document, Image, DocumentAttach, ImageAttach
-from qurry_api.base_views import AuthenticatedView
-from qurry_api.decorators import ownership_required, object_existence_required
-
-from .models import Question, Answer, Comment, Tag, TagCategory
+from qurry_api.base import AuthenticatedView, ownership_required, object_existence_required
+from .models import Question, Answer, Comment, Tag
 
 
-def objects_from(obj_ids, model):
-    objects = []
-    for obj_id in obj_ids:
-        objects.append(model.objects.get(id=obj_id))
-    return objects
+DEFAULT_LIMIT = 20
 
 
 def extract_errors(validation_exception):
@@ -32,8 +27,6 @@ def reference_files(files, attach_model, obj):
         attach_model().attaches_from(obj).add(attach_model(file=file), bulk=False)
 
 
-
-
 class AbstractView(AuthenticatedView):
     Model = None
 
@@ -47,7 +40,7 @@ class AbstractView(AuthenticatedView):
 
             return self.view_detailed(obj)
 
-        return self.view_list(**({**request.GET.dict(),** kwargs}))
+        return self.view_list(**({**request.GET.dict(), ** kwargs}))
 
     def post(self, request, *args, **kwargs):
         try:
@@ -60,6 +53,7 @@ class AbstractView(AuthenticatedView):
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
     @object_existence_required
+    @ownership_required
     def patch(self, request, *args, **kwargs):
         if 'id' not in kwargs:
             return JsonResponse(
@@ -79,6 +73,7 @@ class AbstractView(AuthenticatedView):
             return JsonResponse({'errors': self.handle(exc)}, status=400)
 
     @object_existence_required
+    @ownership_required
     def delete(self, request, *args, **kwargs):
         if 'id' not in kwargs:
             return JsonResponse(
@@ -87,7 +82,7 @@ class AbstractView(AuthenticatedView):
                 status=405)
         obj = self.Model.objects.get(id=kwargs['id'])
         try:
-            self.remove(obj)
+            obj.delete()
             return JsonResponse({'%sId' % self.Model.__name__.lower(): str(kwargs['id'])}, status=200)
         except Exception as exc:
             return JsonResponse({'errors': [str(exc)]}, status=500)
@@ -104,26 +99,30 @@ class AbstractView(AuthenticatedView):
     def change(self, obj, body):
         pass
 
-    @ownership_required
-    def remove(self, obj):
-        obj.delete()
-
     def vote(self, obj, action):
+        if self.user == obj.user:
+            return JsonResponse({'errors': ['you can not vote your own %s' % self.Model.__name__.lower()]}, status=400)
         # remove user from voters
         try:
+            obj.vote_up_users.get(id=self.user.id)
             obj.vote_up_users.remove(self.user)
+            obj.score_down(reverse=True)
         except:
             pass
 
         try:
+            obj.vote_down_users.get(id=self.user.id)
             obj.vote_down_users.remove(self.user)
+            obj.score_up(reverse=True)
         except:
             pass
 
         if action == '1':
             obj.vote_up_users.add(self.user)
+            obj.score_up()
         if action == '-1':
             obj.vote_down_users.add(self.user)
+            obj.score_down()
 
         return JsonResponse({'%sId' % self.Model.__name__.lower(): str(obj.id)})
 
@@ -133,30 +132,23 @@ class QuestionView(AbstractView):
 
     def view_list(self, **kwargs):  # in preview format
         # parse arguments
-        limit = Question.objects.count()
-        offset = 0
-        search_words = None
         try:
-            if 'limit' in kwargs:
-                limit = int(kwargs['limit'])
-
-            if 'offset' in kwargs:
-                offset = int(kwargs['offset'])
-
-            if 'search' in kwargs:
-                search_words = kwargs['search'].split(' ')
+            limit = abs(int(kwargs.get('limit', DEFAULT_LIMIT)))
+            offset = abs(int(kwargs.get('offset', 0)))
+            
+            search_words = kwargs.get('search', '')
+            if search_words != '':
+                search_words = search_words.split(' ')
+            
+            tag_id_list = kwargs.get('tags', '')
+            filter_tags = Tag.objects.none()
+            if tag_id_list != '':
+                filter_tags = Tag.objects.filter(id__in=list(
+                    int(id) for id in tag_id_list.split(',')))
         except:
-            return JsonResponse({'errors': ['get arguments are invalid']}, status=400)
+            return JsonResponse({'errors': ['get arguments are invalid. be sure that limit and offset are integers and tagIds are seperated with a ´,´']}, status=400)
 
-        questions = Question.objects.all()
-
-        # search_result = Question.objects.none()
-        # if search_words:
-        #     for word in search_words:
-        #         search_result |= questions.filter(title__icontains=word)
-        #         search_result |= questions.filter(body__icontains=word)
-
-        #     questions = search_result
+        questions = Question.objects.all().tag_filter(filter_tags).search(search_words)
 
         return JsonResponse(list(question.as_preview(self.user) for question in questions[offset: offset + limit]),
                             safe=False)
@@ -166,13 +158,13 @@ class QuestionView(AbstractView):
 
     def create(self, body):
         tag_ids = list(int(tag_id) for tag_id in body['tagIds'])
-        tags = objects_from(tag_ids, Tag)
+        tags = Tag.objects.filter(id__in=tag_ids)
 
         image_ids = body['imageIds']
-        images = objects_from(image_ids, Image)
+        images = Image.objects.filter(id__in=image_ids)
 
         document_ids = body['documentIds']
-        documents = objects_from(document_ids, Document)
+        documents = Document.objects.filter(id__in=document_ids)
 
         creation_data = {'title': body['title'],
                          'body': body['body'], 'user': self.user}
@@ -186,7 +178,6 @@ class QuestionView(AbstractView):
         reference_files(documents, DocumentAttach, new_question)
         return new_question.id
 
-    @ownership_required
     def change(self, question, body):
 
         if 'title' in body:
@@ -199,18 +190,18 @@ class QuestionView(AbstractView):
 
         if 'tagIds' in body:
             tag_ids = list(int(tag_id) for tag_id in body['tagIds'])
-            tags = objects_from(tag_ids, Tag)
+            tags = Tag.objects.filter(id__in=tag_ids)
             question.tags.set(tags)
 
         if 'imageIds' in body:
             image_ids = body['imageIds']
-            images = objects_from(image_ids, Image)
+            images = Image.objects.filter(id__in=image_ids)
             # remove_files_from(question, Image)
             reference_files(images, ImageAttach, question)
 
         if 'documentIds' in body:
             document_ids = body['documentIds']
-            documents = objects_from(document_ids, Document)
+            documents = Document.objects.filter(id__in=document_ids)
             # remove_files_from(question, Document)
             reference_files(documents, DocumentAttach, question)
 
@@ -253,10 +244,10 @@ class AnswerView(AbstractView):
                 'you can create an answer with questions/<id>/answers/')
 
         image_ids = body['imageIds']
-        images = objects_from(image_ids, Image)
+        images = Image.objects.filter(id__in=image_ids)
 
         document_ids = body['documentIds']
-        documents = objects_from(document_ids, Document)
+        documents = Document.objects.filter(id__in=document_ids)
 
         creation_data = {
             'body': body['body'], 'user': self.user, 'question': self.question}
@@ -270,7 +261,6 @@ class AnswerView(AbstractView):
 
         return new_answer.id
 
-    @ownership_required
     def change(self, answer, body):
 
         if 'body' in body:
@@ -329,7 +319,6 @@ class CommentView(AbstractView):
 
         return new_comment.id
 
-    @ownership_required
     def change(self, comment, body):
 
         if 'body' in body:
@@ -357,4 +346,4 @@ class TagView(AuthenticatedView):
         return self.view_list()
 
     def view_list(self):
-        return JsonResponse(list(tag_category.as_preview() for tag_category in TagCategory.objects.all()), safe=False)
+        return JsonResponse(Tag.all_as_preview(), safe=False)

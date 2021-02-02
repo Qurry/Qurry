@@ -1,19 +1,34 @@
 <template>
-  <v-app>
+  <v-app :style="{ background: $vuetify.theme.themes[theme].background }">
     <MessageSnackbar />
 
     <v-app-bar app color="primary" dark>
       <v-btn to="/" text rounded>Qurry</v-btn>
       <v-spacer></v-spacer>
       <template v-if="$store.state.auth.loggedIn">
-        <v-btn to="/logout" text rounded>Logout</v-btn>
         <v-btn to="/questions" text rounded>Questions</v-btn>
         <v-btn to="/tags" text rounded>Tags</v-btn>
-        <v-btn to="/users" text rounded>Users</v-btn>
-        <v-btn to="/profile" text rounded>Profile</v-btn>
         <span>
           {{ userScore }} <v-icon color="accent"> mdi-trophy </v-icon>
         </span>
+        <v-menu offset-y>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn icon v-bind="attrs" v-on="on">
+              <v-icon>mdi-menu</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item>
+              <v-btn to="/profile" text rounded>Profile</v-btn>
+            </v-list-item>
+            <v-list-item>
+              <v-btn to="/users" text rounded>Users</v-btn>
+            </v-list-item>
+            <v-list-item>
+              <v-btn to="/logout" text rounded>Logout</v-btn>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </template>
       <template v-else>
         <v-btn to="/login" text rounded>Login</v-btn>
@@ -41,19 +56,10 @@
   </v-app>
 </template>
 
-<script lang="ts">
+<script>
 import { Vue, Component } from 'nuxt-property-decorator'
 
-@Component({
-  head: {
-    script: [
-      {
-        src:
-          'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_HTML',
-      },
-    ],
-  },
-})
+@Component
 export default class DefaultLayout extends Vue {
   userScore = ''
   isLoading = false
@@ -83,5 +89,11 @@ export default class DefaultLayout extends Vue {
       this.reload()
     }
   }
+
+  get theme() {
+    return this.$vuetify.theme.dark ? 'dark' : 'light'
+  }
 }
 </script>
+
+<style scoped></style>

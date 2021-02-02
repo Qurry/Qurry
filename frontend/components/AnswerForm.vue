@@ -2,14 +2,31 @@
   <v-form v-model="isFormValid">
     <v-textarea
       v-model.trim="answer.body"
-      rows="1"
-      label="Answer"
+      rows="5"
+      label="Body"
       :rules="[rules.required, rules.minLength]"
       auto-grow
       required
       outlined
       color="secondary"
     ></v-textarea>
+
+    <h2>
+      Body Preview
+      <v-btn icon color="secondary" @click="showBodyPreview = !showBodyPreview">
+        <v-icon>{{ showBodyPreview ? 'mdi-eye' : 'mdi-eye-off' }}</v-icon>
+      </v-btn>
+    </h2>
+
+    <PostContentParser
+      v-if="showBodyPreview"
+      :content="answer.body"
+      mode="body"
+      :images="answer.images"
+      class="body-preview"
+    />
+
+    <ImageUpload :images="answer.images" />
 
     <v-btn color="secondary" :disabled="!isFormValid" @click="onSubmit">
       Submit
@@ -24,6 +41,7 @@ import { CreateEditAnswer } from './../pages/questions/question.model'
 
 @Component
 export default class AnswerForm extends Vue {
+  showBodyPreview = true
   isFormValid = false
 
   @Prop()
@@ -58,5 +76,9 @@ export default class AnswerForm extends Vue {
 ::v-deep .v-textarea textarea {
   line-height: 1.3;
   padding: 5px 0 20px 0;
+}
+.body-preview {
+  border: 3px solid #ddd;
+  padding: 5px;
 }
 </style>

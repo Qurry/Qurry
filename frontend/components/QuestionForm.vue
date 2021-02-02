@@ -14,7 +14,7 @@
     <v-textarea
       v-model.trim="question.body"
       rows="10"
-      label="Description"
+      label="Body"
       :rules="[rules.required, rules.minLength]"
       required
       outlined
@@ -22,31 +22,29 @@
       color="secondary"
     ></v-textarea>
 
-    <v-autocomplete
-      v-model="question.tagIds"
-      :items="tags"
-      chips
-      deletable-chips
-      multiple
-      item-text="name"
-      item-value="id"
-      label="Tags"
-      color="secondary"
-    >
-      <template v-slot:selection="data">
-        <v-chip
-          close
-          @click:close="removeTagIdFromQuestionTagIds(data.item.id)"
-        >
-          <template> {{ data.item.name }} </template>
-        </v-chip>
-      </template>
-      <template v-slot:item="data">
-        <template> {{ data.item.name }} </template>
-      </template>
-    </v-autocomplete>
+    <h2>
+      Body Preview
+      <v-btn icon color="secondary" @click="showBodyPreview = !showBodyPreview">
+        <v-icon>{{ showBodyPreview ? 'mdi-eye' : 'mdi-eye-off' }}</v-icon>
+      </v-btn>
+    </h2>
 
-    <FileUpload :image-ids="question.imageIds" />
+    <PostContentParser
+      v-if="showBodyPreview"
+      :content="question.body"
+      mode="body"
+      :images="question.images"
+      class="body-preview"
+    />
+
+    <h2 class="mt-3">Tags</h2>
+    <TagSelection
+      v-if="loaded || inCreateMode"
+      :selected-tag-ids="question.tagIds"
+      @update-selected-tag-ids="updateSelectedTagIds"
+    />
+
+    <ImageUpload :images="question.images" />
 
     <v-btn
       color="secondary"
@@ -61,26 +59,33 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from 'nuxt-property-decorator'
+import { Vue, Component, Prop, Watch } from 'nuxt-property-decorator'
 import { CreateEditQuestion } from './../pages/questions/question.model'
-import { Tag } from './../pages/tags/tag.model'
 
 @Component
 export default class QuestionForm extends Vue {
   isFormValid = false
-  tags: Tag[] = Object.values(this.$store.state.tags)
+  showBodyPreview = true
+  loaded = false
 
   @Prop()
   question!: CreateEditQuestion
+
+  @Prop()
+  inCreateMode!: boolean
+
+  @Watch('question')
+  onChildChanged() {
+    this.loaded = true
+  }
 
   rules = {
     required: (value: string) => !!value || 'Required',
     minLength: (value: string) => value.length >= 3 || 'At least 3 characters',
   }
 
-  removeTagIdFromQuestionTagIds(tagId: string) {
-    const index = this.question.tagIds.indexOf(tagId)
-    if (index >= 0) this.question.tagIds.splice(index, 1)
+  updateSelectedTagIds(selectedTagIds: string[]) {
+    this.question.tagIds = selectedTagIds
   }
 
   onSubmit() {
@@ -97,5 +102,9 @@ export default class QuestionForm extends Vue {
 ::v-deep .v-textarea textarea {
   line-height: 1.3;
   padding: 5px 0 20px 0;
+}
+.body-preview {
+  border: 3px solid #ddd;
+  padding: 5px;
 }
 </style>

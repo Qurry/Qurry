@@ -1,8 +1,7 @@
 {% autoescape off %}
 Hi {{ user.username }}, <br>
-please click on the link to confirm your registration: <br><br>
+thank you for your registration on qurry.de. Please open this link to confirm your email: <br><br>
 
-<a href="{{ domain }}{% url 'activate' uidb64=uid token=token %}">{{ domain }}{% url 'activate' uidb64=uid token=token %}</a> <br><br>
+{{ domain }}{% url 'activate' uidb64=uid token=token %}</a> <br>
 
-If you can't click on the link, paste it directly into your browser.
 {% endautoescape %}

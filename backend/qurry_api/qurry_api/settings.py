@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 
-JWT_VALIDITY_PERIOD = 60*60
+JWT_VALIDITY_PERIOD = 60*60*24*7
 
 if MODE == 'development':
     DEBUG = True
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'corsheaders',
+    'mptt',
 
     'storages',
     'media',
@@ -187,7 +188,11 @@ AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = 'qurry'
 AWS_S3_FILE_OVERWRITE = False
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_REGION_NAME = 'eu-central-1'
+AWS_QUERYSTRING_EXPIRE = 30
 STORAGE_FOLDER = MODE
+
 
 # ADMIN THUMBNAIL SETTINGS
 ADMIN_THUMBNAIL_DEFAULT_LABEL = 'Preview'
@@ -197,3 +202,6 @@ ADMIN_THUMBNAIL_STYLE = {
     'width': '100px',
     'height': 'auto',
 }
+
+# IMAGE QUALITY AFTER COMPRESSING (%)
+COMPRESSION_IMAGE_QUALITY = 60

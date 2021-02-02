@@ -1,19 +1,53 @@
 <template>
   <v-row>
     <v-col>
-      <h1>Dashboard</h1>
-      <p>Willkommen auf Qurry - dem StackOverflow für die Uni</p>
-      <h2>Heiße Fragen</h2>
-      <p>Es gibt noch keine heißen Fragen.</p>
-      <h2>Meine Fragen</h2>
-      <p>Du hast noch keine Frage gestellt.</p>
+      <h1>Welcome to Qurry 🍛</h1>
+      <p>
+        Qurry is the place where students can ask all their questions in an
+        uncomplicated and informal way.
+      </p>
+
+      <h2>Organizational Questions</h2>
+
+      <ul>
+        <li>Until when can I revoke my lecture enrollment?</li>
+        <li>How can I get into the same student dorm room with a friend?</li>
+      </ul>
+
+      <h2>Exercise/Exam Questions</h2>
+
+      <ul>
+        <li>
+          Prove
+          <katex-element
+            expression="\forall a,b \in \mathbb{N},~ a,b >1 : \log_a(n) \in \Theta(\log_b(n))"
+          />.
+        </li>
+        <li>
+          Explain this C declaration:
+          <code class="lang-c">char* (*(*foo[5])(char*))[];</code>
+        </li>
+      </ul>
+      <br />
+      <h2>Let's chat 😄</h2>
+      <p>
+        Do you have questions, ideas or feature requests? Please email us to
+        <strong> qurry.info@gmail.com </strong>
+      </p>
     </v-col>
   </v-row>
 </template>
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
+import Prism from 'prismjs'
 
 @Component({ auth: false })
-export default class Dashboard extends Vue {}
+export default class Home extends Vue {
+  mounted() {
+    Prism.highlightAll()
+  }
+}
 </script>
+
+<style scoped></style>

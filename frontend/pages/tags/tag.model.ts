@@ -1,16 +1,15 @@
 export interface Tag {
   id: string
   name: string
-  description?: string
+  description: string
   color: string
-  tagCategoryId: string
-  tagCategoryName?: string
 }
 
-export interface TagCategory {
-  id: string
-  name: string
-  description?: string
-  color: string
-  tags: Tag[]
+export interface TreeTag extends Tag {
+  children: TreeTag[]
+}
+
+export interface ObjectTag extends Tag {
+  parentId: string
+  childrenIds: string[]
 }

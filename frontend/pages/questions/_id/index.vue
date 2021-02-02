@@ -24,10 +24,14 @@
           <h1 class="mb-3 question-title">
             <PostContentParser :content="question.title" mode="title" />
           </h1>
-          <PostContentParser :content="question.body" mode="body" />
+          <PostContentParser
+            :content="question.body"
+            mode="body"
+            :images="question.images"
+          />
 
           <div>
-            <TagsList :tag-ids="question.tagIds" />
+            <TagList :tag-ids="question.tagIds" />
             <PostToolbar
               :post="question"
               post-type="question"
@@ -72,7 +76,8 @@ export default class QuestionDetail extends Vue {
     tagIds: [],
     answers: [],
     comments: [],
-    imageIds: [],
+    images: [],
+    documents: [],
   }
 
   sortAnswers() {

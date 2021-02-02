@@ -20,10 +20,10 @@ interface LatexContent extends Content {
   text: string
 }
 
-interface ImageContent extends Content {
-  type: 'uuid-image' | 'url-image'
+export interface ImageContent extends Content {
+  type: 'id-image' | 'url-image'
   src: string
-  alt: string
+  description: string
 }
 
 interface TextContent extends Content {
@@ -54,7 +54,16 @@ export class ContentParser extends Vue {
         contents,
         this.parseImageContents
       )
+      contents = this.parseContentsWithFunction(
+        contents,
+        this.parseBlockLatexContents
+      )
     }
+
+    contents = this.parseContentsWithFunction(
+      contents,
+      this.parseInlineLatexContents
+    )
 
     return contents
   }
@@ -146,14 +155,51 @@ export class ContentParser extends Vue {
   }
 
   parseImageContent(segment: string): ImageContent {
-    const uuidRegex = /[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}/
-    const altText = segment.slice(2).split(']')[0]
+    const idRegex = /^[0-9]+$/
+    const description = segment.slice(2).split(']')[0]
     const source = segment.slice(0, -1).split('](')[1]
     return {
-      type: uuidRegex.test(source) ? 'uuid-image' : 'url-image',
+      type: idRegex.test(source) ? 'id-image' : 'url-image',
       src: source,
-      alt: altText,
+      description,
     } as ImageContent
+  }
+
+  parseInlineLatexContents(
+    unparsedContent: UnparsedContent
+  ): (LatexContent | UnparsedContent)[] {
+    return this.parseLatexContents(unparsedContent, 'inline')
+  }
+
+  parseBlockLatexContents(
+    unparsedContent: UnparsedContent
+  ): (LatexContent | UnparsedContent)[] {
+    return this.parseLatexContents(unparsedContent, 'block')
+  }
+
+  parseLatexContents(
+    unparsedContent: UnparsedContent,
+    mode: 'inline' | 'block'
+  ): (LatexContent | UnparsedContent)[] {
+    const parsedContents: (LatexContent | UnparsedContent)[] = []
+    const latexRegex =
+      mode === 'inline'
+        ? /(?<!\\)\$(?:[^$]+|(?<=\\)\$)+\$/g
+        : /(?<!\\)\$\$(?:[^$]+|(?<=\\)\$)+\$\$/g
+    const delimiterLength = mode === 'inline' ? 1 : 2
+    const unparsedSegments = unparsedContent.text.split(latexRegex)
+    const latexSegments = unparsedContent.text.match(latexRegex)
+    parsedContents.push(this.parseUnparsedContent(unparsedSegments[0]))
+    if (latexSegments) {
+      for (let i = 0; i < latexSegments.length; i++) {
+        parsedContents.push({
+          type: mode + '-latex',
+          text: latexSegments[i].slice(delimiterLength, -1 * delimiterLength),
+        } as LatexContent)
+        parsedContents.push(this.parseUnparsedContent(unparsedSegments[i + 1]))
+      }
+    }
+    return parsedContents
   }
 
   parseUnparsedContent(segment: string): UnparsedContent {
