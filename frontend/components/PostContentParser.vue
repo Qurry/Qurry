@@ -39,7 +39,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, mixins } from 'nuxt-property-decorator'
+import { Component, Prop, Watch, mixins } from 'nuxt-property-decorator'
 import Prism from 'prismjs'
 import { ContentParser, Content } from '../mixins/contentParser'
 import { Image } from './../pages/questions/question.model'
@@ -59,6 +59,12 @@ export default class PostContentParser extends mixins(ContentParser) {
 
   created() {
     this.contents = this.parseContents(this.content, this.mode)
+  }
+
+  @Watch('content')
+  onChildChanged() {
+    this.contents = this.parseContents(this.content, this.mode)
+    Prism.highlightAll()
   }
 
   mounted() {
