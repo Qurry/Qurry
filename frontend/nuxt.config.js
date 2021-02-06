@@ -20,7 +20,16 @@ export default {
           'Qurry is the place where students can ask their questions in an uncomplicated and informal way. The questions can be organisational or content-related. Together, the best approaches to solving assignments can be discussed.',
       },
     ],
-    link: [{ rel: 'icon', type: 'image/x-icon', href: '/static/favicon.ico' }],
+    link: [
+      { rel: 'icon', type: 'image/x-icon', href: '/static/favicon.ico' },
+      {
+        rel: 'stylesheet',
+        href: 'https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css',
+      },
+    ],
+    script: [
+      { src: 'https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js' },
+    ],
   },
 
   // Global CSS (https://go.nuxtjs.dev/config-css)
@@ -28,9 +37,10 @@ export default {
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
   plugins: [
-    { src: '~/plugins/prism', mode: 'client' },
+    // { src: '~/plugins/prism', mode: 'client' },
     '~plugins/filters.ts',
-    '~plugins/katex.js',
+    // '~plugins/katex.js',
+    '~plugins/v-md-editor.js',
   ],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
