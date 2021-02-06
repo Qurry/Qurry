@@ -2,8 +2,6 @@
   <v-row>
     <v-col>
       <v-md-preview :text="welcomeText"></v-md-preview>
-
-      <PostBodyInput />
     </v-col>
   </v-row>
 </template>

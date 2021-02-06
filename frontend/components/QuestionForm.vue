@@ -11,31 +11,7 @@
       color="secondary"
     ></v-textarea>
 
-    <v-textarea
-      v-model.trim="question.body"
-      rows="10"
-      label="Body"
-      :rules="[rules.required, rules.minLength]"
-      required
-      outlined
-      auto-grow
-      color="secondary"
-    ></v-textarea>
-
-    <h2>
-      Body Preview
-      <v-btn icon color="secondary" @click="showBodyPreview = !showBodyPreview">
-        <v-icon>{{ showBodyPreview ? 'mdi-eye' : 'mdi-eye-off' }}</v-icon>
-      </v-btn>
-    </h2>
-
-    <PostContentParser
-      v-if="showBodyPreview"
-      :content="question.body"
-      mode="body"
-      :images="question.images"
-      class="body-preview"
-    />
+    <PostBodyInput v-model="question.body" />
 
     <h2 class="mt-3">Tags</h2>
     <TagSelection
@@ -65,7 +41,6 @@ import { CreateEditQuestion } from './../pages/questions/question.model'
 @Component
 export default class QuestionForm extends Vue {
   isFormValid = false
-  showBodyPreview = true
   loaded = false
 
   @Prop()
@@ -102,9 +77,5 @@ export default class QuestionForm extends Vue {
 ::v-deep .v-textarea textarea {
   line-height: 1.3;
   padding: 5px 0 20px 0;
-}
-.body-preview {
-  border: 3px solid #ddd;
-  padding: 5px;
 }
 </style>

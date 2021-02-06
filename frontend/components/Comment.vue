@@ -9,7 +9,7 @@
       />
     </div>
     <div v-else>
-      <PostContentParser :content="comment.body" mode="body" />
+      {{ comment.body }}
       <PostToolbar
         :post="comment"
         post-type="comment"
@@ -66,9 +66,6 @@ export default class CommentContainer extends Vue {
 </script>
 
 <style scoped>
-.action-icon {
-  cursor: pointer;
-}
 .toolbar {
   display: inline;
 }
