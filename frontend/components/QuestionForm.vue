@@ -11,7 +11,9 @@
       color="secondary"
     ></v-textarea>
 
-    <PostBodyInput v-model="question.body" />
+    <PostBodyInput v-model="question.body" @image="addImage" />
+
+    <ImagePreviewList :images="question.images" />
 
     <h2 class="mt-3">Tags</h2>
     <TagSelection
@@ -19,8 +21,6 @@
       :selected-tag-ids="question.tagIds"
       @update-selected-tag-ids="updateSelectedTagIds"
     />
-
-    <ImageUpload :images="question.images" />
 
     <v-btn
       color="secondary"
@@ -36,7 +36,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'nuxt-property-decorator'
-import { CreateEditQuestion } from './../pages/questions/question.model'
+import { CreateEditQuestion, Image } from './../pages/questions/question.model'
 
 @Component
 export default class QuestionForm extends Vue {
@@ -69,6 +69,10 @@ export default class QuestionForm extends Vue {
 
   onCancel() {
     this.$emit('cancel')
+  }
+
+  addImage(image: Image) {
+    this.question.images.push(image)
   }
 }
 </script>

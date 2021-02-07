@@ -1,8 +1,8 @@
 <template>
   <v-form v-model="isFormValid">
-    <PostBodyInput v-model="answer.body" />
+    <PostBodyInput v-model="answer.body" @image="addImage" />
 
-    <ImageUpload :images="answer.images" />
+    <ImagePreviewList :images="answer.images" />
 
     <v-btn color="secondary" :disabled="!isFormValid" @click="onSubmit">
       Submit
@@ -13,7 +13,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { CreateEditAnswer } from './../pages/questions/question.model'
+import { CreateEditAnswer, Image } from './../pages/questions/question.model'
 
 @Component
 export default class AnswerForm extends Vue {
@@ -28,6 +28,10 @@ export default class AnswerForm extends Vue {
 
   onCancel() {
     this.$emit('cancel')
+  }
+
+  addImage(image: Image) {
+    this.answer.images.push(image)
   }
 }
 </script>
