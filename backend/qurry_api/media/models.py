@@ -13,6 +13,14 @@ from django.conf import settings
 from .validators import validate_image_size, validate_document_size
 
 
+def path_with_uuid(file_obj, filename):
+    return '{base_folder}/{class_name}s/{uuid}/{filename}'.format(
+        base_folder=settings.STORAGE_FOLDER,
+        class_name=file_obj.__class__.__name__.lower(),
+        uuid=file_obj.id,
+        filename=filename)
+
+
 class File(models.Model):
     id = models.UUIDField('UUID',
                           primary_key=True, default=uuid.uuid4, editable=False,
@@ -48,7 +56,7 @@ class File(models.Model):
 
 class Image(File):
     src = models.ImageField(
-        'Image', upload_to='%s/images/' % settings.STORAGE_FOLDER, validators=[validate_image_size])
+        'Image', upload_to=path_with_uuid, validators=[validate_image_size])
 
     # def full_clean(self, *args, **kwargs):
     #     super(Image, self).full_clean(*args, **kwargs)
@@ -65,7 +73,7 @@ class Image(File):
 
 class Document(File):
     src = models.FileField(
-        'Documet', upload_to='%s/documents/' % settings.STORAGE_FOLDER, validators=[validate_document_size])
+        'Documet', upload_to=path_with_uuid, validators=[validate_document_size])
 
 
 class Attach(models.Model):

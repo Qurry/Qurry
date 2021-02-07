@@ -18,11 +18,8 @@
           />
         </div>
         <div v-else>
-          <PostContentParser
-            :content="answer.body"
-            mode="body"
-            :images="answer.images"
-          />
+          <v-md-preview :text="answer.body"></v-md-preview>
+
           <PostToolbar
             :post="answer"
             post-type="answer"
@@ -30,6 +27,7 @@
             @delete="onDelete"
             @edit="onEdit"
           />
+
           <CommentContainer
             :comments="answer.comments"
             :path="'/answers/' + answer.id"

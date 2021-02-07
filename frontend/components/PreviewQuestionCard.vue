@@ -17,7 +17,7 @@
     <div class="body">
       <h1 class="title">
         <nuxt-link :to="'/questions/' + question.id" class="question-link">
-          <PostContentParser :content="question.title" mode="title" />
+          {{ question.title }}
         </nuxt-link>
       </h1>
       <TagList :tag-ids="question.tagIds" />

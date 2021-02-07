@@ -139,6 +139,8 @@ class QuestionView(AbstractView):
             search_words = kwargs.get('search', '')
             if search_words != '':
                 search_words = search_words.split(' ')
+            else:
+                search_words = []
             
             tag_id_list = kwargs.get('tags', '')
             filter_tags = Tag.objects.none()

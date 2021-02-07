@@ -2,7 +2,6 @@ import { User } from './../users/user.model'
 
 export interface Image {
   id: string
-  localId?: string
   url?: string
 }
 

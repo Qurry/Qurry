@@ -26,6 +26,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+    
+    def full_clean(self, *args, **kwargs):
+        if self.email:
+            self.email = self.email.lower()
+        super(User, self).full_clean(*args, **kwargs)
 
     def get_profile(self):
         try:
