@@ -17,27 +17,30 @@ class TagsInline(admin.TabularInline):
     model = Tag
 
 
+@admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'user',)
+    list_display = ('id', 'user', 'created_at')
     readonly_fields = ('id',)
     filter_horizontal = ('tags', 'vote_up_users', 'vote_down_users')
     list_filter = (('tags', TreeRelatedFieldListFilter), 'created_at')
     inlines = (AnswersInline, CommentsInline,)
 
 
+@admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user',)
+    list_display = ('id', 'user', 'created_at')
     readonly_fields = ('id',)
     filter_horizontal = ('vote_up_users', 'vote_down_users')
     list_filter = ('created_at',)
     inlines = (CommentsInline,)
 
 
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    readonly_fields = ('id',)
+    list_display = ('id', 'user', 'created_at')
+
+
+@admin.register(Tag)
 class TagAdmin(DraggableMPTTAdmin):
-    list_display = ('tree_actions', 'indented_title', 'id',)
-
-
-admin.site.register(Question, QuestionAdmin)
-admin.site.register(Answer, AnswerAdmin)
-admin.site.register(Tag, TagAdmin)
-admin.site.register(Comment)
+    list_display = ('tree_actions', 'indented_title', 'id')

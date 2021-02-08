@@ -8,18 +8,19 @@ from .models import User, ActivationToken, Profile
 class ProfileInline(admin.StackedInline):
     model = Profile
 
-
+@admin.register(User)
 class UserAdmin(UserAdmin):
     add_form = UserCreationForm
     form = UserChangeForm
     model = User
-    list_display = ('username', 'is_superuser', 'is_active',)
-    list_filter = ('email', 'username', 'is_superuser', 'is_active',)
+    list_display = ('username', 'is_superuser', 'is_active', 'last_login')
+    list_filter = ('email', 'username', 'is_superuser', 'is_active')
     fieldsets = (
-        (None, {'fields': ('username', 'email', 'password')}),
+        (None, {'fields': ('id', 'username', 'email', 'password')}),
         ('Permissions', {
             'fields': ('is_superuser', 'is_active', 'user_permissions')}),
     )
+    readonly_fields = ('id',)
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
@@ -30,7 +31,5 @@ class UserAdmin(UserAdmin):
     ordering = ('email',)
     inlines = (ProfileInline,)
 
-
-admin.site.register(User, UserAdmin)
 admin.site.register(ActivationToken)
 admin.site.register(Profile)
