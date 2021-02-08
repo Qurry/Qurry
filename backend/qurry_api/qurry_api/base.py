@@ -8,7 +8,7 @@ from django.contrib.admin.options import BaseModelAdmin
 from django.core.exceptions import PermissionDenied
 from django.db.models import ImageField
 from django.utils.safestring import mark_safe
-from django.http import JsonResponse
+from django.contrib.auth.models import update_last_login
 from django.conf import settings
 
 from users.models import User
@@ -107,4 +107,5 @@ class AuthenticatedView(View):
         if not self.user:
             return JsonResponse({'errors': ['you have to login to do this action']}, status=401)
 
+        update_last_login(None, self.user)
         return super().dispatch(request, request, *args, **kwargs)
