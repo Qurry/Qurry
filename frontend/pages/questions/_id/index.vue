@@ -22,13 +22,10 @@
         />
         <div class="question-body-container">
           <h1 class="mb-3 question-title">
-            <PostContentParser :content="question.title" mode="title" />
+            {{ question.title }}
           </h1>
-          <PostContentParser
-            :content="question.body"
-            mode="body"
-            :images="question.images"
-          />
+
+          <v-md-preview :text="question.body"></v-md-preview>
 
           <div>
             <TagList :tag-ids="question.tagIds" />

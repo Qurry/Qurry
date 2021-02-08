@@ -12,6 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@kangc/v-md-editor": "^1.6.0",
     "@nuxt/typescript-runtime": "^2.0.0",
     "@nuxtjs/auth": "^4.9.1",
     "@nuxtjs/axios": "^5.12.5",
