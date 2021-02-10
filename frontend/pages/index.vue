@@ -1,7 +1,7 @@
 <template>
   <v-row>
     <v-col>
-      <v-md-preview :text="welcomeText"></v-md-preview>
+      <v-md-preview :text="welcomeText" class="pa-0"></v-md-preview>
     </v-col>
   </v-row>
 </template>
