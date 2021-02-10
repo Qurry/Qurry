@@ -18,7 +18,7 @@
           />
         </div>
         <div v-else>
-          <v-md-preview :text="answer.body"></v-md-preview>
+          <v-md-preview :text="answer.body" class="pa-0"></v-md-preview>
 
           <PostToolbar
             :post="answer"
@@ -106,6 +106,5 @@ export default class AnswerDiv extends Vue {
 }
 .answer-body-container {
   flex: 1;
-  /* margin-bottom: 25px; */
 }
 </style>

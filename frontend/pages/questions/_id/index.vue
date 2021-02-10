@@ -25,7 +25,7 @@
             {{ question.title }}
           </h1>
 
-          <v-md-preview :text="question.body"></v-md-preview>
+          <v-md-preview :text="question.body" class="pa-0"></v-md-preview>
 
           <div>
             <TagList :tag-ids="question.tagIds" />
