@@ -7,7 +7,7 @@
         <h2>Angaben gem&auml;&szlig; &sect; 5 TMG</h2>
         <p>
           Abdullatif Ghajar und Tom Richter<br />
-          Stahnsdorfter Str. 150c<br />
+          Stahnsdorfer Str. 150c<br />
           14482 Potsdam
         </p>
 
