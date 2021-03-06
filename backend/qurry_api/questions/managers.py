@@ -7,7 +7,10 @@ class QuestionQuerySet(models.QuerySet):
         if not tags.exists():
             return self.all()
 
-        return self.filter(tags__in=tags)
+        tag_parents = set(tag.parent for tag in tags)
+        tag_leaves = list(tag for tag in tags if tag not in tag_parents)
+
+        return self.filter(tags__in=tag_leaves)
 
     def search(self, words):
         if not words:
@@ -20,5 +23,6 @@ class QuestionQuerySet(models.QuerySet):
             search_result |= self.filter(answer__body__icontains=word)
             search_result |= self.filter(comments__body__icontains=word)
         return search_result.distinct()
+
 
 QuestionManager = QuestionQuerySet.as_manager()
