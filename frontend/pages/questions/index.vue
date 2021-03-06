@@ -22,7 +22,7 @@
           New Question
         </v-btn>
       </div>
-      <QuestionSearchForm @submit="onSubmitSearch" />
+      <QuestionSearchForm class="mb-4" @submit="onSubmitSearch" />
       <div v-if="questions.length">
         <PreviewQuestionCard
           v-for="question in questions"
