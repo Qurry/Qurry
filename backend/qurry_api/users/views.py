@@ -52,7 +52,8 @@ def register(request):
                 'domain': get_current_site(request),
             })
             to_email = form.cleaned_data.get('email')
-            send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [to_email], html_message=message)
+            send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [
+                      to_email], html_message=message)
 
             return JsonResponse({}, status=201)
         else:

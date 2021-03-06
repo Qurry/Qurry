@@ -3,7 +3,7 @@ from django.urls import path
 from .views import register, activate, login, UserView
 
 urlpatterns = [
-    
+
     path('login/', login, name='login'),
     path('register/', register, name='register'),
     path('activate/<str:uidb64>/<str:token>/',

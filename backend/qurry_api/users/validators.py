@@ -3,6 +3,7 @@ import re
 from django.core import validators
 from django.utils.deconstruct import deconstructible
 
+
 @deconstructible
 class HPIEmailValidator(validators.RegexValidator):
     regex = r'^[\w\.-]*@([\w\.-]+\.)?hpi\.de\Z'

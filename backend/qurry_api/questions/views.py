@@ -135,13 +135,13 @@ class QuestionView(AbstractView):
         try:
             limit = abs(int(kwargs.get('limit', DEFAULT_LIMIT)))
             offset = abs(int(kwargs.get('offset', 0)))
-            
+
             search_words = kwargs.get('search', '')
             if search_words != '':
                 search_words = search_words.split(' ')
             else:
                 search_words = []
-            
+
             tag_id_list = kwargs.get('tags', '')
             filter_tags = Tag.objects.none()
             if tag_id_list != '':
