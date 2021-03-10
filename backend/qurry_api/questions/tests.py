@@ -1,3 +1,5 @@
-from django.test import TestCase
+from qurry_api.tests import AuthenticatedTestCase
 
-# Create your tests here.
+
+class QuestionsTestCase(AuthenticatedTestCase):
+    pass

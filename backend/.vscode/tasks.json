@@ -8,6 +8,12 @@
       "problemMatcher": []
     },
     {
+      "label": "Test Backend",
+      "type": "shell",
+      "command": "source python-env/bin/activate; cd qurry_api; python3.9 manage.py test",
+      "problemMatcher": []
+    },
+    {
       "label": "Open Django Shell",
       "type": "shell",
       "command": "source python-env/bin/activate; python3.9 qurry_api/manage.py shell",

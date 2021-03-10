@@ -20,7 +20,7 @@ class UserCreationForm(forms.ModelForm):
         fields = ('email', 'username')
 
     def clean_password(self):
-        password = self.cleaned_data.get("password")
+        password = self.cleaned_data.get('password')
         return password
 
     def _post_clean(self):
@@ -42,7 +42,7 @@ class UserCreationForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password"])
+        user.set_password(self.cleaned_data['password'])
         if commit:
             user.save()
         return user

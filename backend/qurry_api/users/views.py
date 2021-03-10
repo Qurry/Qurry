@@ -1,26 +1,24 @@
 import json
-import jwt
-import time
 import secrets
+import time
 
+import jwt
+from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import send_mail
 from django.http import JsonResponse
-from django.template.loader import render_to_string
-from django.conf import settings
 from django.shortcuts import redirect
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.encoding import force_bytes, force_text
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-
-
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from questions.views import extract_errors
 from qurry_api import settings
 from qurry_api.base import AuthenticatedView, active_user_existence_required
 
 from .forms import UserCreationForm
-from .models import User, ActivationToken
+from .models import ActivationToken, User
 
 
 # aux func
@@ -81,6 +79,9 @@ def login(request):
             if not user.check_password(password):
                 raise PermissionDenied()
 
+            if not user.is_active:
+                raise PermissionDenied
+
         except ValueError:
             return JsonResponse({'errors': ['request must contain email and password as strings']}, status=400)
 
@@ -88,11 +89,11 @@ def login(request):
             return JsonResponse({'errors': ['This user does not exist, has not confirmed their email or the password is invalid.']}, status=400)
 
         token = jwt.encode({
-            "token_type": "access",
-            "exp": int(time.time()) + settings.JWT_VALIDITY_PERIOD,
-            "jti": secrets.token_urlsafe(15),
-            "user_id": str(user.id),
-        }, settings.SECRET_KEY, algorithm="HS256").decode('ascii')
+            'token_type': 'access',
+            'exp': int(time.time()) + settings.JWT_VALIDITY_PERIOD,
+            'jti': secrets.token_urlsafe(15),
+            'user_id': str(user.id),
+        }, settings.SECRET_KEY, algorithm='HS256')
 
         return JsonResponse({'access': token})
 
@@ -141,10 +142,7 @@ class UserView(AuthenticatedView):
         return JsonResponse({'userId': self.user.id})
 
     def profile(self):
-        return JsonResponse({**self.user.as_detailed(), **{
-            'email': self.user.email,
-            'registeredAt': timezone.localtime(self.user.registered_at)
-        }})
+        return JsonResponse(self.user.profile_info())
 
     def change(self, **kwargs):
         if 'username' in kwargs:

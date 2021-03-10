@@ -2,6 +2,6 @@
 Hi {{ user.username }}, <br>
 thank you for your registration on qurry.de. Please open this link to confirm your email: <br><br>
 
-{{ domain }}{% url 'activate' uidb64=uid token=token %}</a> <br>
+{{ domain }}{% url 'activate-account' uidb64=uid token=token %}</a> <br>
 
 {% endautoescape %}

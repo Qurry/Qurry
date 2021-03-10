@@ -1,14 +1,16 @@
 import json
 
-from django.core.exceptions import ValidationError, PermissionDenied, RequestAborted
+from django.core.exceptions import (PermissionDenied, RequestAborted,
+                                    ValidationError)
 from django.http import JsonResponse
+from media.models import Document, DocumentAttach, Image, ImageAttach
+from qurry_api.base import (AuthenticatedView, object_existence_required,
+                            ownership_required)
 
-from media.models import Document, Image, DocumentAttach, ImageAttach
-from qurry_api.base import AuthenticatedView, ownership_required, object_existence_required
-from .models import Question, Answer, Comment, Tag
-
+from .models import Answer, Comment, Question, Tag
 
 DEFAULT_LIMIT = 20
+DEFAULT_ERROR_MESSAGE = 'error while parsing input'
 
 
 def extract_errors(validation_exception):
@@ -215,7 +217,7 @@ class QuestionView(AbstractView):
             # tagIds is not a list
             TypeError: 'tagIds, imageIds and documentIds should be a list of strings.',
         }
-        return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
+        return [message_dict.get(type(bad_request_exception), DEFAULT_ERROR_MESSAGE)]
 
 
 class AnswerView(AbstractView):
@@ -278,7 +280,7 @@ class AnswerView(AbstractView):
             # one argument is not given
             KeyError: 'request must contain body',
         }
-        return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
+        return [message_dict.get(type(bad_request_exception), DEFAULT_ERROR_MESSAGE)]
 
 
 class CommentView(AbstractView):
@@ -339,7 +341,7 @@ class CommentView(AbstractView):
             # one argument is not given
             KeyError: 'request must contain body',
         }
-        return [message_dict.get(type(bad_request_exception), str(bad_request_exception))]
+        return [message_dict.get(type(bad_request_exception), DEFAULT_ERROR_MESSAGE)]
 
 
 class TagView(AuthenticatedView):

@@ -1,6 +1,9 @@
 import secrets
 import uuid
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, Permission, _user_get_permissions
+
+from django.contrib.auth.models import (AbstractBaseUser, Permission,
+                                        PermissionsMixin,
+                                        _user_get_permissions)
 from django.db import models
 from django.utils import timezone
 from media.models import Image
@@ -48,9 +51,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     def profile_image(self):
         return self.get_profile().image_url()
 
+    def profile_info(self):
+        return {**self.as_detailed(), **{
+            'email': self.email,
+            'registeredAt': str(timezone.localtime(self.registered_at))
+        }}
+
     def as_preview(self):
         return {
-            'id': self.id,
+            'id': str(self.id),
             'username': self.username
         }
 
