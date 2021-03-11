@@ -11,7 +11,6 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from questions.views import extract_errors
-from qurry_api import settings
 from qurry_api.base import AuthenticatedView, active_user_existence_required
 
 from .forms import UserCreationForm

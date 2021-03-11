@@ -1,0 +1,59 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Launch Backend",
+      "type": "shell",
+      "command": "${config:python.pythonPath} manage.py runserver",
+      "problemMatcher": []
+    },
+    {
+      "label": "Test Backend",
+      "type": "shell",
+      "command": "${config:python.pythonPath} manage.py test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Open Django Shell",
+      "type": "shell",
+      "command": "${config:python.pythonPath} manage.py shell",
+      "problemMatcher": []
+    },
+    {
+      "label": "Install Python Libraries",
+      "type": "shell",
+      "command": "source ../python-env/bin/activate; pip3.9 install -r ../requirements.txt",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Database (for first time)",
+      "type": "shell",
+      "command": "${config:python.pythonPath} manage.py makemigrations --empty users questions media; ${config:python.pythonPath} manage.py makemigrations users questions media; ${config:python.pythonPath} manage.py migrate users; ${config:python.pythonPath} manage.py makemigrations; ${config:python.pythonPath} manage.py migrate;",
+      "problemMatcher": []
+    },
+    {
+      "label": "Make & Install Migrations",
+      "type": "shell",
+      "command": "${config:python.pythonPath} manage.py makemigrations users questions media; ${config:python.pythonPath} manage.py migrate users; ${config:python.pythonPath} manage.py makemigrations; ${config:python.pythonPath} manage.py migrate;",
+      "problemMatcher": []
+    },
+    {
+      "label": "Flush Data",
+      "type": "shell",
+      "command": "${config:python.pythonPath} manage.py flush --no-input -v 3",
+      "problemMatcher": []
+    },
+    {
+      "label": "Export Data",
+      "type": "shell",
+      "command": "${config:python.pythonPath} manage.py dumpdata -v 3 --indent=4 -e sessions -e admin -e contenttypes -e auth.Permission > ../records.json",
+      "problemMatcher": []
+    },
+    {
+      "label": "Import Data",
+      "type": "shell",
+      "command": "${config:python.pythonPath} manage.py loaddata -v 3 ../records.json",
+      "problemMatcher": []
+    }
+  ]
+}

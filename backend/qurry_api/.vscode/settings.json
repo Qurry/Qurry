@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "python-env/bin/python3.9",
+    "python.pythonPath": "../python-env/bin/python3.9",
     "python.terminal.activateEnvironment": true,
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true,

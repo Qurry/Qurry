@@ -1,7 +1,7 @@
 {
   "folders": [
     {
-      "path": "../backend"
+      "path": "../backend/qurry_api"
     },
     {
       "path": "../frontend"
