@@ -12,11 +12,11 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.views import View
 from questions.views import extract_errors
-from qurry_api.base import (AuthenticatedView, authenticate_user,
-                            method_required, object_existence_required)
+from qurry_api.base import (AuthenticatedView, method_required,
+                            object_existence_required)
 
 from .forms import UserCreationForm
-from .models import ActivationToken, User
+from .models import ActivationToken, User, clean_email_address
 
 
 class Accounting(View):
@@ -57,6 +57,7 @@ class Accounting(View):
             if not email or not password:
                 raise ValueError
 
+            email = clean_email_address(email)
             user = User.objects.get(email=email)
             if not user.check_password(password):
                 raise PermissionDenied()

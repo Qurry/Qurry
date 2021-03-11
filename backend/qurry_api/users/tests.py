@@ -13,6 +13,8 @@ class LoginTestCase(AuthenticatedTestCase):
 
     def test_valid_login(self):
         self.assertTrue(self.can_login('admin@hpi.de', 'admin'))
+        self.assertTrue(self.can_login('admin@uni-potsdam.hpi.de', 'admin'))
+        self.assertTrue(self.can_login('ADMIN@HPI.DE', 'admin'))
 
     def test_invalid_login(self):
         self.assertFalse(self.can_login('admin@hpi.de', 'admi'))
@@ -28,7 +30,7 @@ class LoginTestCase(AuthenticatedTestCase):
     def register_and_return_activation_url(self, email, username, password):
         self.assertTrue(self.successfully_registered(
             email, username, password))
-        activation_token = ActivationToken.objects.get(user__email=email)
+        activation_token = ActivationToken.objects.get(user__username=username)
         token = activation_token.token
         uid = activation_token.user.id
 
@@ -36,17 +38,33 @@ class LoginTestCase(AuthenticatedTestCase):
                             kwargs={'uid': uid, 'token': token})
 
     def test_valid_register(self):
+        self.assertTrue(self.successfully_registered(
+            'register1@hpi.de', 'register1', 'includeI09.'))
+
+        self.assertTrue(self.successfully_registered(
+            'register2@student.hpi.de', 'register2', 'includeI09.'))
+
+        self.assertTrue(self.successfully_registered(
+            'register3@student.uni-potsdam.hpi.de', 'register3', 'includeI09.'))
+
+    def test_register_and_activation(self):
         activation_url = self.register_and_return_activation_url(
-            'test@hpi.de', 'test', 'includeI09.')
-        self.assertFalse(self.can_login('test@hpi.de', 'includeI09.'))
+            'register@student.uni-potsdam.hpi.de', 'register', 'includeI09.')
+        self.assertFalse(self.can_login(
+            'register@student.uni-potsdam.hpi.de', 'includeI09.'))
 
         response = self.client.get(activation_url, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(self.can_login('test@hpi.de', 'includeI09.'))
+        self.assertTrue(self.can_login(
+            'register@student.uni-potsdam.hpi.de', 'includeI09.'))
+        self.assertTrue(self.can_login(
+            'register@student.hpi.de', 'includeI09.'))
 
     def test_invalid_register(self):
         self.assertFalse(self.successfully_registered(
-            'admin@hpi.de', 'a', 'includeI09.'))
+            'new@hhpi.de', 'new', 'includeI09.'))
+        self.assertFalse(self.successfully_registered(
+            'admin@hpi.de', 'new', 'includeI09.'))
         self.assertFalse(self.successfully_registered(
             'new@hpi.de', 'admin', 'inclueI9.'))
         self.assertFalse(self.successfully_registered(

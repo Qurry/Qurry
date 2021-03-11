@@ -1,14 +1,16 @@
 import secrets
 import uuid
 
-from django.contrib.auth.models import (AbstractBaseUser, Permission,
-                                        PermissionsMixin,
-                                        _user_get_permissions)
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils import timezone
 from media.models import Image
 
 from .managers import UserManager
+
+
+def clean_email_address(email_address):
+    return email_address.lower().replace('uni-potsdam.', '')
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -32,7 +34,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def full_clean(self, *args, **kwargs):
         if self.email:
-            self.email = self.email.lower()
+            self.email = clean_email_address(self.email)
         super(User, self).full_clean(*args, **kwargs)
 
     def get_profile(self):
