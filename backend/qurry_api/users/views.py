@@ -95,31 +95,30 @@ class Accounting(View):
 
 class UserView(AuthenticatedView):
     Model = User
-    mode = None
 
     @object_existence_required
-    def get(self, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
             user = User.objects.get(id=kwargs['id'])
             return JsonResponse(user.as_detailed())
 
         return JsonResponse(list(user.as_detailed() for user in User.objects.all_active()), safe=False)
 
-    @authenticate_user
-    def profile(self, request):
-        if request.method == 'GET':
-            return JsonResponse(self.user.profile_info())
-        if request.method == 'PATCH':
-            try:
-                self.change(**json.loads(request.body.decode('utf-8') or '{}'))
-            except ValidationError as exc:
-                return JsonResponse({'errors': extract_errors(exc)}, status=400)
-            except Exception as exc:
-                return JsonResponse({'errors': [str(exc)]}, status=400)
 
-            return JsonResponse({'userId': self.user.id})
-        else:
-            return JsonResponse({'errors': ['if you need to edit your profile, PATCH to profile/']}, status=405)
+class ProfileView(AuthenticatedView):
+
+    def get(self, request, *args, **kwargs):
+        return JsonResponse(self.user.profile_info())
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            self.change(**json.loads(request.body.decode('utf-8') or '{}'))
+        except ValidationError as exc:
+            return JsonResponse({'errors': extract_errors(exc)}, status=400)
+        except Exception as exc:
+            return JsonResponse({'errors': [str(exc)]}, status=400)
+
+        return JsonResponse({'userId': self.user.id})
 
     def change(self, **kwargs):
         if 'username' in kwargs:
