@@ -352,14 +352,30 @@
     "model": "users.user",
     "pk": "318f9fe5-75ac-4ef6-b605-d0f9a0752ce9",
     "fields": {
-        "password": "pbkdf2_sha256$216000$lSQQ0u6YMCwF$UPB9dpTLAPgX5Pnimb/DgRcFNb7SVYAkZwPmyHQKmpk=",
-        "last_login": "2021-03-10T16:18:18.927Z",
+        "password": "pbkdf2_sha256$216000$JVrjo0cWVOSU$XZrgDjReuc16/Undei+3K6pDm2zb7PonY2pA84I6nYE=",
+        "last_login": "2021-03-11T18:43:02.425Z",
         "is_superuser": true,
         "email": "admin@hpi.de",
         "username": "admin",
         "is_staff": true,
         "is_active": true,
         "registered_at": "2021-01-30T06:31:40.050Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "users.user",
+    "pk": "54b466bc-8cd0-4d76-be07-2a5103740374",
+    "fields": {
+        "password": "pbkdf2_sha256$216000$gxHxQ2dnZsRg$i8zRGXw8biLzqMLRPwYAP7VNqHquiE9KkTg/SKpqO68=",
+        "last_login": null,
+        "is_superuser": false,
+        "email": "t@hpi.de",
+        "username": "t",
+        "is_staff": false,
+        "is_active": false,
+        "registered_at": "2021-03-10T17:30:20.054Z",
         "groups": [],
         "user_permissions": []
     }
@@ -378,6 +394,13 @@
         "registered_at": "2021-02-02T21:37:44.852Z",
         "groups": [],
         "user_permissions": []
+    }
+},
+{
+    "model": "users.blockeduser",
+    "pk": 1,
+    "fields": {
+        "email": "blocked@hpi.de"
     }
 },
 {
@@ -405,6 +428,14 @@
         "user": "a0dd12ad-6fbf-4743-813d-044a01899b67",
         "score": 20,
         "image": null
+    }
+},
+{
+    "model": "users.activationtoken",
+    "pk": 2,
+    "fields": {
+        "user": "54b466bc-8cd0-4d76-be07-2a5103740374",
+        "token": "qUSrbKeb_JXmyGdytsdrijukUyhac12kB_sdwI5g"
     }
 },
 {

@@ -5,6 +5,8 @@ from qurry_api.tests import AuthenticatedTestCase
 
 from .models import ActivationToken, User
 
+GOOD_PASSWORD = 'includeI09.'
+BAD_PASSWORD = '123456'
 
 class LoginTestCase(AuthenticatedTestCase):
     def can_login(self, email, password):
@@ -39,41 +41,46 @@ class LoginTestCase(AuthenticatedTestCase):
 
     def test_valid_register(self):
         self.assertTrue(self.successfully_registered(
-            'register1@hpi.de', 'register1', 'includeI09.'))
+            'register1@hpi.de', 'register1', GOOD_PASSWORD))
 
         self.assertTrue(self.successfully_registered(
-            'register2@student.hpi.de', 'register2', 'includeI09.'))
+            'register2@student.hpi.de', 'register2', GOOD_PASSWORD))
 
         self.assertTrue(self.successfully_registered(
-            'register3@student.uni-potsdam.hpi.de', 'register3', 'includeI09.'))
+            'register3@student.uni-potsdam.hpi.de', 'register3', GOOD_PASSWORD))
 
     def test_register_and_activation(self):
         activation_url = self.register_and_return_activation_url(
-            'register@student.uni-potsdam.hpi.de', 'register', 'includeI09.')
+            'register@student.uni-potsdam.hpi.de', 'register', GOOD_PASSWORD)
         self.assertFalse(self.can_login(
-            'register@student.uni-potsdam.hpi.de', 'includeI09.'))
+            'register@student.uni-potsdam.hpi.de', GOOD_PASSWORD))
 
         response = self.client.get(activation_url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(self.can_login(
-            'register@student.uni-potsdam.hpi.de', 'includeI09.'))
+            'register@student.uni-potsdam.hpi.de', GOOD_PASSWORD))
         self.assertTrue(self.can_login(
-            'register@student.hpi.de', 'includeI09.'))
+            'register@student.hpi.de', GOOD_PASSWORD))
 
     def test_invalid_register(self):
         self.assertFalse(self.successfully_registered(
-            'new@hhpi.de', 'new', 'includeI09.'))
+            'new@hhpi.de', 'new', GOOD_PASSWORD))
         self.assertFalse(self.successfully_registered(
-            'admin@hpi.de', 'new', 'includeI09.'))
+            'admin@hpi.de', 'new', GOOD_PASSWORD))
         self.assertFalse(self.successfully_registered(
-            'new@hpi.de', 'admin', 'inclueI9.'))
+            'new@hpi.de', 'admin', GOOD_PASSWORD))
         self.assertFalse(self.successfully_registered(
-            'new@hpi.de', '', 'includeI09.'))
+            'new@hpi.de', '', GOOD_PASSWORD))
         self.assertFalse(self.successfully_registered(
-            '', 'new', 'includeI09.'))
+            '', 'new', GOOD_PASSWORD))
         # bad passwords
         self.assertFalse(self.successfully_registered(
-            'new@hpi.de', 'new', 'SHORT'))
+            'new@hpi.de', 'new', BAD_PASSWORD))
+
+    def test_blocked_user(self):
+        self.assertFalse(self.successfully_registered(
+            'blocked@hpi.de', 'blocked', GOOD_PASSWORD))
+        self.assertFalse(self.can_login('blocked@hpi.de', 'admin'))
 
 
 class UsersTestCase(AuthenticatedTestCase):
@@ -136,5 +143,4 @@ class UsersTestCase(AuthenticatedTestCase):
 
         response = self.request('PATCH', reverse_lazy(
             'view-profile'), {"oldPassword": "admin", "newPassword": "includeI09."}, authenticated=True)
-
         self.assertEqual(response.status_code, 200)

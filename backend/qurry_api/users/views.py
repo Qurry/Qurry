@@ -23,7 +23,10 @@ class Accounting(View):
     @method_required('POST')
     def register(self, request):
         form = UserCreationForm(request.POST)
-        if form.is_valid():
+        try:
+            if not form.is_valid():
+                raise ValidationError()
+
             user = form.save(commit=False)
             user.is_active = False
             user.save()
@@ -40,12 +43,16 @@ class Accounting(View):
                 to_email], html_message=message)
 
             return JsonResponse({}, status=201)
-        else:
-            response_json = {'errors': {}}
-            for field, errors in form.errors.items():
-                response_json['errors'][field] = ' '.join(errors)
 
-            return JsonResponse(response_json, status=409)
+        except Exception as exc:
+            response_json = {'errors': []}
+            for field, errors in form.errors.items():
+                response_json['errors'].append('%s' % field.join(errors))
+
+            if not response_json['errors']:
+                response_json['errors'].append(str(exc))
+
+            return JsonResponse(response_json, status=400)
 
     @method_required('POST')
     def login(self, request):
