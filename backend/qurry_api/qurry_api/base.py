@@ -14,6 +14,17 @@ from users.backends import JWTAuthentication
 from users.models import User
 
 
+def method_required(method):
+    def wrapper(function):
+        def check_method(self, request, *args, **kwargs):
+            if request.method == method:
+                return function(self, request, *args, **kwargs)
+            return JsonResponse({'errors': ['only %s method is allowed' % method]}, status=405)
+
+        return check_method
+    return wrapper
+
+
 def ownership_required(function):
     def is_owner(self, *args, **kwargs):
         if 'id' in kwargs:
@@ -38,16 +49,22 @@ def object_existence_required(function):
     return does_exist
 
 
-def active_user_existence_required(function):
-    def does_active_exist(self, *args, **kwargs):
-        if 'id' in kwargs:
-            try:
-                User.objects.get(id=kwargs['id'], is_active=True)
-            except Exception as err:
-                return JsonResponse({'errors': [str(err)]}, status=404)
-        return function(self, *args, **kwargs)
+def authenticate_user(function):
+    def authenitcate(self, request, *args, **kwargs):
+        try:
+            self.user = JWTAuthentication().authenticate(request)
+        except (jwt.exceptions.InvalidSignatureError, User.DoesNotExist) as exc:
+            return JsonResponse({'errors': ['invalid access token or user does not exist']}, status=401)
+        except Exception as exc:
+            return JsonResponse({'errors': [str(exc)]}, status=400)
 
-    return does_active_exist
+        if not self.user:
+            return JsonResponse({'errors': ['you have to login to do this action']}, status=401)
+
+        update_last_login(None, self.user)
+        return function(self, request, *args, **kwargs)
+
+    return authenitcate
 
 
 def admin_thumbnail(field_name, *args, **kwargs):
@@ -95,16 +112,6 @@ def admin_thumbnail(field_name, *args, **kwargs):
 
 
 class AuthenticatedView(View):
+    @authenticate_user
     def dispatch(self, request, *args, **kwargs):
-        try:
-            self.user = JWTAuthentication().authenticate(request)
-        except (jwt.exceptions.InvalidSignatureError, User.DoesNotExist) as exc:
-            return JsonResponse({'errors': ['invalid access token or user does not exist']}, status=401)
-        except Exception as exc:
-            return JsonResponse({'errors': [str(exc)]}, status=400)
-
-        if not self.user:
-            return JsonResponse({'errors': ['you have to login to do this action']}, status=401)
-
-        update_last_login(None, self.user)
         return super().dispatch(request, request, *args, **kwargs)

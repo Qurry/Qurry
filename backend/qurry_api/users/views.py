@@ -10,28 +10,18 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
+from django.views import View
 from questions.views import extract_errors
-from qurry_api.base import AuthenticatedView, active_user_existence_required
+from qurry_api.base import (AuthenticatedView, authenticate_user,
+                            method_required, object_existence_required)
 
 from .forms import UserCreationForm
 from .models import ActivationToken, User
 
 
-# aux func
-def activation_token_for(user):
-    return ActivationToken.objects.create(user=user).token
-
-
-def is_token_valid(user, token):
-    try:
-        ActivationToken.objects.get(user=user.id, token=token).delete()
-    except ActivationToken.DoesNotExist:
-        return False
-    return True
-
-
-def register(request):
-    if request.method == 'POST':
+class Accounting(View):
+    @method_required('POST')
+    def register(self, request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
@@ -42,12 +32,12 @@ def register(request):
             message = render_to_string('email_template.html', {
                 'user': user,
                 'uid': user.id,
-                'token': activation_token_for(user),
+                'token': ActivationToken.token_for(user),
                 'domain': get_current_site(request),
             })
             to_email = form.cleaned_data.get('email')
             send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [
-                      to_email], html_message=message)
+                to_email], html_message=message)
 
             return JsonResponse({}, status=201)
         else:
@@ -57,12 +47,8 @@ def register(request):
 
             return JsonResponse(response_json, status=409)
 
-    return JsonResponse({'message': 'request is not post'}, status=400)
-
-
-def login(request):
-    if request.method == 'POST':
-
+    @method_required('POST')
+    def login(self, request):
         try:
             body = json.loads(request.body.decode('utf-8'))
             email = body['email']
@@ -93,58 +79,63 @@ def login(request):
 
         return JsonResponse({'access': token})
 
-    return JsonResponse({'errors': ['only post method is allowed']}, status=405)
-
-
-def activate(request, uid, token):
-    try:
-        user = User.objects.get(id=uid)
-    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-    if user is not None and is_token_valid(user, token):
-        user.is_active = True
-        user.save()
-        return redirect('/register/success')
-    else:
-        return redirect('/register/invalid')
+    @method_required('GET')
+    def activate(self, request, uid, token):
+        try:
+            user = User.objects.get(id=uid)
+        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+        if user is not None and ActivationToken.is_token_valid_for(user, token):
+            user.is_active = True
+            user.save()
+            return redirect('/register/success')
+        else:
+            return redirect('/register/invalid')
 
 
 class UserView(AuthenticatedView):
     Model = User
     mode = None
 
-    @active_user_existence_required
-    def get(self, *_, **kwargs):
-        if self.mode == 'profile':
-            return self.profile()
-
+    @object_existence_required
+    def get(self, *args, **kwargs):
         if 'id' in kwargs:
             user = User.objects.get(id=kwargs['id'])
             return JsonResponse(user.as_detailed())
 
         return JsonResponse(list(user.as_detailed() for user in User.objects.all_active()), safe=False)
 
-    def patch(self, request, *_, **__):
-        if self.mode != 'profile':
+    @authenticate_user
+    def profile(self, request):
+        if request.method == 'GET':
+            return JsonResponse(self.user.profile_info())
+        if request.method == 'PATCH':
+            try:
+                self.change(**json.loads(request.body.decode('utf-8') or '{}'))
+            except ValidationError as exc:
+                return JsonResponse({'errors': extract_errors(exc)}, status=400)
+            except Exception as exc:
+                return JsonResponse({'errors': [str(exc)]}, status=400)
+
+            return JsonResponse({'userId': self.user.id})
+        else:
             return JsonResponse({'errors': ['if you need to edit your profile, PATCH to profile/']}, status=405)
-        try:
-            self.change(**json.loads(request.body.decode('utf-8') or '{}'))
-        except ValidationError as exc:
-            return JsonResponse({'errors': extract_errors(exc)}, status=400)
-        except Exception as exc:
-            return JsonResponse({'errors': [str(exc)]}, status=400)
-
-        return JsonResponse({'userId': self.user.id})
-
-    def profile(self):
-        return JsonResponse(self.user.profile_info())
 
     def change(self, **kwargs):
         if 'username' in kwargs:
             self.user.username = kwargs['username']
 
-        if 'password' in kwargs:
-            self.user.set_password(kwargs['password'])
+        if 'newPassword' in kwargs:
+            if not self.user.check_password(kwargs.get('oldPassword')):
+                raise PermissionDenied(
+                    'your old password is wrong or you did not send it')
+            try:
+                UserCreationForm().validate_password(kwargs['newPassword'])
+            except ValidationError as exc:
+                print('{"newPassword": %s}' % exc)
+                raise ValidationError('{"newPassword": %s}' % str(exc))
+
+            self.user.set_password(kwargs['newPassword'])
 
         self.user.full_clean()
         self.user.save()

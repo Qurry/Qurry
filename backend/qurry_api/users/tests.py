@@ -87,6 +87,10 @@ class UsersTestCase(AuthenticatedTestCase):
         sample_data = json.loads(response.content)
         self.assertEqual(sample_data, sample_user.as_detailed())
 
+        response = self.request('GET', reverse_lazy(
+            'view-user-details', args=['fake-id']), authenticated=True)
+        self.assertEqual(response.status_code, 404)
+
     def test_profile_results(self):
         response = self.request('GET', reverse_lazy(
             'view-profile'), authenticated=True)

@@ -16,6 +16,8 @@ DEFAULT_ERROR_MESSAGE = 'error while parsing input'
 def extract_errors(validation_exception):
     error_list = []
     error_dict = eval(str(validation_exception))
+    if isinstance(error_dict, list):
+        error_dict = eval(error_dict[0])
     for field in error_dict:
         for error in error_dict[field]:
             error_list.append('%s: %s' % (field, error))

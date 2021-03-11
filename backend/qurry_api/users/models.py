@@ -101,3 +101,13 @@ class ActivationToken(models.Model):
     def save(self, *args, **kwargs):
         self.token = secrets.token_urlsafe(30)
         return super().save(*args, **kwargs)
+
+    def token_for(user):
+        return ActivationToken.objects.create(user=user).token
+
+    def is_token_valid_for(user, token):
+        try:
+            ActivationToken.objects.get(user=user.id, token=token).delete()
+        except ActivationToken.DoesNotExist:
+            return False
+        return True

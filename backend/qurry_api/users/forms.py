@@ -19,6 +19,9 @@ class UserCreationForm(forms.ModelForm):
         model = User
         fields = ('email', 'username')
 
+    def validate_password(self, password, *args):
+        password_validation.validate_password(password, *args)
+
     def clean_password(self):
         password = self.cleaned_data.get('password')
         return password
@@ -36,7 +39,7 @@ class UserCreationForm(forms.ModelForm):
         password = self.cleaned_data.get('password')
         if password:
             try:
-                password_validation.validate_password(password, self.instance)
+                self.validate_password(password, self.instance)
             except ValidationError as error:
                 self.add_error('password', error)
 
