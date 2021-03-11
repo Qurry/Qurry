@@ -96,5 +96,8 @@ class Profile(models.Model):
 class ActivationToken(models.Model):
     user = models.OneToOneField(User, verbose_name='user',
                                 on_delete=models.CASCADE)
-    token = models.TextField(
-        'token', blank=True, default=secrets.token_urlsafe(30))
+    token = models.TextField('token', blank=True)
+
+    def save(self, *args, **kwargs):
+        self.token = secrets.token_urlsafe(30)
+        return super().save(*args, **kwargs)
