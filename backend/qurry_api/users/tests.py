@@ -22,7 +22,7 @@ class LoginTestCase(AuthenticatedTestCase):
 
     def successfully_registered(self, email, username, password):
         response = self.request('POST', reverse_lazy('register'),
-                                {'email': email, 'username': username, 'password': password})
+                                {'email': email, 'username': username, 'password': password}, json=False)
         return response.status_code == 201
 
     def register_and_return_activation_url(self, email, username, password):
@@ -101,5 +101,22 @@ class UsersTestCase(AuthenticatedTestCase):
         self.assertEqual(expected, got)
 
     def test_user_editing(self):
-        # TODO
-        pass
+        User.objects.get_or_create(username='test')
+
+        response = self.request('PATCH', reverse_lazy(
+            'view-profile'), {'username': 'ADMIN_ADMIN'}, authenticated=True)
+        self.assertEqual(response.status_code, 200)
+        assert not User.objects.filter(username='admin').exists()
+
+        response = self.request('PATCH', reverse_lazy(
+            'view-profile'), {'username': 'test'}, authenticated=True)
+        self.assertEqual(response.status_code, 400)
+
+        response = self.request('PATCH', reverse_lazy(
+            'view-profile'), {'oldPassword': 'admin', 'newPassword': 'SHORT'}, authenticated=True)
+        self.assertEqual(response.status_code, 400)
+
+        response = self.request('PATCH', reverse_lazy(
+            'view-profile'), {"oldPassword": "admin", "newPassword": "includeI09."}, authenticated=True)
+
+        self.assertEqual(response.status_code, 200)

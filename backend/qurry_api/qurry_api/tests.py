@@ -13,9 +13,11 @@ class AuthenticatedTestCase(TestCase):
         self.client = Client()
         self.login_as_admin()
 
-    def request(self, method, url, *args, authenticated=False, **kwargs):
+    def request(self, method, url, *args, authenticated=False, json=True, **kwargs):
         if authenticated:
             kwargs['HTTP_AUTHORIZATION'] = 'Bearer ' + self.access_token
+        if json:
+            kwargs['content_type'] = 'application/json'
         return getattr(self.client, method.lower())(url, *args, **kwargs)
 
     def login(self, email, password, enforce_success=True):

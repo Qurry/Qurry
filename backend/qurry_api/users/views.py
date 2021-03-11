@@ -132,7 +132,6 @@ class UserView(AuthenticatedView):
             try:
                 UserCreationForm().validate_password(kwargs['newPassword'])
             except ValidationError as exc:
-                print('{"newPassword": %s}' % exc)
                 raise ValidationError('{"newPassword": %s}' % str(exc))
 
             self.user.set_password(kwargs['newPassword'])
