@@ -1,8 +1,6 @@
 import json
 
 from django.urls import reverse_lazy
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
 from qurry_api.tests import AuthenticatedTestCase
 
 from .models import ActivationToken, User
@@ -35,8 +33,7 @@ class LoginTestCase(AuthenticatedTestCase):
         uid = activation_token.user.id
 
         return reverse_lazy('activate-account',
-                            args=(urlsafe_base64_encode(
-                                force_bytes(uid)), token))
+                            kwargs={'uid': uid, 'token': token})
 
     def test_valid_register(self):
         activation_url = self.register_and_return_activation_url(

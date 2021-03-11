@@ -10,9 +10,6 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
-from django.utils import timezone
-from django.utils.encoding import force_bytes, force_text
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from questions.views import extract_errors
 from qurry_api import settings
 from qurry_api.base import AuthenticatedView, active_user_existence_required
@@ -45,7 +42,7 @@ def register(request):
             mail_subject = 'Activate your account.'
             message = render_to_string('email_template.html', {
                 'user': user,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'uid': user.id,
                 'token': activation_token_for(user),
                 'domain': get_current_site(request),
             })
@@ -100,10 +97,9 @@ def login(request):
     return JsonResponse({'errors': ['only post method is allowed']}, status=405)
 
 
-def activate(request, uidb64, token):
+def activate(request, uid, token):
     try:
-        uid = force_text(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
+        user = User.objects.get(id=uid)
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
     if user is not None and is_token_valid(user, token):
