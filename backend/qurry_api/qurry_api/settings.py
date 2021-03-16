@@ -18,6 +18,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env('SECRET_KEY')
 
 JWT_VALIDITY_PERIOD = 60*60*24*7
+ACTIVATION_TOKEN_VALIDITY_TIME = 60*60*3
+REST_TOKEN_VALIDITY_TIME = 60*30
 
 if MODE == 'development':
     DEBUG = True

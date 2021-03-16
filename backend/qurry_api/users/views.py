@@ -16,7 +16,16 @@ from qurry_api.base import (AuthenticatedView, method_required,
                             object_existence_required)
 
 from .forms import UserCreationForm
-from .models import ActivationToken, User, clean_email_address
+from .models import ActivationToken, ResetToken, User, clean_email_address
+
+
+def new_jwt_token(uid):
+    return jwt.encode({
+        'token_type': 'access',
+        'exp': int(time.time()) + settings.JWT_VALIDITY_PERIOD,
+        'jti': secrets.token_urlsafe(15),
+        'user_id': str(uid),
+    }, settings.SECRET_KEY, algorithm='HS256')
 
 
 class Accounting(View):
@@ -32,10 +41,8 @@ class Accounting(View):
             user.save()
 
             mail_subject = 'Activate your account.'
-            message = render_to_string('email_template.html', {
-                'user': user,
-                'uid': user.id,
-                'token': ActivationToken.token_for(user),
+            message = render_to_string('activation_email.html', {
+                'token': ActivationToken().new_for(user),
                 'domain': get_current_site(request),
             })
             to_email = form.cleaned_data.get('email')
@@ -78,12 +85,7 @@ class Accounting(View):
         except (User.DoesNotExist, PermissionDenied):
             return JsonResponse({'errors': ['This user does not exist, has not confirmed their email or the password is invalid.']}, status=400)
 
-        token = jwt.encode({
-            'token_type': 'access',
-            'exp': int(time.time()) + settings.JWT_VALIDITY_PERIOD,
-            'jti': secrets.token_urlsafe(15),
-            'user_id': str(user.id),
-        }, settings.SECRET_KEY, algorithm='HS256')
+        token = new_jwt_token(user.id)
 
         return JsonResponse({'access': token})
 
@@ -91,14 +93,70 @@ class Accounting(View):
     def activate(self, request, uid, token):
         try:
             user = User.objects.get(id=uid)
-        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
-            user = None
-        if user is not None and ActivationToken.is_token_valid_for(user, token):
+            token = ActivationToken.objects.get(user=user, value=token)
+            if not token.is_valid():
+                raise Exception('invalid token')
+            token.delete()
             user.is_active = True
             user.save()
             return redirect('/register/success')
-        else:
+        except Exception:
             return redirect('/register/invalid')
+
+    @method_required('POST')
+    def forgot_password(self, request):
+        try:
+            email = json.loads(request.body).get('email')
+            user = User.objects.get(email=email)
+
+            mail_subject = 'Reset your password.'
+            message = render_to_string('password_reset_email.html', {
+                'token': ResetToken().new_for(user),
+                'domain': get_current_site(request),
+            })
+
+            # send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [
+            #     email], html_message=message)
+
+            print(message)
+
+            return JsonResponse({}, status=200)
+
+        except Exception:
+            return JsonResponse({'errors': ['invalid email address']}, status=400)
+
+    @method_required('GET')
+    def reset_password(self, request, uid, token):
+        try:
+            user = User.objects.get(id=uid)
+            token = ResetToken.objects.get(user=user, value=token)
+            if not token.is_valid():
+                raise Exception('invalid token')
+
+            response = redirect('home')
+            response.set_cookie('validation', token.validation)
+            return response
+        except Exception:
+            # TODO change me
+            return redirect('/register/invalid')
+
+    @method_required('POST')
+    def set_password(self, request):
+        try:
+            token = ResetToken.objects.get(
+                validation=request.headers.get('validation'))
+            if not token.is_valid():
+                raise Exception('invalid token')
+            user = token.user
+            token.delete()
+
+            password = json.loads(request.body).get('password')
+            UserCreationForm().validate_password(password)
+
+        except Exception as exc:
+            return JsonResponse({'erorrs': [str(exc)]}, 400)
+
+        return JsonResponse({'access': new_jwt_token(user.id)})
 
 
 class UserView(AuthenticatedView):
@@ -135,7 +193,7 @@ class ProfileView(AuthenticatedView):
         if 'newPassword' in kwargs:
             if not self.user.check_password(kwargs.get('oldPassword')):
                 raise PermissionDenied(
-                    'your old password is wrong or you did not send it')
+                    'your old password is wrong')
             try:
                 UserCreationForm().validate_password(kwargs['newPassword'])
             except ValidationError as exc:
