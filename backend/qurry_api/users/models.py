@@ -4,9 +4,12 @@ from datetime import datetime, timezone
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils import timezone
 from media.models import Image
+
+from users.validators import HPIEmailValidator, validate_word_characters
 
 from .managers import UserManager
 
@@ -18,9 +21,13 @@ def clean_email_address(email_address):
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    email = models.EmailField('email address', unique=True)
+    email = models.EmailField(
+        'email address', unique=True, validators=[HPIEmailValidator()])
     username = models.CharField(
-        'username', max_length=50, null=True, unique=True)
+        'username', max_length=50, null=True, unique=True, validators=[
+            MinLengthValidator(limit_value=3),
+            validate_word_characters
+        ])
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
