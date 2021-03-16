@@ -1,7 +1,0 @@
-{% autoescape off %}
-Hi {{ user.username }}, <br>
-thank you for your registration on qurry.de. Please open this link to confirm your email: <br><br>
-
-{{ domain }}{% url 'activate-account' uid=uid token=token %}</a> <br>
-
-{% endautoescape %}
