@@ -1,10 +1,15 @@
 import secrets
 import uuid
+from datetime import datetime, timezone
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils import timezone
 from media.models import Image
+
+from users.validators import HPIEmailValidator, validate_word_characters
 
 from .managers import UserManager
 
@@ -16,9 +21,13 @@ def clean_email_address(email_address):
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    email = models.EmailField('email address', unique=True)
+    email = models.EmailField(
+        'email address', unique=True, validators=[HPIEmailValidator()])
     username = models.CharField(
-        'username', max_length=50, null=True, unique=True)
+        'username', max_length=50, null=True, unique=True, validators=[
+            MinLengthValidator(limit_value=3),
+            validate_word_characters
+        ])
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -67,7 +76,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def profile_info(self):
         return {**self.as_detailed(), **{
             'email': self.email,
-            'registeredAt': str(timezone.localtime(self.registered_at))
+            'registeredAt': str(timezone.localtime(self.registered_at).replace(microsecond=0))
         }}
 
     def as_preview(self):
@@ -113,21 +122,41 @@ class Profile(models.Model):
         return str(self.user)
 
 
-class ActivationToken(models.Model):
+class Token(models.Model):
+
     user = models.OneToOneField(User, verbose_name='user',
                                 on_delete=models.CASCADE)
-    token = models.TextField('token', blank=True)
+    value = models.TextField('token value', blank=True)
+    created_at = models.DateTimeField('Creation Date', auto_now_add=True)
 
-    def save(self, *args, **kwargs):
-        self.token = secrets.token_urlsafe(30)
-        return super().save(*args, **kwargs)
+    token_length = 30
+    expiration_time = 60
 
-    def token_for(user):
-        return ActivationToken.objects.create(user=user).token
+    class Meta:
+        abstract = True
 
-    def is_token_valid_for(user, token):
-        try:
-            ActivationToken.objects.get(user=user.id, token=token).delete()
-        except ActivationToken.DoesNotExist:
-            return False
-        return True
+    def new_for(self, user):
+        self.__class__.objects.filter(user=user).delete()
+
+        self.user = user
+        self.value = secrets.token_urlsafe(self.token_length)
+        self.save()
+        return self
+
+    def is_valid(self):
+        now = datetime.now(timezone.utc)
+        return (now - self.created_at).seconds < self.expiration_time
+
+
+class ActivationToken(Token):
+    expiration_time = settings.ACTIVATION_TOKEN_VALIDITY_TIME
+
+
+class ResetToken(Token):
+    validation = models.TextField('validation token', blank=True)
+
+    expiration_time = settings.REST_TOKEN_VALIDITY_TIME
+
+    def new_for(self, user):
+        self.validation = secrets.token_urlsafe(self.token_length)
+        return super().new_for(user)

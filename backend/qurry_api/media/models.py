@@ -1,16 +1,14 @@
 import uuid
-import sys
-from PIL import Image as PIL_Image
-from io import BytesIO
-from django.core.files.uploadedfile import InMemoryUploadedFile
+
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import validate_image_file_extension
 from django.db import models
 from django.db.models.fields.related import ForeignKey
 from django.utils import timezone
-from django.conf import settings
 
-from .validators import validate_image_size, validate_document_size
+from .validators import validate_document_size, validate_image_size
 
 
 def path_with_uuid(file_obj, filename):
@@ -56,7 +54,7 @@ class File(models.Model):
 
 class Image(File):
     src = models.ImageField(
-        'Image', upload_to=path_with_uuid, validators=[validate_image_size])
+        'Image', upload_to=path_with_uuid, validators=[validate_image_size, validate_image_file_extension])
 
     # def full_clean(self, *args, **kwargs):
     #     super(Image, self).full_clean(*args, **kwargs)

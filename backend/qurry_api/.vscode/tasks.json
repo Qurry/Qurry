@@ -46,13 +46,13 @@
     {
       "label": "Export Data",
       "type": "shell",
-      "command": "${config:python.pythonPath} manage.py dumpdata -v 3 --indent=4 -e sessions -e admin -e contenttypes -e auth.Permission > ../records.json",
+      "command": "${config:python.pythonPath} manage.py dumpdata -v 3 --indent=4 -e sessions -e admin -e contenttypes -e auth.Permission > fixtures/testing.json",
       "problemMatcher": []
     },
     {
       "label": "Import Data",
       "type": "shell",
-      "command": "${config:python.pythonPath} manage.py loaddata -v 3 ../records.json",
+      "command": "${config:python.pythonPath} manage.py loaddata -v 3 fixtures/testing.json",
       "problemMatcher": []
     }
   ]

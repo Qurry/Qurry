@@ -43,8 +43,14 @@ class AbstractView(AuthenticatedView):
                 return self.vote(obj, request.GET['vote'])
 
             return self.view_detailed(obj)
+        try:
+            limit = abs(int(request.GET.get('limit', DEFAULT_LIMIT)))
+            offset = abs(int(request.GET.get('offset', 0)))
 
-        return self.view_list(**({**request.GET.dict(), ** kwargs}))
+            return self.view_list(**({**request.GET.dict(), ** kwargs, 'limit': limit, 'offset': offset}))
+
+        except Exception:
+            return JsonResponse({'errors': ['get arguments are invalid']}, status=400)
 
     def post(self, request, *args, **kwargs):
         try:
@@ -106,27 +112,8 @@ class AbstractView(AuthenticatedView):
     def vote(self, obj, action):
         if self.user == obj.user:
             return JsonResponse({'errors': ['you can not vote your own %s' % self.Model.__name__.lower()]}, status=400)
-        # remove user from voters
-        try:
-            obj.vote_up_users.get(id=self.user.id)
-            obj.vote_up_users.remove(self.user)
-            obj.score_up(reverse=True)
-        except:
-            pass
 
-        try:
-            obj.vote_down_users.get(id=self.user.id)
-            obj.vote_down_users.remove(self.user)
-            obj.score_down(reverse=True)
-        except:
-            pass
-
-        if action == '1':
-            obj.vote_up_users.add(self.user)
-            obj.score_up()
-        if action == '-1':
-            obj.vote_down_users.add(self.user)
-            obj.score_down()
+        obj.get_vote(self.user, action)
 
         return JsonResponse({'%sId' % self.Model.__name__.lower(): str(obj.id)})
 
@@ -136,27 +123,21 @@ class QuestionView(AbstractView):
 
     def view_list(self, **kwargs):  # in preview format
         # parse arguments
-        try:
-            limit = abs(int(kwargs.get('limit', DEFAULT_LIMIT)))
-            offset = abs(int(kwargs.get('offset', 0)))
+        search_words = kwargs.get('search', '')
+        if search_words != '':
+            search_words = search_words.split(' ')
+        else:
+            search_words = []
 
-            search_words = kwargs.get('search', '')
-            if search_words != '':
-                search_words = search_words.split(' ')
-            else:
-                search_words = []
-
-            tag_id_list = kwargs.get('tags', '')
-            filter_tags = Tag.objects.none()
-            if tag_id_list != '':
-                filter_tags = Tag.objects.filter(id__in=list(
-                    int(id) for id in tag_id_list.split(',')))
-        except:
-            return JsonResponse({'errors': ['get arguments are invalid. be sure that limit and offset are integers and tagIds are seperated with a ´,´']}, status=400)
+        tag_id_list = kwargs.get('tags', '')
+        filter_tags = Tag.objects.none()
+        if tag_id_list != '':
+            filter_tags = Tag.objects.filter(id__in=list(
+                int(id) for id in tag_id_list.split(',')))
 
         questions = Question.objects.all().tag_filter(filter_tags).search(search_words)
 
-        return JsonResponse(list(question.as_preview(self.user) for question in questions[offset: offset + limit]),
+        return JsonResponse(list(question.as_preview(self.user) for question in questions[kwargs['offset']: kwargs['offset'] + kwargs['limit']]),
                             safe=False)
 
     def view_detailed(self, question):

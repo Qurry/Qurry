@@ -353,7 +353,7 @@
     "pk": "318f9fe5-75ac-4ef6-b605-d0f9a0752ce9",
     "fields": {
         "password": "pbkdf2_sha256$216000$JVrjo0cWVOSU$XZrgDjReuc16/Undei+3K6pDm2zb7PonY2pA84I6nYE=",
-        "last_login": "2021-03-11T18:43:02.425Z",
+        "last_login": "2021-03-14T23:15:33.304Z",
         "is_superuser": true,
         "email": "admin@hpi.de",
         "username": "admin",
@@ -428,14 +428,6 @@
         "user": "a0dd12ad-6fbf-4743-813d-044a01899b67",
         "score": 20,
         "image": null
-    }
-},
-{
-    "model": "users.activationtoken",
-    "pk": 2,
-    "fields": {
-        "user": "54b466bc-8cd0-4d76-be07-2a5103740374",
-        "token": "qUSrbKeb_JXmyGdytsdrijukUyhac12kB_sdwI5g"
     }
 },
 {

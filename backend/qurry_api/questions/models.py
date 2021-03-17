@@ -1,11 +1,12 @@
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.fields import (GenericForeignKey,
+                                                GenericRelation)
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
+from media.models import DocumentAttach, ImageAttach
 from mptt.models import MPTTModel, TreeForeignKey
 
 from .managers import QuestionManager
-from media.models import ImageAttach, DocumentAttach
 
 
 class Post(models.Model):
@@ -35,10 +36,31 @@ class Post(models.Model):
         else:
             self.user.add_to_score(-self.downvote_penalty)
 
+    def get_vote(self, user, action):
+        # remove user from voters
+        if self.vote_up_users.filter(id=user.id).exists():
+            self.vote_up_users.remove(user)
+            self.score_up(reverse=True)
+
+        if self.vote_down_users.filter(id=user.id).exists():
+            self.vote_down_users.remove(user)
+            self.score_down(reverse=True)
+
+        if action == '1':
+            self.vote_up_users.add(user)
+            self.score_up()
+        elif action == '-1':
+            self.vote_down_users.add(user)
+            self.score_down()
+        elif action == '0':
+            pass
+        else:
+            raise ValueError('vote is invalid')
+
     def time_info(self):
         return {
-            'createdAt': timezone.localtime(self.created_at),
-            'editedAt': timezone.localtime(self.updated_at),
+            'createdAt': str(timezone.localtime(self.created_at).replace(microsecond=0)),
+            'editedAt': str(timezone.localtime(self.updated_at).replace(microsecond=0)),
         }
 
 

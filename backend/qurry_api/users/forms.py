@@ -4,7 +4,6 @@ from django.contrib.auth.forms import UserChangeForm
 from django.core.exceptions import ValidationError
 
 from .models import User
-from .validators import HPIEmailValidator
 
 
 class UserCreationForm(forms.ModelForm):
@@ -22,20 +21,8 @@ class UserCreationForm(forms.ModelForm):
     def validate_password(self, password, *args):
         password_validation.validate_password(password, *args)
 
-    def clean_password(self):
-        password = self.cleaned_data.get('password')
-        return password
-
     def _post_clean(self):
         super()._post_clean()
-        email = self.cleaned_data.get('email')
-        if email:
-            try:
-                HPIEmailValidator()(email)
-            except ValidationError as error:
-                self.add_error('email', error)
-        # Validate the password after self.instance is updated with form data
-        # by super().
         password = self.cleaned_data.get('password')
         if password:
             try:

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .forms import UserChangeForm, UserCreationForm
-from .models import ActivationToken, BlockedUser, Profile, User
+from .models import ActivationToken, BlockedUser, Profile, ResetToken, User
 
 
 def block_users(modeladmin, request, queryset):
@@ -43,5 +43,6 @@ class UserAdmin(UserAdmin):
 
 
 admin.site.register(ActivationToken)
+admin.site.register(ResetToken)
 admin.site.register(Profile)
 admin.site.register(BlockedUser)
