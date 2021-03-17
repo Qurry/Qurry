@@ -12,49 +12,21 @@
         <v-container>
           <v-row>
             <v-col cols="12">
-              <v-text-field
+              <UsernameInput
                 v-model="user.username"
-                :rules="[
-                  rules.required,
-                  rules.minLengthUsername,
-                  rules.maxLength,
-                  rules.charsUsername,
-                ]"
-                label="Username"
-                required
                 class="form-field"
-                color="secondary"
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12">
-              <v-text-field
-                v-model="user.email"
-                :rules="[rules.required, rules.email]"
-                label="Email"
-                required
-                class="form-field"
-                color="secondary"
-              ></v-text-field>
+                creation-mode="true"
+              />
             </v-col>
             <v-col cols="12">
-              <v-text-field
+              <EmailInput v-model="user.email" class="form-field" />
+            </v-col>
+            <v-col cols="12">
+              <PasswordInput
                 v-model="user.password"
-                :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                :rules="[
-                  rules.required,
-                  rules.minLengthPassword,
-                  rules.maxLength,
-                  rules.number,
-                  rules.uppercase,
-                  rules.lowercase,
-                ]"
-                :type="showPassword ? 'text' : 'password'"
-                label="Password"
                 class="form-field"
-                color="secondary"
-                @click:append="showPassword = !showPassword"
-              ></v-text-field>
+                creation-mode="true"
+              />
             </v-col>
             <v-btn
               :disabled="!isFormValid || loading"
@@ -73,8 +45,12 @@
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
-import { RegistrationUser } from '../users/user.model'
-import UserService from './../../services/UserService'
+
+export interface RegistrationUser {
+  username: string
+  email: string
+  password: string
+}
 
 @Component({ middleware: 'guest', auth: false })
 export default class Register extends Vue {
@@ -86,33 +62,12 @@ export default class Register extends Vue {
 
   errors: string[] = []
   isFormValid = false
-  showPassword = false
   loading = false
-  rules = {
-    required: (value: string) => !!value || 'Required.',
-    minLengthPassword: (value: string) =>
-      value.length >= 10 || 'At least 10 characters.',
-    minLengthUsername: (value: string) =>
-      value.length >= 3 || 'At least 3 characters.',
-    charsUsername: (value: string) =>
-      /^[a-zA-Z][a-zA-Z0-9._-]*$/.test(value) || 'Invalid characters.',
-    number: (value: string) => /\d/.test(value) || 'At least one number.',
-    lowercase: (value: string) =>
-      /[a-z]/.test(value) || 'At least one lower case letter.',
-    uppercase: (value: string) =>
-      /[A-Z]/.test(value) || 'At least one upper case letter',
-    maxLength: (value: string) =>
-      value.length <= 100 || 'Maximum 100 characters.',
-    email: (value: string) => {
-      const pattern = /^[\w.-]*@([\w.-]+\.)?(hpi\.de|hpi\.uni-potsdam\.de)$/
-      return pattern.test(value) || 'Invalid email.'
-    },
-  }
 
   onSubmit() {
     this.loading = true
     this.errors = []
-    UserService.register(this.$axios, this.user)
+    this.register()
       .then((_res: any) => {
         this.$router.push('/register/confirm')
       })
@@ -126,6 +81,18 @@ export default class Register extends Vue {
         }
         this.loading = false
       })
+  }
+
+  async register() {
+    const bodyFormData = new FormData()
+    bodyFormData.append('username', this.user.username)
+    bodyFormData.append('email', this.user.email)
+    bodyFormData.append('password', this.user.password)
+
+    const response = await this.$axios.post('/register/', bodyFormData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response
   }
 }
 </script>
