@@ -18,6 +18,7 @@
           </v-row>
         </v-container>
       </v-form>
+      <NuxtLink to="/forgot-password">Forgot Password?</NuxtLink>
     </v-col>
   </v-row>
 </template>
