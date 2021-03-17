@@ -13,5 +13,6 @@ class HPIEmailValidator(EmailValidator):
 
 
 def validate_word_characters(value):
-    if not _lazy_re_compile(r'^\w+$', re.IGNORECASE).match(value):
-        raise ValidationError('Username should contain only word characters')
+    if not _lazy_re_compile(r'^[\wöäüß\.\-]+$', re.IGNORECASE).match(value):
+        raise ValidationError(
+            'Username should contain only alphabet characters or one of these characters (`.`, `-`, `_`')
