@@ -1,4 +1,3 @@
-import json
 import secrets
 import time
 
@@ -12,8 +11,9 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.views import View
 from questions.views import extract_errors
-from qurry_api.base import (AuthenticatedView, method_required,
-                            object_existence_required)
+from qurry_api.decorators import (method_required, object_existence_required,
+                                  with_request_body_decoded)
+from qurry_api.views import BaseView
 
 from .forms import UserCreationForm
 from .models import ActivationToken, ResetToken, User, clean_email_address
@@ -30,8 +30,9 @@ def new_jwt_token(uid):
 
 class Accounting(View):
     @method_required('POST')
+    @with_request_body_decoded
     def register(self, request):
-        form = UserCreationForm(request.POST)
+        form = UserCreationForm(request.body)
         try:
             if not form.is_valid():
                 raise ValidationError()
@@ -62,11 +63,11 @@ class Accounting(View):
             return JsonResponse(response_json, status=400)
 
     @method_required('POST')
+    @with_request_body_decoded
     def login(self, request):
         try:
-            body = json.loads(request.body.decode('utf-8'))
-            email = body['email']
-            password = body['password']
+            email = request.body['email']
+            password = request.body['password']
 
             if not email or not password:
                 raise ValueError
@@ -104,9 +105,10 @@ class Accounting(View):
             return redirect('/register/invalid')
 
     @method_required('POST')
+    @with_request_body_decoded
     def forgot_password(self, request):
         try:
-            email = json.loads(request.body).get('email')
+            email = request.body.get('email')
             user = User.objects.get(email=email)
 
             mail_subject = 'Reset your password.'
@@ -141,16 +143,17 @@ class Accounting(View):
             return redirect('/register/invalid')
 
     @method_required('POST')
+    @with_request_body_decoded
     def set_password(self, request):
         try:
             token = ResetToken.objects.get(
-                validation=request.headers.get('validation'))
+                validation=request.COOKIES.get('validation'))
             if not token.is_valid():
                 raise Exception('invalid token')
             user = token.user
             token.delete()
 
-            password = json.loads(request.body).get('password')
+            password = request.body.get('password')
             UserCreationForm().validate_password(password)
 
         except Exception as exc:
@@ -159,7 +162,7 @@ class Accounting(View):
         return JsonResponse({'access': new_jwt_token(user.id)})
 
 
-class UserView(AuthenticatedView):
+class UserView(BaseView):
     Model = User
 
     @object_existence_required
@@ -171,14 +174,14 @@ class UserView(AuthenticatedView):
         return JsonResponse(list(user.as_detailed() for user in User.objects.all_active()), safe=False)
 
 
-class ProfileView(AuthenticatedView):
+class ProfileView(BaseView):
 
     def get(self, request, *args, **kwargs):
         return JsonResponse(self.user.profile_info())
 
     def patch(self, request, *args, **kwargs):
         try:
-            self.change(**json.loads(request.body.decode('utf-8') or '{}'))
+            self.change(request.body)
         except ValidationError as exc:
             return JsonResponse({'errors': extract_errors(exc)}, status=400)
         except Exception as exc:
@@ -186,20 +189,20 @@ class ProfileView(AuthenticatedView):
 
         return JsonResponse({'userId': self.user.id})
 
-    def change(self, **kwargs):
-        if 'username' in kwargs:
-            self.user.username = kwargs['username']
+    def change(self, body):
+        if 'username' in body:
+            self.user.username = body['username']
 
-        if 'newPassword' in kwargs:
-            if not self.user.check_password(kwargs.get('oldPassword')):
+        if 'newPassword' in body:
+            if not self.user.check_password(body['oldPassword']):
                 raise PermissionDenied(
                     'your old password is wrong')
             try:
-                UserCreationForm().validate_password(kwargs['newPassword'])
+                UserCreationForm().validate_password(body['newPassword'])
             except ValidationError as exc:
                 raise ValidationError('{"newPassword": %s}' % str(exc))
 
-            self.user.set_password(kwargs['newPassword'])
+            self.user.set_password(body['newPassword'])
 
         self.user.full_clean()
         self.user.save()

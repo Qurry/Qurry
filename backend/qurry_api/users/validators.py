@@ -12,7 +12,7 @@ class HPIEmailValidator(EmailValidator):
     message = 'You have to provide a valid HPI email address like `chris.neinel@student.hpi.de`'
 
 
-def validate_word_characters(value):
+def validate_username_characters(value):
     if not _lazy_re_compile(r'^[\wöäüß\.\-]+$', re.IGNORECASE).match(value):
         raise ValidationError(
             'Username should contain only alphabet characters or one of these characters (`.`, `-`, `_`')
