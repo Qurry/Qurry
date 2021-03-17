@@ -9,7 +9,7 @@ from django.db import models
 from django.utils import timezone
 from media.models import Image
 
-from users.validators import HPIEmailValidator, validate_word_characters
+from users.validators import HPIEmailValidator, validate_username_characters
 
 from .managers import UserManager
 
@@ -24,9 +24,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         'email address', unique=True, validators=[HPIEmailValidator()])
     username = models.CharField(
-        'username', max_length=50, null=True, unique=True, validators=[
+        'username', max_length=20, null=True, unique=True, validators=[
             MinLengthValidator(limit_value=3),
-            validate_word_characters
+            validate_username_characters
         ])
 
     is_staff = models.BooleanField(default=False)
