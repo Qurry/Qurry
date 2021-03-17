@@ -33,14 +33,14 @@ class Accounting(View):
     @with_request_body_decoded
     def register(self, request):
         form = UserCreationForm(request.body)
-        try:
-            if not form.is_valid():
-                raise ValidationError()
-
+        if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
             user.save()
+        else:
+            return JsonResponse({'errors': form.error_list()}, status=400)
 
+        try:
             mail_subject = 'Activate your account.'
             message = render_to_string('activation_email.html', {
                 'token': ActivationToken().new_for(user),
@@ -52,15 +52,8 @@ class Accounting(View):
 
             return JsonResponse({}, status=201)
 
-        except Exception as exc:
-            response_json = {'errors': []}
-            for field, errors in form.errors.items():
-                response_json['errors'].append('%s' % field.join(errors))
-
-            if not response_json['errors']:
-                response_json['errors'].append(str(exc))
-
-            return JsonResponse(response_json, status=400)
+        except Exception:
+            return JsonResponse({'errors': ['error while sending an email']}, status=500)
 
     @method_required('POST')
     @with_request_body_decoded
@@ -68,9 +61,6 @@ class Accounting(View):
         try:
             email = request.body['email']
             password = request.body['password']
-
-            if not email or not password:
-                raise ValueError
 
             email = clean_email_address(email)
             user = User.objects.get(email=email)

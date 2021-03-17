@@ -44,14 +44,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     def full_clean(self, *args, **kwargs):
         if self.email:
             self.email = clean_email_address(self.email)
-        if self.is_blocked():
-            raise PermissionError(
-                'this user is blocked. please contact the support')
 
         super(User, self).full_clean(*args, **kwargs)
-
-    def is_blocked(self):
-        return BlockedUser.objects.filter(email__iexact=self.email)
 
     def block(self):
         BlockedUser.objects.create(email=self.email)
