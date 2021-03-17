@@ -26,7 +26,17 @@ Qurry is the place where students can ask all their questions in an uncomplicate
 
 ## Let's chat 😄
 
-Do you have questions, ideas or feature requests? Please email us to **qurry.info@gmail.com**`
+Do you have questions, ideas or feature requests? Please email us to **qurry.info@gmail.com**
+
+# Release Log
+
+## v0.2
+- edit username and password in profile
+- password reset
+
+## v0.1
+- MVP with questions, answers, comments, tags
+`
 }
 </script>
 
