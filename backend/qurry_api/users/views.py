@@ -135,7 +135,7 @@ class ProfileView(AuthenticatedView):
         if 'newPassword' in kwargs:
             if not self.user.check_password(kwargs.get('oldPassword')):
                 raise PermissionDenied(
-                    'your old password is wrong or you did not send it')
+                    'Your old password is wrong.')
             try:
                 UserCreationForm().validate_password(kwargs['newPassword'])
             except ValidationError as exc:

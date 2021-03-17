@@ -15,7 +15,7 @@
         : [rules.required]
     "
     :type="showPassword ? 'text' : 'password'"
-    label="Password"
+    :label="label ? label : 'Password'"
     color="secondary"
     @click:append="showPassword = !showPassword"
     @input="$emit('input', $event)"
@@ -32,6 +32,9 @@ export default class PasswordInput extends Vue {
 
   @Prop()
   creationMode?: boolean
+
+  @Prop()
+  label?: string
 
   showPassword = false
   rules = {
