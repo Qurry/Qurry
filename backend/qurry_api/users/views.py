@@ -107,10 +107,8 @@ class Accounting(View):
                 'domain': get_current_site(request),
             })
 
-            # send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [
-            #     email], html_message=message)
-
-            print(message)
+            send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [
+                email], html_message=message)
 
             return JsonResponse({}, status=200)
 

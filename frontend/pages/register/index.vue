@@ -84,14 +84,13 @@ export default class Register extends Vue {
   }
 
   async register() {
-    const bodyFormData = new FormData()
-    bodyFormData.append('username', this.user.username)
-    bodyFormData.append('email', this.user.email)
-    bodyFormData.append('password', this.user.password)
+    const userInput = {
+      'username': this.user.username,
+      'email': this.user.email,
+      'password': this.user.password
+    }
 
-    const response = await this.$axios.post('/register/', bodyFormData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    const response = await this.$axios.post('/register/', userInput)
     return response
   }
 }
