@@ -31,7 +31,7 @@ export default class UsernameInput extends Vue {
     maxLength: (value: string) =>
       value.length <= 20 || 'Maximum 20 characters.',
     allowedChars: (value: string) =>
-      /^[a-zA-Z0-9._-]*$/.test(value) ||
+      /^[a-zA-Z0-9._-äöüßÄÖÜ]*$/.test(value) ||
       'Only letters, numbers and - _ . are allowed.',
   }
 }

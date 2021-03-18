@@ -123,7 +123,7 @@ class Accounting(View):
             return JsonResponse({}, status=200)
 
         except Exception:
-            return JsonResponse({'errors': ['invalid email address']}, status=400)
+            return JsonResponse({'errors': ['This email address is invalid.']}, status=400)
 
     @method_required('GET')
     def reset_password(self, request, uid, token):
@@ -133,18 +133,17 @@ class Accounting(View):
             if not token.is_valid():
                 raise Exception('invalid token')
 
-            response = redirect('home')
+            response = redirect('/password/reset')
             response.set_cookie('validation', token.validation)
             return response
         except Exception:
-            # TODO change me
-            return redirect('/register/invalid')
+            return redirect('/password/invalid')
 
     @method_required('POST')
     def set_password(self, request):
         try:
             token = ResetToken.objects.get(
-                validation=request.headers.get('validation'))
+                validation=request.headers.get('Validation'))
             if not token.is_valid():
                 raise Exception('invalid token')
             user = token.user
@@ -152,6 +151,8 @@ class Accounting(View):
 
             password = json.loads(request.body).get('password')
             UserCreationForm().validate_password(password)
+            user.set_password(password)
+            user.save()
 
         except Exception as exc:
             return JsonResponse({'erorrs': [str(exc)]}, 400)

@@ -2,19 +2,19 @@
   <v-row>
     <v-col>
       <h1>Forgot Password</h1>
-      <p>Please enter your email to request a reset link.</p>
+      <p>Please enter your email address to request a reset link.</p>
       <MessageList :messages="errors" />
-      <v-form v-model="isFormValid">
+      <v-form v-model="isFormValid" @submit.prevent="onSubmit">
         <v-container>
           <v-row>
             <v-col cols="12">
-              <EmailInput v-model="user.email" class="form-field" />
+              <EmailInput v-model="email" class="form-field" />
             </v-col>
             <v-btn
               :disabled="!isFormValid || loading"
               :loading="loading"
               color="secondary"
-              @click="onSubmit"
+              type="submit"
             >
               Submit
             </v-btn>
@@ -28,19 +28,9 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 
-export interface RegistrationUser {
-  username: string
-  email: string
-  password: string
-}
-
 @Component({ middleware: 'guest', auth: false })
-export default class Register extends Vue {
-  user: RegistrationUser = {
-    username: '',
-    email: '',
-    password: '',
-  }
+export default class ForgottenPassword extends Vue {
+  email = ''
 
   errors: string[] = []
   isFormValid = false
@@ -49,9 +39,9 @@ export default class Register extends Vue {
   onSubmit() {
     this.loading = true
     this.errors = []
-    this.register()
+    this.requestPasswordReset()
       .then((_res: any) => {
-        this.$router.push('/register/confirm')
+        this.$router.push('/password/confirm')
       })
       .catch((error) => {
         if (error.response.data.errors) {
@@ -65,14 +55,9 @@ export default class Register extends Vue {
       })
   }
 
-  async register() {
-    const bodyFormData = new FormData()
-    bodyFormData.append('username', this.user.username)
-    bodyFormData.append('email', this.user.email)
-    bodyFormData.append('password', this.user.password)
-
-    const response = await this.$axios.post('/register/', bodyFormData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+  async requestPasswordReset() {
+    const response = await this.$axios.post('/forgotpassword/', {
+      email: this.email,
     })
     return response
   }

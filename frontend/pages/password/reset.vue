@@ -1,29 +1,14 @@
 <template>
   <v-row>
     <v-col>
-      <h1>Registration</h1>
-      <p>
-        At the moment registration is only possible for
-        <a href="https://hpi.de/" target="_blank">HPI</a> students with an HPI
-        email address.
-      </p>
+      <h1>Set New Password</h1>
       <MessageList :messages="errors" />
       <v-form v-model="isFormValid" @submit.prevent="onSubmit">
         <v-container>
           <v-row>
             <v-col cols="12">
-              <UsernameInput
-                v-model="user.username"
-                class="form-field"
-                creation-mode="true"
-              />
-            </v-col>
-            <v-col cols="12">
-              <EmailInput v-model="user.email" class="form-field" />
-            </v-col>
-            <v-col cols="12">
               <PasswordInput
-                v-model="user.password"
+                v-model="password"
                 class="form-field"
                 creation-mode="true"
               />
@@ -34,7 +19,7 @@
               color="secondary"
               type="submit"
             >
-              Register
+              Submit
             </v-btn>
           </v-row>
         </v-container>
@@ -46,19 +31,9 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 
-export interface RegistrationUser {
-  username: string
-  email: string
-  password: string
-}
-
 @Component({ middleware: 'guest', auth: false })
-export default class Register extends Vue {
-  user: RegistrationUser = {
-    username: '',
-    email: '',
-    password: '',
-  }
+export default class ResetPassword extends Vue {
+  password = ''
 
   errors: string[] = []
   isFormValid = false
@@ -67,9 +42,9 @@ export default class Register extends Vue {
   onSubmit() {
     this.loading = true
     this.errors = []
-    this.register()
+    this.resetPassword()
       .then((_res: any) => {
-        this.$router.push('/register/confirm')
+        this.$router.push('/login')
       })
       .catch((error) => {
         if (error.response.data.errors) {
@@ -83,15 +58,28 @@ export default class Register extends Vue {
       })
   }
 
-  async register() {
-    const bodyFormData = new FormData()
-    bodyFormData.append('username', this.user.username)
-    bodyFormData.append('email', this.user.email)
-    bodyFormData.append('password', this.user.password)
+  getCookie(name: string) {
+    const value = `; ${document.cookie}`
+    const parts = value.split(`; ${name}=`)
+    if (parts.length === 2) {
+      return parts.pop()!.split(';').shift()
+    }
+  }
 
-    const response = await this.$axios.post('/register/', bodyFormData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+  async resetPassword() {
+    const config = {
+      headers: {
+        validation: this.getCookie('validation'),
+      },
+    }
+
+    const response = await this.$axios.post(
+      '/resetpassword/',
+      {
+        password: this.password,
+      },
+      config
+    )
     return response
   }
 }
