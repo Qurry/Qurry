@@ -58,28 +58,10 @@ export default class ResetPassword extends Vue {
       })
   }
 
-  getCookie(name: string) {
-    const value = `; ${document.cookie}`
-    const parts = value.split(`; ${name}=`)
-    if (parts.length === 2) {
-      return parts.pop()!.split(';').shift()
-    }
-  }
-
   async resetPassword() {
-    const config = {
-      headers: {
-        validation: this.getCookie('validation'),
-      },
-    }
-
-    const response = await this.$axios.post(
-      '/resetpassword/',
-      {
-        password: this.password,
-      },
-      config
-    )
+    const response = await this.$axios.post('/resetpassword/', {
+      password: this.password,
+    })
     return response
   }
 }
