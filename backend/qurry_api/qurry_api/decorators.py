@@ -1,4 +1,5 @@
 import base64
+import json
 
 import jwt
 import six
@@ -6,10 +7,10 @@ from django.conf import settings
 from django.contrib.admin.options import BaseModelAdmin
 from django.contrib.auth.models import update_last_login
 from django.core.exceptions import PermissionDenied
+from django.core.handlers.wsgi import WSGIHandler
 from django.db.models import ImageField
 from django.http import JsonResponse
 from django.utils.safestring import mark_safe
-from django.views import View
 from users.backends import JWTAuthentication
 from users.models import User
 
@@ -111,7 +112,11 @@ def admin_thumbnail(field_name, *args, **kwargs):
     return _model_admin_wrapper
 
 
-class AuthenticatedView(View):
-    @authenticate_user
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, request, *args, **kwargs)
+def with_request_body_decoded(function):
+    def decode_body(self, request, *args, **kwargs):
+        if request.method in ['POST', 'PATCH'] and request.body:
+            request._body = json.loads(request.body)
+
+        return function(self, request, *args, **kwargs)
+
+    return decode_body

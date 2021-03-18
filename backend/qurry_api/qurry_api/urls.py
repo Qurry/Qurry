@@ -1,6 +1,6 @@
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib import admin
-from django.urls import path, re_path, include
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.urls import include, path, re_path
 from django.views.generic import TemplateView
 
 urlpatterns = [
@@ -8,7 +8,7 @@ urlpatterns = [
     path('api/media/', include('media.urls')),
     path('api/', include('questions.urls')),
     path('api/', include('users.urls')),
-    re_path(r'^.*', TemplateView.as_view(template_name='index.html')),
+    re_path(r'^.*', TemplateView.as_view(template_name='index.html'), name='home'),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

@@ -1,7 +1,7 @@
 from django.contrib import admin
+from qurry_api.decorators import admin_thumbnail
 
-from qurry_api.base import admin_thumbnail
-from .models import Image, Document
+from .models import Document, Image
 
 
 @admin.register(Image)

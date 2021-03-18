@@ -1,11 +1,9 @@
-import json
-
 from django.core.exceptions import (PermissionDenied, RequestAborted,
                                     ValidationError)
 from django.http import JsonResponse
 from media.models import Document, DocumentAttach, Image, ImageAttach
-from qurry_api.base import (AuthenticatedView, object_existence_required,
-                            ownership_required)
+from qurry_api.decorators import object_existence_required, ownership_required
+from qurry_api.views import BaseView
 
 from .models import Answer, Comment, Question, Tag
 
@@ -31,7 +29,7 @@ def reference_files(files, attach_model, obj):
         attach_model().attaches_from(obj).add(attach_model(file=file), bulk=False)
 
 
-class AbstractView(AuthenticatedView):
+class AbstractView(BaseView):
     Model = None
 
     # different HTTP requests
@@ -55,7 +53,7 @@ class AbstractView(AuthenticatedView):
     def post(self, request, *args, **kwargs):
         try:
             # extract arguments from body and create element with these arguments
-            id = self.create(json.loads(request.body.decode('utf-8') or '{}'))
+            id = self.create(request.body)
             return JsonResponse({'%sId' % self.Model.__name__.lower(): str(id)}, status=201)
         except ValidationError as exc:
             return JsonResponse({'errors': extract_errors(exc)}, status=400)
@@ -73,7 +71,7 @@ class AbstractView(AuthenticatedView):
         obj = self.Model.objects.get(id=kwargs['id'])
         try:
             # extract arguments from body and change element with these arguments
-            self.change(obj, json.loads(request.body.decode('utf-8') or '{}'))
+            self.change(obj, request.body)
             return JsonResponse({'%sId' % self.Model.__name__.lower(): str(kwargs['id'])}, status=200)
         except ValidationError as exc:
             return JsonResponse({'errors': extract_errors(exc)}, status=400)
@@ -327,7 +325,7 @@ class CommentView(AbstractView):
         return [message_dict.get(type(bad_request_exception), DEFAULT_ERROR_MESSAGE)]
 
 
-class TagView(AuthenticatedView):
+class TagView(BaseView):
 
     def get(self, request, *args, **kwargs):
         return self.view_list()

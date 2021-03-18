@@ -1,4 +1,3 @@
-import json
 import secrets
 import time
 
@@ -12,8 +11,9 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.views import View
 from questions.views import extract_errors
-from qurry_api.base import (AuthenticatedView, method_required,
-                            object_existence_required)
+from qurry_api.decorators import (method_required, object_existence_required,
+                                  with_request_body_decoded)
+from qurry_api.views import BaseView
 
 from .forms import UserCreationForm
 from .models import ActivationToken, ResetToken, User, clean_email_address
@@ -30,16 +30,17 @@ def new_jwt_token(uid):
 
 class Accounting(View):
     @method_required('POST')
+    @with_request_body_decoded
     def register(self, request):
-        form = UserCreationForm(request.POST)
-        try:
-            if not form.is_valid():
-                raise ValidationError()
-
+        form = UserCreationForm(request.body)
+        if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
             user.save()
+        else:
+            return JsonResponse({'errors': form.error_list()}, status=400)
 
+        try:
             mail_subject = 'Activate your account.'
             message = render_to_string('activation_email.html', {
                 'token': ActivationToken().new_for(user),
@@ -51,25 +52,15 @@ class Accounting(View):
 
             return JsonResponse({}, status=201)
 
-        except Exception as exc:
-            response_json = {'errors': []}
-            for field, errors in form.errors.items():
-                response_json['errors'].append('%s' % field.join(errors))
-
-            if not response_json['errors']:
-                response_json['errors'].append(str(exc))
-
-            return JsonResponse(response_json, status=400)
+        except Exception:
+            return JsonResponse({'errors': ['error while sending an email']}, status=500)
 
     @method_required('POST')
+    @with_request_body_decoded
     def login(self, request):
         try:
-            body = json.loads(request.body.decode('utf-8'))
-            email = body['email']
-            password = body['password']
-
-            if not email or not password:
-                raise ValueError
+            email = request.body['email']
+            password = request.body['password']
 
             email = clean_email_address(email)
             user = User.objects.get(email=email)
@@ -104,9 +95,10 @@ class Accounting(View):
             return redirect('/register/invalid')
 
     @method_required('POST')
+    @with_request_body_decoded
     def forgot_password(self, request):
         try:
-            email = json.loads(request.body).get('email')
+            email = request.body.get('email')
             user = User.objects.get(email=email)
 
             mail_subject = 'Reset your password.'
@@ -140,16 +132,17 @@ class Accounting(View):
             return redirect('/password/invalid')
 
     @method_required('POST')
+    @with_request_body_decoded
     def set_password(self, request):
         try:
             token = ResetToken.objects.get(
-                validation=request.headers.get('Validation'))
+                validation=request.COOKIES.get('validation'))
             if not token.is_valid():
                 raise Exception('invalid token')
             user = token.user
             token.delete()
 
-            password = json.loads(request.body).get('password')
+            password = request.body.get('password')
             UserCreationForm().validate_password(password)
             user.set_password(password)
             user.save()
@@ -160,7 +153,7 @@ class Accounting(View):
         return JsonResponse({'access': new_jwt_token(user.id)})
 
 
-class UserView(AuthenticatedView):
+class UserView(BaseView):
     Model = User
 
     @object_existence_required
@@ -172,14 +165,14 @@ class UserView(AuthenticatedView):
         return JsonResponse(list(user.as_detailed() for user in User.objects.all_active()), safe=False)
 
 
-class ProfileView(AuthenticatedView):
+class ProfileView(BaseView):
 
     def get(self, request, *args, **kwargs):
         return JsonResponse(self.user.profile_info())
 
     def patch(self, request, *args, **kwargs):
         try:
-            self.change(**json.loads(request.body.decode('utf-8') or '{}'))
+            self.change(request.body)
         except ValidationError as exc:
             return JsonResponse({'errors': extract_errors(exc)}, status=400)
         except Exception as exc:
@@ -187,20 +180,20 @@ class ProfileView(AuthenticatedView):
 
         return JsonResponse({'userId': self.user.id})
 
-    def change(self, **kwargs):
-        if 'username' in kwargs:
-            self.user.username = kwargs['username']
+    def change(self, body):
+        if 'username' in body:
+            self.user.username = body['username']
 
-        if 'newPassword' in kwargs:
-            if not self.user.check_password(kwargs.get('oldPassword')):
+        if 'newPassword' in body:
+            if not self.user.check_password(body['oldPassword']):
                 raise PermissionDenied(
                     'Your old password is wrong.')
             try:
-                UserCreationForm().validate_password(kwargs['newPassword'])
+                UserCreationForm().validate_password(body['newPassword'])
             except ValidationError as exc:
                 raise ValidationError('{"newPassword": %s}' % str(exc))
 
-            self.user.set_password(kwargs['newPassword'])
+            self.user.set_password(body['newPassword'])
 
         self.user.full_clean()
         self.user.save()
