@@ -8,6 +8,7 @@ from .models import ActivationToken, User
 GOOD_PASSWORD = 'includeI09.'
 BAD_PASSWORD = '123456'
 
+
 class LoginTestCase(AuthenticatedTestCase):
     def can_login(self, email, password):
         self.login(email, password, enforce_success=False)
@@ -22,18 +23,19 @@ class LoginTestCase(AuthenticatedTestCase):
         self.assertFalse(self.can_login('admin@hpi.de', 'admi'))
         self.assertFalse(self.can_login('admin@hpi.de', ''))
         self.assertFalse(self.can_login('test@hpi.de', 'test'))
+        self.assertFalse(self.can_login('test@student.hpi.de', 'test'))
         self.assertFalse(self.can_login('', ''))
 
     def successfully_registered(self, email, username, password):
         response = self.request('POST', reverse_lazy('register'),
-                                {'email': email, 'username': username, 'password': password}, json=False)
+                                {'email': email, 'username': username, 'password': password})
         return response.status_code == 201
 
     def register_and_return_activation_url(self, email, username, password):
         self.assertTrue(self.successfully_registered(
             email, username, password))
         activation_token = ActivationToken.objects.get(user__username=username)
-        token = activation_token.token
+        token = activation_token.value
         uid = activation_token.user.id
 
         return reverse_lazy('activate-account',
@@ -49,13 +51,16 @@ class LoginTestCase(AuthenticatedTestCase):
         self.assertTrue(self.successfully_registered(
             'register3@student.uni-potsdam.hpi.de', 'register3', GOOD_PASSWORD))
 
+        self.assertTrue(self.successfully_registered(
+            'registe4@student.uni-potsdam.hpi.de', 'register_4', GOOD_PASSWORD))
+
     def test_register_and_activation(self):
         activation_url = self.register_and_return_activation_url(
             'register@student.uni-potsdam.hpi.de', 'register', GOOD_PASSWORD)
         self.assertFalse(self.can_login(
             'register@student.uni-potsdam.hpi.de', GOOD_PASSWORD))
 
-        response = self.client.get(activation_url, follow=True)
+        response = self.request('GET', activation_url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(self.can_login(
             'register@student.uni-potsdam.hpi.de', GOOD_PASSWORD))
@@ -65,6 +70,10 @@ class LoginTestCase(AuthenticatedTestCase):
     def test_invalid_register(self):
         self.assertFalse(self.successfully_registered(
             'new@hhpi.de', 'new', GOOD_PASSWORD))
+        self.assertFalse(self.successfully_registered(
+            'new@hpi.de', 'n', GOOD_PASSWORD))
+        self.assertFalse(self.successfully_registered(
+            'new@hpi.de', 'new@', GOOD_PASSWORD))
         self.assertFalse(self.successfully_registered(
             'admin@hpi.de', 'new', GOOD_PASSWORD))
         self.assertFalse(self.successfully_registered(
@@ -97,7 +106,7 @@ class UsersTestCase(AuthenticatedTestCase):
         self.assertEqual(self.request('GET', reverse_lazy(
             'view-profile'), authenticated=True).status_code, 200)
 
-    def test_users_results(self):
+    def test_values(self):
         response = self.request('GET', reverse_lazy(
             'view-users'), authenticated=True)
 
@@ -116,7 +125,7 @@ class UsersTestCase(AuthenticatedTestCase):
             'view-user-details', args=['fake-id']), authenticated=True)
         self.assertEqual(response.status_code, 404)
 
-    def test_profile_results(self):
+    def test_profile_values(self):
         response = self.request('GET', reverse_lazy(
             'view-profile'), authenticated=True)
 
@@ -138,9 +147,9 @@ class UsersTestCase(AuthenticatedTestCase):
         self.assertEqual(response.status_code, 400)
 
         response = self.request('PATCH', reverse_lazy(
-            'view-profile'), {'oldPassword': 'admin', 'newPassword': 'SHORT'}, authenticated=True)
+            'view-profile'), {'oldPassword': 'admin', 'newPassword': BAD_PASSWORD}, authenticated=True)
         self.assertEqual(response.status_code, 400)
 
         response = self.request('PATCH', reverse_lazy(
-            'view-profile'), {"oldPassword": "admin", "newPassword": "includeI09."}, authenticated=True)
+            'view-profile'), {'oldPassword': 'admin', 'newPassword': GOOD_PASSWORD}, authenticated=True)
         self.assertEqual(response.status_code, 200)

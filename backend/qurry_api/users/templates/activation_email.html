@@ -2,6 +2,6 @@
 Hi {{ user.username }}, <br>
 thank you for creating a new account on qurry.de. To confirm your account please click on the link below: <br><br>
 
-{{ domain }}{% url 'activate-account' uid=token.user.id token=token.value %}</a> <br>
+<a>{{ domain }}{% url 'activate-account' uid=token.user.id token=token.value %}</a> <br>
 
 {% endautoescape %}

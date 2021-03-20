@@ -13,10 +13,11 @@ from django.views import View
 from questions.views import extract_errors
 from qurry_api.decorators import (method_required, object_existence_required,
                                   with_request_body_decoded)
-from qurry_api.views import BaseView
+from qurry_api.views import BaseView, error_list_from
 
-from .forms import UserCreationForm
-from .models import ActivationToken, ResetToken, User, clean_email_address
+from .forms import (AuthenticationForm, PasswordForgotForm, PasswordResetForm,
+                    RegistrationForm, TokenValidationForm)
+from .models import ActivationToken, ResetToken, User
 
 
 def new_jwt_token(uid):
@@ -32,13 +33,13 @@ class Accounting(View):
     @method_required('POST')
     @with_request_body_decoded
     def register(self, request):
-        form = UserCreationForm(request.body)
+        form = RegistrationForm(request.body)
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
             user.save()
         else:
-            return JsonResponse({'errors': form.error_list()}, status=400)
+            return JsonResponse({'errors': error_list_from(form.errors)}, status=400)
 
         try:
             mail_subject = 'Activate your account.'
@@ -53,54 +54,39 @@ class Accounting(View):
             return JsonResponse({}, status=201)
 
         except Exception:
-            return JsonResponse({'errors': ['error while sending an email']}, status=500)
+            return JsonResponse({'errors': ['Error occured while sending an email']}, status=500)
 
     @method_required('POST')
     @with_request_body_decoded
     def login(self, request):
-        try:
-            email = request.body['email']
-            password = request.body['password']
+        form = AuthenticationForm(data=request.body)
+        if form.is_valid():
+            return JsonResponse({'access': new_jwt_token(form.get_user().id)})
 
-            email = clean_email_address(email)
-            user = User.objects.get(email=email)
-            if not user.check_password(password):
-                raise PermissionDenied()
-
-            if not user.is_active:
-                raise PermissionDenied
-
-        except ValueError:
-            return JsonResponse({'errors': ['request must contain email and password as strings']}, status=400)
-
-        except (User.DoesNotExist, PermissionDenied):
-            return JsonResponse({'errors': ['This user does not exist, has not confirmed their email or the password is invalid.']}, status=400)
-
-        token = new_jwt_token(user.id)
-
-        return JsonResponse({'access': token})
+        return JsonResponse({'errors': error_list_from(form.errors)}, status=400)
 
     @method_required('GET')
     def activate(self, request, uid, token):
-        try:
-            user = User.objects.get(id=uid)
-            token = ActivationToken.objects.get(user=user, value=token)
-            if not token.is_valid():
-                raise Exception('invalid token')
-            token.delete()
+        form = TokenValidationForm(
+            {'uid': uid, 'token': token}, ActivationToken)
+        if form.is_valid():
+            form.get_token().delete()
+            user = form.get_user()
             user.is_active = True
             user.save()
             return redirect('/register/success')
-        except Exception:
-            return redirect('/register/invalid')
+
+        return redirect('/register/invalid')
 
     @method_required('POST')
     @with_request_body_decoded
     def forgot_password(self, request):
+        form = PasswordForgotForm(request.body)
+        if form.is_valid():
+            user = form.user
+        else:
+            return JsonResponse({'errors': error_list_from(form.errors)}, status=400)
         try:
-            email = request.body.get('email')
-            user = User.objects.get(email=email)
-
             mail_subject = 'Reset your password.'
             message = render_to_string('password_reset_email.html', {
                 'token': ResetToken().new_for(user),
@@ -108,45 +94,41 @@ class Accounting(View):
             })
 
             send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [
-                email], html_message=message)
+                user.email], html_message=message)
 
             return JsonResponse({}, status=200)
-
         except Exception:
-            return JsonResponse({'errors': ['This email address is invalid.']}, status=400)
+            return JsonResponse({'errors': ['Error occured while sending an email']}, status=500)
 
     @method_required('GET')
     def reset_password(self, request, uid, token):
-        try:
-            user = User.objects.get(id=uid)
-            token = ResetToken.objects.get(user=user, value=token)
-            if not token.is_valid():
-                raise Exception('invalid token')
-
+        form = TokenValidationForm({'uid': uid, 'token': token}, ResetToken)
+        if form.is_valid():
+            token = form.get_token()
             response = redirect('/password/reset')
             response.set_cookie('validation', token.validation)
+            token.got_used()
             return response
-        except Exception:
-            return redirect('/password/invalid')
+
+        return redirect('/password/invalid')
 
     @method_required('POST')
     @with_request_body_decoded
     def set_password(self, request):
-        try:
-            token = ResetToken.objects.get(
-                validation=request.COOKIES.get('validation'))
-            if not token.is_valid():
-                raise Exception('invalid token')
-            user = token.user
-            token.delete()
+        password = request.body.get('password')
+        validation = request.COOKIES.get('validation')
+        form = PasswordResetForm(
+            {'validation': validation, 'password': password})
 
-            password = request.body.get('password')
-            UserCreationForm().validate_password(password)
+        if form.is_valid():
+            user = form.get_user()
             user.set_password(password)
             user.save()
 
-        except Exception as exc:
-            return JsonResponse({'erorrs': [str(exc)]}, 400)
+            token = form.get_token()
+            token.delete()
+        else:
+            return JsonResponse({'erorrs': error_list_from(form.errors)}, status=400)
 
         return JsonResponse({'access': new_jwt_token(user.id)})
 
@@ -154,7 +136,7 @@ class Accounting(View):
 class UserView(BaseView):
     Model = User
 
-    @object_existence_required
+    @ object_existence_required
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
             user = User.objects.get(id=kwargs['id'])
@@ -186,12 +168,14 @@ class ProfileView(BaseView):
             if not self.user.check_password(body['oldPassword']):
                 raise PermissionDenied(
                     'Your old password is wrong.')
-            try:
-                UserCreationForm().validate_password(body['newPassword'])
-            except ValidationError as exc:
-                raise ValidationError('{"newPassword": %s}' % str(exc))
+            # try:
+            #     RegistrationForm().validate_password(body['newPassword'])
+            # except ValidationError as exc:
+            #     raise ValidationError('{"newPassword": %s}' % str(exc))
 
             self.user.set_password(body['newPassword'])
 
+        # form = UserChangeForm(body, instance=self.user)
+        # form.is_valid()
         self.user.full_clean()
         self.user.save()

@@ -137,9 +137,12 @@ class Token(models.Model):
         self.save()
         return self
 
-    def is_valid(self):
+    def is_expired(self):
         now = datetime.now(timezone.utc)
-        return (now - self.created_at).seconds < self.expiration_time
+        return (now - self.created_at).seconds > self.expiration_time
+
+    def is_valid(self):
+        return not self.is_expired()
 
 
 class ActivationToken(Token):
@@ -148,9 +151,17 @@ class ActivationToken(Token):
 
 class ResetToken(Token):
     validation = models.TextField('validation token', blank=True)
+    is_used = models.BooleanField('Got Used', default=False)
 
     expiration_time = settings.REST_TOKEN_VALIDITY_TIME
 
     def new_for(self, user):
         self.validation = secrets.token_urlsafe(self.token_length)
         return super().new_for(user)
+
+    def got_used(self):
+        self.is_used = True
+        self.save()
+
+    def is_valid(self):
+        return super().is_valid() and not self.is_used
