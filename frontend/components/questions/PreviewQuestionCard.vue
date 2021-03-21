@@ -35,7 +35,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { PreviewQuestion } from './../pages/questions/question.model'
+import { PreviewQuestion } from '~/pages/questions/question.model'
 
 @Component
 export default class QuestionListCard extends Vue {

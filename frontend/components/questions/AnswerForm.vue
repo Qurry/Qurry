@@ -13,7 +13,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { CreateEditAnswer, Image } from './../pages/questions/question.model'
+import { CreateEditAnswer, Image } from '~/pages/questions/question.model'
 
 @Component
 export default class AnswerForm extends Vue {

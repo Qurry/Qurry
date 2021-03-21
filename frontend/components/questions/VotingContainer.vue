@@ -22,7 +22,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import QuestionService from '../services/QuestionService'
+import QuestionService from '~/services/QuestionService'
 
 @Component
 export default class VotingContainer extends Vue {

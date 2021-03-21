@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { Image } from './../pages/questions/question.model'
+import { Image } from '~/pages/questions/question.model'
 
 @Component
 export default class ImagePreviewList extends Vue {
