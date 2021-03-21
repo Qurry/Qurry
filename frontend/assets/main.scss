@@ -1,0 +1,13 @@
+@import '~vuetify/src/styles/settings/_variables';
+
+@media #{map-get($display-breakpoints, 'lg-and-up')} {
+  .container {
+    width: 65% !important;
+  }
+}
+
+.github-markdown-body,
+.v-md-editor-preview,
+.v-md-textarea-editor textarea {
+  word-break: normal !important;
+}

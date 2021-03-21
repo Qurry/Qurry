@@ -37,7 +37,7 @@
     </v-app-bar>
 
     <v-main>
-      <v-container>
+      <v-container class="container">
         <div v-if="isLoading">
           <v-progress-circular
             :size="70"
