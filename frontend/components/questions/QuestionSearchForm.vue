@@ -21,7 +21,7 @@
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
-import { QuestionSearch } from './../pages/questions/question.model'
+import { QuestionSearch } from '~/pages/questions/question.model'
 
 @Component
 export default class QuestionSearchForm extends Vue {

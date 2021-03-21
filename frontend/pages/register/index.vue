@@ -85,9 +85,9 @@ export default class Register extends Vue {
 
   async register() {
     const userInput = {
-      'username': this.user.username,
-      'email': this.user.email,
-      'password': this.user.password
+      username: this.user.username,
+      email: this.user.email,
+      password: this.user.password,
     }
 
     const response = await this.$axios.post('/register/', userInput)

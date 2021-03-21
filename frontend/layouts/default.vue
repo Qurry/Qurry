@@ -37,14 +37,9 @@
     </v-app-bar>
 
     <v-main>
-      <v-container>
+      <v-container class="container">
         <div v-if="isLoading">
-          <v-progress-circular
-            :size="70"
-            :width="7"
-            color="primary"
-            indeterminate
-          ></v-progress-circular>
+          <LoadingSpinner />
         </div>
         <div v-else>
           <nuxt />
@@ -65,6 +60,7 @@ export default class DefaultLayout extends Vue {
   isLoading = false
 
   created() {
+    // reload triggered if user logs in
     this.$nuxt.$on('reload', () => {
       this.reload()
     })

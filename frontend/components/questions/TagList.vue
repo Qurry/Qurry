@@ -26,7 +26,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { ObjectTag } from './../pages/tags/tag.model'
+import { ObjectTag } from '~/pages/tags/tag.model'
 
 @Component
 export default class TagList extends Vue {

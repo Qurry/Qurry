@@ -23,7 +23,6 @@
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
-import UserService from '../../services/UserService'
 import { User } from './user.model'
 
 @Component
@@ -33,9 +32,10 @@ export default class Dashboard extends Vue {
 
   fetch() {
     return Promise.all([
-      UserService.getUsers(this.$axios)
-        .then((users) => {
-          this.users = users.sort((a: User, b: User) =>
+      this.$axios
+        .get('/users/')
+        .then((users: { data: User[] }) => {
+          this.users = users.data.sort((a: User, b: User) =>
             a.score! < b.score! ? 1 : b.score! < a.score! ? -1 : 0
           )
         })

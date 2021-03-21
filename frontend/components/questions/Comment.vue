@@ -24,8 +24,8 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { Comment, CreateEditComment } from './../pages/questions/question.model'
-import QuestionService from './../services/QuestionService'
+import { Comment, CreateEditComment } from '~/pages/questions/question.model'
+import QuestionService from '~/services/QuestionService'
 
 @Component
 export default class CommentContainer extends Vue {

@@ -20,7 +20,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { CreateEditComment } from './../pages/questions/question.model'
+import { CreateEditComment } from '~/pages/questions/question.model'
 
 @Component
 export default class CommentForm extends Vue {

@@ -36,7 +36,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'nuxt-property-decorator'
-import { CreateEditQuestion, Image } from './../pages/questions/question.model'
+import { CreateEditQuestion, Image } from '~/pages/questions/question.model'
 
 @Component
 export default class QuestionForm extends Vue {

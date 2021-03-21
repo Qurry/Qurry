@@ -42,8 +42,8 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { Answer, CreateEditAnswer } from './../pages/questions/question.model'
-import QuestionService from './../services/QuestionService'
+import { Answer, CreateEditAnswer } from '~/pages/questions/question.model'
+import QuestionService from '~/services/QuestionService'
 
 @Component
 export default class AnswerDiv extends Vue {
