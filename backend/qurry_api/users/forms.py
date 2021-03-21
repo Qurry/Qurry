@@ -138,23 +138,39 @@ class PasswordResetForm(forms.Form, TokenValidationMixin):
                 raise self.expired_token_error()
 
 
-class UserChangeForm(UserChangeForm):
+class PasswordChangeForm(forms.Form):
     oldPassword = forms.CharField(
-        label='Old Password', strip=False, required=False)
+        label='Old Password', strip=False)
     newPassword = forms.CharField(
-        label='new Password', strip=False, required=False)
-    username = forms.CharField(label='Username', required=False)
+        label='new Password', strip=False)
+
+    def __init__(self, data, instance=None, *args, **kwargs):
+        self.instance = instance
+        super().__init__(data, *args, **kwargs)
+
+    def clean(self):
+        super().clean()
+
+        new_password = self.cleaned_data.get('newPassword')
+        old_password = self.cleaned_data.get('oldPassword')
+
+        if not self.instance.check_password(old_password):
+            self.add_error('oldPassword', ValidationError(
+                'Old Password is wrong', code='wrong_old_password'))
+
+        password_validation.validate_password(
+            new_password, self.instance)
+
+    def save(self, commit=True):
+        password = self.cleaned_data.get('newPassword')
+        self.instance.set_password(password)
+
+        if commit:
+            self.instance.save()
+
+
+class ProfileEditForm(forms.ModelForm):
 
     class Meta:
         model = User
         fields = ('username',)
-
-    def clean(self):
-        super().clean()
-        new_password = self.cleaned_data.get('newPassword')
-        if new_password:
-            if not 'oldPassword' in self.cleaned_data:
-                self.cleaned_data('old password', 'Old password is required')
-
-            old_password = self.cleaned_data.get('oldPassword')
-            self.instance.check_password(old_password)

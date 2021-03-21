@@ -15,8 +15,9 @@ from qurry_api.decorators import (method_required, object_existence_required,
                                   with_request_body_decoded)
 from qurry_api.views import BaseView, error_list_from
 
-from .forms import (AuthenticationForm, PasswordForgotForm, PasswordResetForm,
-                    RegistrationForm, TokenValidationForm)
+from .forms import (
+    AuthenticationForm, PasswordChangeForm, PasswordForgotForm,
+    PasswordResetForm, ProfileEditForm, RegistrationForm, TokenValidationForm)
 from .models import ActivationToken, ResetToken, User
 
 
@@ -151,31 +152,12 @@ class ProfileView(BaseView):
         return JsonResponse(self.user.profile_info())
 
     def patch(self, request, *args, **kwargs):
-        try:
-            self.change(request.body)
-        except ValidationError as exc:
-            return JsonResponse({'errors': extract_errors(exc)}, status=400)
-        except Exception as exc:
-            return JsonResponse({'errors': [str(exc)]}, status=400)
+        form = ProfileEditForm(request.body, instance=self.user)
+        if 'newPassword' in request.body:
+            form = PasswordChangeForm(request.body, instance=self.user)
 
-        return JsonResponse({'userId': self.user.id})
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'userId': self.user.id})
 
-    def change(self, body):
-        if 'username' in body:
-            self.user.username = body['username']
-
-        if 'newPassword' in body:
-            if not self.user.check_password(body['oldPassword']):
-                raise PermissionDenied(
-                    'Your old password is wrong.')
-            # try:
-            #     RegistrationForm().validate_password(body['newPassword'])
-            # except ValidationError as exc:
-            #     raise ValidationError('{"newPassword": %s}' % str(exc))
-
-            self.user.set_password(body['newPassword'])
-
-        # form = UserChangeForm(body, instance=self.user)
-        # form.is_valid()
-        self.user.full_clean()
-        self.user.save()
+        return JsonResponse({'errors': error_list_from(form.errors)}, status=400)
