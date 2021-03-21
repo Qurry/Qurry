@@ -56,7 +56,13 @@ export default class VotingContainer extends Vue {
       .then((_res) => {
         this.$emit('update')
       })
-      .catch((e) => console.log(e))
+      .catch((e) => {
+        if (e.response.data.errors) {
+          this.$store.commit('snackbar/setSnack', e.response.data.errors[0])
+        } else {
+          console.log(e)
+        }
+      })
   }
 }
 </script>

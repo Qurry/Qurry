@@ -109,7 +109,7 @@ class AbstractView(BaseView):
 
     def vote(self, obj, action):
         if self.user == obj.user:
-            return JsonResponse({'errors': ['you can not vote your own %s' % self.Model.__name__.lower()]}, status=400)
+            return JsonResponse({'errors': ['You can\'t vote for your own %s.' % self.Model.__name__.lower()]}, status=400)
 
         obj.get_vote(self.user, action)
 
@@ -313,7 +313,7 @@ class CommentView(AbstractView):
         comment.save()
 
     def vote(self, answer, action):
-        return JsonResponse({'error': ['you can not vote comments now']}, status=405)
+        return JsonResponse({'error': ['You can\'t vote comments.']}, status=405)
 
     def handle(self, bad_request_exception):
         # fields are not valid
