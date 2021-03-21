@@ -111,7 +111,7 @@ class AbstractView(BaseView):
         if self.user == obj.user:
             return JsonResponse({'errors': ['you can not vote your own %s' % self.Model.__name__.lower()]}, status=400)
 
-        obj.get_vote(self.user, action)
+        obj.got_voted(self.user, action)
 
         return JsonResponse({'%sId' % self.Model.__name__.lower(): str(obj.id)})
 
