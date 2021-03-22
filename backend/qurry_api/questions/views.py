@@ -1,5 +1,6 @@
 from django.core.exceptions import (PermissionDenied, RequestAborted,
                                     ValidationError)
+from django.db.models import Q
 from django.http import JsonResponse
 from media.models import Document, DocumentAttach, Image, ImageAttach
 from qurry_api.decorators import object_existence_required, ownership_required
@@ -9,6 +10,7 @@ from .models import Answer, Comment, Question, Tag
 
 DEFAULT_LIMIT = 20
 DEFAULT_ERROR_MESSAGE = 'error while parsing input'
+DEFAULT_SORT = 'votes'
 
 
 def extract_errors(validation_exception):
@@ -42,12 +44,10 @@ class AbstractView(BaseView):
 
             return self.view_detailed(obj)
         try:
-            limit = abs(int(request.GET.get('limit', DEFAULT_LIMIT)))
-            offset = abs(int(request.GET.get('offset', 0)))
+            return self.view_list(**({**request.GET.dict(), ** kwargs}))
 
-            return self.view_list(**({**request.GET.dict(), ** kwargs, 'limit': limit, 'offset': offset}))
-
-        except Exception:
+        except Exception as exc:
+            raise exc
             return JsonResponse({'errors': ['get arguments are invalid']}, status=400)
 
     def post(self, request, *args, **kwargs):
@@ -121,21 +121,38 @@ class QuestionView(AbstractView):
 
     def view_list(self, **kwargs):  # in preview format
         # parse arguments
-        search_words = kwargs.get('search', '')
-        if search_words != '':
-            search_words = search_words.split(' ')
-        else:
-            search_words = []
+        limit = abs(int(kwargs.get('limit', DEFAULT_LIMIT)))
+        offset = abs(int(kwargs.get('offset', 0)))
 
-        tag_id_list = kwargs.get('tags', '')
+        search_vector = kwargs.get('search', '').split()
+
+        tag_ids = kwargs.get('tags', '')
         filter_tags = Tag.objects.none()
-        if tag_id_list != '':
+        if tag_ids != '':
             filter_tags = Tag.objects.filter(id__in=list(
-                int(id) for id in tag_id_list.split(',')))
+                int(id) for id in tag_ids.split(',')))
 
-        questions = Question.objects.all().tag_filter(filter_tags).search(search_words)
+        sort_attribute = kwargs.get('sort', DEFAULT_SORT)
+        ascnding = kwargs.get('asc', 'false')
+        if ascnding == 'false':
+            sort_attribute = '-%s' % sort_attribute
 
-        return JsonResponse(list(question.as_preview(self.user) for question in questions[kwargs['offset']: kwargs['offset'] + kwargs['limit']]),
+        # collect queries for database
+        queries = []
+        user_id = kwargs.get('user')
+        if user_id:
+            queries.append(Q(user__id=user_id))
+
+        answered = kwargs.get('answered', None)
+        if answered == 'false':
+            queries.append(Q(answer_count=0))
+        elif answered == 'true':
+            queries.append(~Q(answer_count=0))
+
+        questions = Question.objects.filter(*queries).tag_filter(filter_tags).search(
+            search_vector).order_by(sort_attribute)[offset: offset+limit]
+
+        return JsonResponse(list(question.as_preview(self.user) for question in questions),
                             safe=False)
 
     def view_detailed(self, question):

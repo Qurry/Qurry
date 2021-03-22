@@ -148,6 +148,7 @@ class Question(Post, VotedPostMixin):
     title = models.CharField('Title', max_length=200)
     tags = models.ManyToManyField(Tag, verbose_name='Tags', blank=True)
 
+    answer_count = models.IntegerField('Number of Answers', default=0)
     comments = GenericRelation(Comment)
 
     images = GenericRelation(ImageAttach)
@@ -161,11 +162,18 @@ class Question(Post, VotedPostMixin):
     def __str__(self):
         return '%d: %s' % (self.id, self.title)
 
+    def save(self, *args, **kwargs):
+        self.answer_count = self.answer_set.count()
+        return super().save(*args, **kwargs)
+
+    def is_answered(self):
+        return self.answer_count != 0
+
     def as_preview(self, user):
-        return {**self.time_info(), **self.voting_info(), **{
+        return {**self.time_info(), **self.voting_info(user), **{
             'id': str(self.id),
             'title': self.title,
-            'answers': self.answer_set.count(),
+            'answers': self.answer_count,
             'comments': self.comments.count(),
             'tagIds': list(str(tag.id) for tag in self.tags.all()),
         }}
