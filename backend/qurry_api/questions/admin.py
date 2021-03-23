@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericTabularInline
 from mptt.admin import DraggableMPTTAdmin, TreeRelatedFieldListFilter
 
-from .models import Question, Answer, Tag, Comment
+from .models import Answer, Comment, Question, Tag
 
 
 class CommentsInline(GenericTabularInline):
