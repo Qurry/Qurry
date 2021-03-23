@@ -50,9 +50,9 @@ export default class QuestionSearchForm extends Vue {
 
   sortByOptions = [
     // { text: 'Most Relevant', value: 'relevant' },
-    { text: 'Most Votes', value: 'votes' },
-    { text: 'Newest', value: 'created_at' },
-    { text: 'Oldest', value: '-created_at' },
+    { text: 'Most Votes', value: '-votes' },
+    { text: 'Newest', value: '-created_at' },
+    { text: 'Oldest', value: 'created_at' },
   ]
 
   updateSelectedTagIds(selectedTagIds: string[]) {
