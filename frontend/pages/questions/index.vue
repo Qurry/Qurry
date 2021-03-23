@@ -1,16 +1,5 @@
 <template>
-  <v-row v-if="$fetchState.pending">
-    <v-progress-circular
-      :size="70"
-      :width="7"
-      color="primary"
-      indeterminate
-    ></v-progress-circular>
-  </v-row>
-  <v-row v-else-if="$fetchState.error">
-    <p>Error while fetching questions: {{ $fetchState.error.message }}</p>
-  </v-row>
-  <v-row v-else>
+  <v-row>
     <v-col>
       <div class="question-header">
         <h1>Questions</h1>
@@ -22,16 +11,37 @@
           New Question
         </v-btn>
       </div>
-      <QuestionSearchForm class="mb-4" @submit="onSubmitSearch" />
-      <div v-if="questions.length">
-        <PreviewQuestionCard
-          v-for="question in questions"
-          :key="question.id"
-          :question="question"
-        />
+      <QuestionSearchForm
+        class="mb-4"
+        :search="search"
+        @submit="onSubmitSearch"
+      />
+      <div v-if="isFetchingQuestions">
+        <LoadingSpinner />
       </div>
       <div v-else>
-        <p class="no-questions">No questions found.</p>
+        <div v-if="questions.length">
+          <PreviewQuestionCard
+            v-for="question in questions"
+            :key="question.id"
+            :question="question"
+          />
+          <v-row justify="center">
+            <v-col>
+              <v-container class="max-width">
+                <v-pagination
+                  v-model="search.page"
+                  :length="search.limit"
+                  :total-visible="7"
+                  @input="onSubmitSearch"
+                ></v-pagination>
+              </v-container>
+            </v-col>
+          </v-row>
+        </div>
+        <div v-else>
+          <p class="no-questions">No questions found.</p>
+        </div>
       </div>
     </v-col>
   </v-row>
@@ -39,34 +49,40 @@
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
-import QuestionService from './../../services/QuestionService'
 import { PreviewQuestion, QuestionSearch } from './question.model'
+import QuestionService from '~/services/QuestionService'
 
 @Component
 export default class QuestionList extends Vue {
   questions: PreviewQuestion[] = []
-
-  sortQuestions() {
-    this.questions.sort((a: PreviewQuestion, b: PreviewQuestion) =>
-      a.votes! < b.votes! ? 1 : b.votes! < a.votes! ? -1 : 0
-    )
+  isFetchingQuestions = false
+  search: QuestionSearch = {
+    limit: 10,
+    page: 1,
+    text: '',
+    tagIds: [],
+    sort: 'relevant',
+    ascending: false,
+    answered: false,
+    user: '',
   }
 
   fetch() {
     return Promise.all([this.getQuestions()])
   }
 
-  getQuestions(search: QuestionSearch = { text: '', tagIds: [] }) {
-    QuestionService.getQuestions(this.$axios, search)
+  getQuestions() {
+    this.isFetchingQuestions = true
+    QuestionService.getQuestions(this.$axios, this.search)
       .then((questions) => {
         this.questions = questions
-        this.sortQuestions()
       })
       .catch((error) => console.log(error))
+      .finally(() => (this.isFetchingQuestions = false))
   }
 
-  onSubmitSearch(search: QuestionSearch) {
-    this.getQuestions(search)
+  onSubmitSearch() {
+    this.getQuestions()
   }
 }
 </script>

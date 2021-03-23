@@ -43,8 +43,14 @@ export interface CreateEditQuestion {
 }
 
 export interface QuestionSearch {
+  limit: number
+  page: number
   text: string
   tagIds: string[]
+  sort: string
+  ascending: boolean
+  answered: boolean
+  user: string
 }
 
 export interface Answer {
