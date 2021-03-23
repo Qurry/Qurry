@@ -133,9 +133,6 @@ class QuestionView(AbstractView):
                 int(id) for id in tag_ids.split(',')))
 
         sort_attribute = kwargs.get('sort', DEFAULT_SORT)
-        ascnding = kwargs.get('asc', 'false')
-        if ascnding == 'false':
-            sort_attribute = '-%s' % sort_attribute
 
         # collect queries for database
         queries = []

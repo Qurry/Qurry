@@ -31,10 +31,12 @@ function imagesAndDocumentsToIds(post: CreateEditQuestion | CreateEditAnswer) {
 export default {
   async getQuestions($axios: NuxtAxiosInstance, search: QuestionSearch) {
     const { data }: { data: PreviewQuestion[] } = await $axios.get(
-      `/questions/?limit=${search.limit}&offset=${
-        (search.page - 1) * search.limit
-      }\
-      &search=${search.text}&tags=${search.tagIds.join()}`
+      `/questions/?limit=${search.limit}\
+&offset=${(search.page - 1) * search.limit}\
+&search=${search.text}\
+&sort=${search.sort}\
+&tags=${search.tagIds.join()}\
+&answered=${search.answered}`
     )
     return data
   },

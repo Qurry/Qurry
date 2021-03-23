@@ -61,9 +61,8 @@ export default class QuestionList extends Vue {
     page: 1,
     text: '',
     tagIds: [],
-    sort: 'relevant',
-    ascending: false,
-    answered: false,
+    sort: 'votes',
+    answered: true,
     user: '',
   }
 

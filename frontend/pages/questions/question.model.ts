@@ -48,7 +48,6 @@ export interface QuestionSearch {
   text: string
   tagIds: string[]
   sort: string
-  ascending: boolean
   answered: boolean
   user: string
 }

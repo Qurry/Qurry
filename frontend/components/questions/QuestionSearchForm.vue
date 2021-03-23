@@ -29,7 +29,7 @@
           ></v-select>
         </div>
 
-        <v-checkbox v-model="search.answered" label="No answers"></v-checkbox>
+        <v-checkbox v-model="search.answered" label="With answers"></v-checkbox>
 
         <v-btn color="secondary" type="submit" class="search-btn">
           Search
@@ -49,9 +49,10 @@ export default class QuestionSearchForm extends Vue {
   search!: QuestionSearch
 
   sortByOptions = [
-    { text: 'Most Relevant', value: 'relevant' },
+    // { text: 'Most Relevant', value: 'relevant' },
     { text: 'Most Votes', value: 'votes' },
-    { text: 'Newest', value: 'creation_date' },
+    { text: 'Newest', value: 'created_at' },
+    { text: 'Oldest', value: '-created_at' },
   ]
 
   updateSelectedTagIds(selectedTagIds: string[]) {
