@@ -9,7 +9,7 @@
         <v-btn to="/questions" text rounded>Questions</v-btn>
         <v-btn to="/tags" text rounded>Tags</v-btn>
         <span>
-          {{ userScore }} <v-icon color="accent"> mdi-trophy </v-icon>
+          {{ userScore }} <v-icon color="#ffb300"> mdi-trophy </v-icon>
         </span>
         <v-menu offset-y>
           <template v-slot:activator="{ on, attrs }">
@@ -92,4 +92,12 @@ export default class DefaultLayout extends Vue {
 }
 </script>
 
-<style scoped></style>
+<style>
+/* this has to be global because of vuetify and katex conficting class name .overline */
+.v-application .overline {
+  font-size: 1em !important;
+  line-height: 1.2 !important;
+  text-transform: none;
+  letter-spacing: 0.08em !important;
+}
+</style>

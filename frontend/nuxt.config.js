@@ -93,7 +93,7 @@ export default {
       themes: {
         light: {
           primary: '#e55c44', // orange
-          accent: '#f6ae2d', // yellow
+          accent: colors.transparent, // don't use it because of katex conficting class name
           secondary: '#33658a', // blue
           darkblue: '#2f4858',
           info: colors.teal.lighten1,
@@ -103,7 +103,7 @@ export default {
         },
         dark: {
           primary: '#ba410d', // orange
-          accent: '#f6ae2d', // yellow
+          accent: colors.transparent, // don't use it because of katex conficting class name
           secondary: '#3a80e8', // blue
           darkblue: '#2f4858',
           background: '#333',
