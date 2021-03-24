@@ -20,8 +20,7 @@
       "@nuxt/types",
       "@nuxtjs/axios",
       "@types/nuxtjs__auth",
-      "@types/prismjs",
-      "@types/katex"
+      "@types/prismjs"
     ]
   },
   "exclude": ["node_modules", ".nuxt", "dist"]
