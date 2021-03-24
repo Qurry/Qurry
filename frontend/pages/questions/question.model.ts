@@ -45,11 +45,10 @@ export interface CreateEditQuestion {
 export interface QuestionSearch {
   limit: number
   page: number
-  text: string
+  words: string
   tagIds: string[]
-  sort: string
+  orderBy: string
   answered: boolean
-  user: string
 }
 
 export interface Answer {

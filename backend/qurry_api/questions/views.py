@@ -8,9 +8,9 @@ from qurry_api.views import BaseView
 
 from .models import Answer, Comment, Question, Tag
 
-DEFAULT_LIMIT = 20
+DEFAULT_LIMIT = 10
 DEFAULT_ERROR_MESSAGE = 'error while parsing input'
-DEFAULT_SORT = 'votes'
+DEFAULT_ORDER_BY = 'votes'
 
 
 def extract_errors(validation_exception):
@@ -124,7 +124,7 @@ class QuestionView(AbstractView):
         limit = abs(int(kwargs.get('limit', DEFAULT_LIMIT)))
         offset = abs(int(kwargs.get('offset', 0)))
 
-        search_vector = kwargs.get('search', '').split()
+        search_vector = kwargs.get('words', '').split()
 
         tag_ids = kwargs.get('tags', '')
         filter_tags = Tag.objects.none()
@@ -132,13 +132,13 @@ class QuestionView(AbstractView):
             filter_tags = Tag.objects.filter(id__in=list(
                 int(id) for id in tag_ids.split(',')))
 
-        sort_attribute = kwargs.get('sort', DEFAULT_SORT)
+        order_by = kwargs.get('order_by', DEFAULT_ORDER_BY)
 
         # collect queries for database
         queries = []
-        user_id = kwargs.get('user')
-        if user_id:
-            queries.append(Q(user__id=user_id))
+        # user_id = kwargs.get('user')
+        # if user_id:
+        #     queries.append(Q(user__id=user_id))
 
         answered = kwargs.get('answered', None)
         if answered == 'false':
@@ -147,10 +147,12 @@ class QuestionView(AbstractView):
             queries.append(~Q(answer_count=0))
 
         questions = Question.objects.filter(*queries).tag_filter(filter_tags).search(
-            search_vector).order_by(sort_attribute)[offset: offset+limit]
+            search_vector).order_by(order_by)[offset: offset+limit]
 
-        return JsonResponse(list(question.as_preview(self.user) for question in questions),
-                            safe=False)
+        return JsonResponse({
+            'count': questions.count(),
+            'questions': list(question.as_preview(self.user) for question in questions)
+        })
 
     def view_detailed(self, question):
         return JsonResponse(question.as_detailed(self.user))

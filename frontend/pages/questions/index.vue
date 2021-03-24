@@ -59,11 +59,10 @@ export default class QuestionList extends Vue {
   search: QuestionSearch = {
     limit: 10,
     page: 1,
-    text: '',
+    words: '',
     tagIds: [],
-    sort: '-votes',
+    orderBy: '-votes',
     answered: true,
-    user: '',
   }
 
   fetch() {
