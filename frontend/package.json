@@ -18,8 +18,7 @@
     "@nuxtjs/axios": "^5.12.5",
     "core-js": "^3.6.5",
     "nuxt": "^2.14.6",
-    "nuxt-property-decorator": "^2.8.8",
-    "prismjs": "^1.23.0"
+    "nuxt-property-decorator": "^2.8.8"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.12.1",
@@ -31,7 +30,6 @@
     "@nuxtjs/eslint-module": "^2.0.0",
     "@nuxtjs/vuetify": "^1.11.2",
     "@types/nuxtjs__auth": "^4.8.5",
-    "@types/prismjs": "^1.16.2",
     "@vue/test-utils": "^1.1.0",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "^10.1.0",

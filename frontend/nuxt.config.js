@@ -36,12 +36,7 @@ export default {
   css: ['@/assets/main.scss'],
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
-  plugins: [
-    // { src: '~/plugins/prism', mode: 'client' },
-    '~plugins/filters.ts',
-    // '~plugins/katex.js',
-    '~plugins/v-md-editor.js',
-  ],
+  plugins: ['~plugins/filters.ts', '~plugins/v-md-editor.js'],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
   components: true,
@@ -119,7 +114,7 @@ export default {
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
     // * You can extend webpack config here
-    vendor: ['axios', 'prismjs'],
+    vendor: ['axios'],
 
     extend(config, ctx) {
       if (ctx.isServer) {
