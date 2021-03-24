@@ -4,7 +4,7 @@ from .decorators import authenticate_user, with_request_body_decoded
 
 
 def error_list_from(error_dict):
-    return list(error.as_text() for error in dict(error_dict).values())
+    return list(error.as_text()[2:] for error in dict(error_dict).values())
 
 
 class BaseView(View):
