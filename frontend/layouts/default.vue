@@ -37,7 +37,7 @@
     </v-app-bar>
 
     <v-main>
-      <v-container class="container">
+      <v-container class="layout-container">
         <div v-if="isLoading">
           <LoadingSpinner />
         </div>
@@ -99,5 +99,9 @@ export default class DefaultLayout extends Vue {
   line-height: 1.2 !important;
   text-transform: none;
   letter-spacing: 0.08em !important;
+}
+.v-application ul,
+.v-application ol {
+  padding-left: 0px;
 }
 </style>

@@ -1,7 +1,7 @@
 @import '~vuetify/src/styles/settings/_variables';
 
 @media #{map-get($display-breakpoints, 'lg-and-up')} {
-  .container {
+  .layout-container {
     width: 65% !important;
   }
 }
