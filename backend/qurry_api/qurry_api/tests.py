@@ -4,6 +4,9 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.test import Client, TestCase
 from django.urls.base import reverse_lazy
+from users.models import User
+
+ADMIN = User.objects.get(username='admin')
 
 
 class AuthenticatedTestCase(TestCase):
@@ -13,16 +16,16 @@ class AuthenticatedTestCase(TestCase):
         self.client = Client()
         self.login_as_admin()
 
-    def request(self, method, url, *args, authenticated=False, json=True, **kwargs):
+    def request(self, method, url, *args, authenticated=False, **kwargs):
         if authenticated:
             kwargs['HTTP_AUTHORIZATION'] = 'Bearer ' + self.access_token
-        if json:
-            kwargs['content_type'] = 'application/json'
+
+        kwargs['content_type'] = 'application/json'
         return getattr(self.client, method.lower())(url, *args, **kwargs)
 
     def login(self, email, password, enforce_success=True):
-        response = self.client.post(reverse_lazy('login'), data=json.dumps(
-            {'email': email, 'password': password}), content_type='application/json')
+        response = self.request('POST', reverse_lazy('login'),
+                                {'email': email, 'password': password})
 
         if enforce_success:
             self.assertEqual(response.status_code, 200)
