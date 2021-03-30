@@ -7,7 +7,6 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils import timezone
-from media.models import Image
 
 from users.validators import HPIEmailValidator, validate_username_characters
 
@@ -57,6 +56,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         except:
             return self.create_default_profile()
 
+    @property
     def score(self):
         return self.get_profile().score
 
@@ -73,6 +73,10 @@ class User(AbstractBaseUser, PermissionsMixin):
             'registeredAt': str(timezone.localtime(self.registered_at).replace(microsecond=0))
         }}
 
+    @property
+    def notifications(self):
+        return self.notification_set.all()
+
     def as_preview(self):
         return {
             'id': str(self.id),
@@ -81,7 +85,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def as_detailed(self):
         return {**self.as_preview(), **{
-            'score': max(self.score(), 0),
+            'score': max(self.score, 0),
             'image': self.profile_image(),
         }}
 
@@ -100,11 +104,11 @@ class BlockedUser(models.Model):
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, verbose_name='Profile',
+    user = models.OneToOneField('users.user', verbose_name='Profile',
                                 on_delete=models.CASCADE)
 
     score = models.IntegerField('Score', default=0)
-    image = models.ForeignKey(Image, verbose_name='Profile Image',
+    image = models.ForeignKey('media.image', verbose_name='Profile Image',
                               blank=True, null=True, on_delete=models.SET_NULL)
 
     def image_url(self):
@@ -118,7 +122,7 @@ class Profile(models.Model):
 
 class Token(models.Model):
 
-    user = models.OneToOneField(User, verbose_name='user',
+    user = models.OneToOneField('users.user', verbose_name='user',
                                 on_delete=models.CASCADE)
     value = models.TextField('token value', blank=True)
     created_at = models.DateTimeField('Creation Date', auto_now_add=True)
