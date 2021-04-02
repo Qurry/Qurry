@@ -21,7 +21,7 @@ class Notification(models.Model):
     is_read = models.BooleanField('Has it been read', default=False)
 
     class Meta:
-        ordering = ['created_at']
+        ordering = ('created_at',)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()

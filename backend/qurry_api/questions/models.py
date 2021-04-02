@@ -36,7 +36,20 @@ class VotableMixin(models.Model):
         else:
             self.user.add_to_score(-self.downvote_penalty)
 
-    def got_voted(self, user, action):
+    def got_voted(self, user, up=True):
+        if up:
+            self.vote_up_users.add(user)
+            self.score_up()
+            self.votes += 1
+
+        else:
+            self.vote_down_users.add(user)
+            self.score_down()
+            self.votes -= 1
+
+        self.save()
+
+    def remove_voter(self, user):
         # remove user from voters
         if self.vote_up_users.filter(id=user.id).exists():
             self.vote_up_users.remove(user)
@@ -47,19 +60,6 @@ class VotableMixin(models.Model):
             self.vote_down_users.remove(user)
             self.score_down(reverse=True)
             self.votes += 1
-
-        if action == '1':
-            self.vote_up_users.add(user)
-            self.score_up()
-            self.votes += 1
-        elif action == '-1':
-            self.vote_down_users.add(user)
-            self.score_down()
-            self.votes -= 1
-        elif action == '0':
-            pass
-        else:
-            raise ValueError('vote is invalid')
 
         self.save()
 
@@ -194,7 +194,7 @@ class Question(Post, VotableMixin, AttachableMixin):
         return super().save(*args, **kwargs)
 
     def get_subscribed_by(self, user):
-        Subscription.objects.create(question=self, user=user)
+        Subscription.objects.get_or_create(question=self, user=user)
 
     def notify_subscribers(self, obj):
         for subscription in self.subscription_set.all():

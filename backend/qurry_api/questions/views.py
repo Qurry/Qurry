@@ -1,14 +1,13 @@
 from abc import abstractmethod
 
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Q
 from django.http import JsonResponse
-from media.models import Document, DocumentAttach, Image, ImageAttach
 from qurry_api.decorators import object_existence_required, ownership_required
 from qurry_api.views import BaseView, error_list_from
 
-from questions.forms import AnswerForm, CommentForm, QuestionForm
+from questions.forms import (AnswerActionForm, AnswerForm, CommentForm,
+                             QuestionActionForm, QuestionForm)
 
 from .models import Answer, Comment, Question, Tag
 
@@ -38,18 +37,21 @@ def reference_files(files, attach_model, obj):
 class AbstractView(BaseView):
     Model = None
     Form = None
+    ActionForm = None
 
     # different HTTP requests
     @object_existence_required
     def get(self, request, *args, **kwargs):
         if 'id' in kwargs:
             obj = self.Model.objects.get(id=kwargs['id'])
-            if 'vote' in request.GET:
-                return self.vote(obj, request.GET['vote'])
+            if request.GET and self.ActionForm:
+                form = self.ActionForm(request.GET.dict(), obj, self.user)
+                if not form.is_valid():
+                    return JsonResponse({'errors': error_list_from(form.errors)}, status=400)
 
             return self.view_detailed(obj)
         try:
-            return self.view_list(**({**request.GET.dict(), ** kwargs}))
+            return self.view_list(**({**request.GET.dict(), **kwargs}))
 
         except Exception:
             return JsonResponse({'errors': ['get arguments are invalid']}, status=400)
@@ -62,8 +64,8 @@ class AbstractView(BaseView):
 
         return JsonResponse({'errors': error_list_from(form.errors)}, status=400)
 
-    @object_existence_required
-    @ownership_required
+    @ object_existence_required
+    @ ownership_required
     def patch(self, request, *args, **kwargs):
         if 'id' not in kwargs:
             return JsonResponse(
@@ -80,8 +82,8 @@ class AbstractView(BaseView):
 
         return JsonResponse({'errors': error_list_from(form.errors)}, status=400)
 
-    @object_existence_required
-    @ownership_required
+    @ object_existence_required
+    @ ownership_required
     def delete(self, request, *args, **kwargs):
         if 'id' not in kwargs:
             return JsonResponse(
@@ -95,30 +97,23 @@ class AbstractView(BaseView):
         except Exception as exc:
             return JsonResponse({'errors': [str(exc)]}, status=500)
 
-    @abstractmethod
+    @ abstractmethod
     def view_list(self, **kwargs):  # in preview format
         pass
 
-    @abstractmethod
+    @ abstractmethod
     def view_detailed(self, obj):
         pass
 
-    @abstractmethod
+    @ abstractmethod
     def form_data(self, raw_data):
         pass
-
-    def vote(self, obj, action):
-        if self.user == obj.user:
-            return JsonResponse({'errors': ['You can\'t vote for your own %s.' % self.Model.__name__.lower()]}, status=400)
-
-        obj.got_voted(self.user, action)
-
-        return JsonResponse({'%sId' % self.Model.__name__.lower(): str(obj.id)})
 
 
 class QuestionView(AbstractView):
     Model = Question
     Form = QuestionForm
+    ActionForm = QuestionActionForm
 
     def view_list(self, **kwargs):  # in preview format
         # parse arguments
@@ -172,6 +167,7 @@ class QuestionView(AbstractView):
 class AnswerView(AbstractView):
     Model = Answer
     Form = AnswerForm
+    ActionForm = AnswerActionForm
     question = None
 
     def setup(self, request, *args, **kwargs):
@@ -248,9 +244,6 @@ class CommentView(AbstractView):
             }
 
         return {}
-
-    def vote(self, answer, action):
-        return JsonResponse({'error': ['You can\'t vote comments.']}, status=405)
 
 
 class TagView(BaseView):
