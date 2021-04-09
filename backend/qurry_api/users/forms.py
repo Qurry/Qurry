@@ -20,8 +20,8 @@ class RegistrationForm(UserCreationForm):
 
     def check_blocked_user(self, email):
         if BlockedUser.objects.filter(email__iexact=email).exists():
-            self.add_error(
-                'email', 'This user is blocked. Please contact the support')
+            self.add_error('email', ValidationError(
+                'This user is blocked. Please contact the support', code='blocked_user'))
 
     def clean(self):
         self.cleaned_data['email'] = clean_email_address(

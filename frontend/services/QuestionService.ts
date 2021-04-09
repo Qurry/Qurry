@@ -33,9 +33,9 @@ export default {
     const { data }: { data: PreviewQuestion[] } = await $axios.get(
       `/questions/?limit=${search.limit}\
 &offset=${(search.page - 1) * search.limit}\
-&search=${search.text}\
-&sort=${search.sort}\
-&tags=${search.tagIds.join()}\
+&words=${search.words}\
+&order_by=${search.orderBy}\
+&tag_ids=${search.tagIds.join()}\
 &answered=${search.answered}`
     )
     return data

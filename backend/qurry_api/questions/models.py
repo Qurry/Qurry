@@ -5,20 +5,21 @@ from django.db import models
 from django.utils import timezone
 from media.models import DocumentAttach, ImageAttach
 from mptt.models import MPTTModel, TreeForeignKey
+from notifications.models import Subscription
 
 from .managers import QuestionManager
 
 
-class VotedPostMixin(models.Model):
+class VotableMixin(models.Model):
     votes = models.IntegerField('Votes', default=0)
 
     upvote_reward = 0
     downvote_penalty = 0
 
     vote_up_users = models.ManyToManyField(
-        "users.User", verbose_name='Upvoting Users', related_name='%(class)s_upvoters', blank=True)
+        'users.User', verbose_name='Upvoting Users', related_name='%(class)s_upvoters', blank=True)
     vote_down_users = models.ManyToManyField(
-        "users.User", verbose_name='Downvoting Users', related_name='%(class)s_downvoters', blank=True)
+        'users.User', verbose_name='Downvoting Users', related_name='%(class)s_downvoters', blank=True)
 
     class Meta:
         abstract = True
@@ -35,7 +36,20 @@ class VotedPostMixin(models.Model):
         else:
             self.user.add_to_score(-self.downvote_penalty)
 
-    def got_voted(self, user, action):
+    def got_voted(self, user, up=True):
+        if up:
+            self.vote_up_users.add(user)
+            self.score_up()
+            self.votes += 1
+
+        else:
+            self.vote_down_users.add(user)
+            self.score_down()
+            self.votes -= 1
+
+        self.save()
+
+    def remove_voter(self, user):
         # remove user from voters
         if self.vote_up_users.filter(id=user.id).exists():
             self.vote_up_users.remove(user)
@@ -46,19 +60,6 @@ class VotedPostMixin(models.Model):
             self.vote_down_users.remove(user)
             self.score_down(reverse=True)
             self.votes += 1
-
-        if action == '1':
-            self.vote_up_users.add(user)
-            self.score_up()
-            self.votes += 1
-        elif action == '-1':
-            self.vote_down_users.add(user)
-            self.score_down()
-            self.votes -= 1
-        elif action == '0':
-            pass
-        else:
-            raise ValueError('vote is invalid')
 
         self.save()
 
@@ -74,6 +75,29 @@ class VotedPostMixin(models.Model):
             'votes': self.votes,
             'user': self.user.as_preview(),
             'userVote': self.vote_of(user)
+        }
+
+
+class AttachableMixin(models.Model):
+
+    images = GenericRelation(ImageAttach)
+    documents = GenericRelation(DocumentAttach)
+
+    class Meta:
+        abstract = True
+
+    def add_images(self, images):
+        for image in images:
+            self.images.add(ImageAttach(file=image), bulk=False)
+
+    def add_documents(self, documents):
+        for document in documents:
+            self.documents.add(DocumentAttach(file=document), bulk=False)
+
+    def attachments_info(self):
+        return {
+            'images': list(image.file.as_preview() for image in self.images.all()),
+            'documents': list(document.file.as_preview() for document in self.documents.all()),
         }
 
 
@@ -99,10 +123,15 @@ class Post(models.Model):
 class Comment(Post):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    reference_object = GenericForeignKey('content_type', 'object_id')
+    commented_object = GenericForeignKey('content_type', 'object_id')
 
     def __str__(self):
         return 'comment from %s' % self.user
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if isinstance(self.commented_object, Question):
+            self.commented_object.notify_subscribers(self)
 
     def as_preview(self):
         return {**self.time_info(), **{
@@ -144,15 +173,13 @@ class Tag(MPTTModel):
         return self.name
 
 
-class Question(Post, VotedPostMixin):
+class Question(Post, VotableMixin, AttachableMixin):
     title = models.CharField('Title', max_length=200)
-    tags = models.ManyToManyField(Tag, verbose_name='Tags', blank=True)
+    tags = models.ManyToManyField(
+        'questions.tag', verbose_name='Tags', blank=True)
 
     answer_count = models.IntegerField('Number of Answers', default=0)
     comments = GenericRelation(Comment)
-
-    images = GenericRelation(ImageAttach)
-    documents = GenericRelation(DocumentAttach)
 
     objects = QuestionManager
 
@@ -166,8 +193,12 @@ class Question(Post, VotedPostMixin):
         self.answer_count = self.answer_set.count()
         return super().save(*args, **kwargs)
 
-    def is_answered(self):
-        return self.answer_count != 0
+    def get_subscribed_by(self, user):
+        Subscription.objects.get_or_create(question=self, user=user)
+
+    def notify_subscribers(self, obj):
+        for subscription in self.subscription_set.all():
+            subscription.notifiy_subscriber(obj)
 
     def as_preview(self, user):
         return {**self.time_info(), **self.voting_info(user), **{
@@ -179,29 +210,28 @@ class Question(Post, VotedPostMixin):
         }}
 
     def as_detailed(self, user):
-        return {**self.as_preview(user), **{
+        return {**self.as_preview(user), **self.attachments_info(), **{
             'body': self.body,
             'answers': list(answer.as_detailed(user) for answer in self.answer_set.all()),
             'comments': list(comment.as_preview() for comment in self.comments.all()),
-            'images': list(image.file.as_preview() for image in self.images.all()),
-            'documents': list(document.file.as_preview() for document in self.documents.all()),
         }}
 
 
-class Answer(Post, VotedPostMixin):
+class Answer(Post, VotableMixin, AttachableMixin):
     question = models.ForeignKey(
-        Question, verbose_name='Question', on_delete=models.CASCADE)
+        'questions.question', verbose_name='Question', on_delete=models.CASCADE)
 
     comments = GenericRelation(Comment)
-
-    images = GenericRelation(ImageAttach)
-    documents = GenericRelation(DocumentAttach)
 
     upvote_reward = 10
     downvote_penalty = 0
 
     def __str__(self):
         return "Answer from %s" % self.user
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.question.notify_subscribers(self)
 
     def as_preview(self, user):
         return {**self.time_info(), **self.voting_info(user), **{
@@ -210,8 +240,6 @@ class Answer(Post, VotedPostMixin):
         }}
 
     def as_detailed(self, user):
-        return {**self.as_preview(user), **{
+        return {**self.as_preview(user), **self.attachments_info(), **{
             'comments': list(comment.as_preview() for comment in self.comments.all()),
-            'images': list(image.file.as_preview() for image in self.images.all()),
-            'documents': list(document.as_preview() for document in self.documents.all()),
         }}

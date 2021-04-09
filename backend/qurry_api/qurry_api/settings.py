@@ -23,7 +23,7 @@ REST_TOKEN_VALIDITY_TIME = 60*30
 
 if MODE == 'development':
     DEBUG = True
-    ALLOWED_HOSTS = ['localhost']
+    ALLOWED_HOSTS = ['localhost', 'testserver']
     CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
     CORS_ALLOW_CREDENTIALS = True
 else:
@@ -45,9 +45,11 @@ INSTALLED_APPS = [
     'mptt',
 
     'storages',
-    'media',
     'users',
     'questions',
+    'notifications',
+    'media',
+
 
 ]
 

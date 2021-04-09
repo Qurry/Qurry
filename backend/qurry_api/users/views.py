@@ -4,13 +4,10 @@ import time
 import jwt
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
-from django.views import View
-from questions.views import extract_errors
 from qurry_api.decorators import (method_required, object_existence_required,
                                   with_request_body_decoded)
 from qurry_api.views import BaseView, error_list_from
@@ -30,7 +27,7 @@ def new_jwt_token(uid):
     }, settings.SECRET_KEY, algorithm='HS256')
 
 
-class Accounting(View):
+class AccountingView:
     @method_required('POST')
     @with_request_body_decoded
     def register(self, request):

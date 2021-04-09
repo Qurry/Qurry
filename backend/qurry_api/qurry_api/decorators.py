@@ -115,7 +115,10 @@ def admin_thumbnail(field_name, *args, **kwargs):
 def with_request_body_decoded(function):
     def decode_body(self, request, *args, **kwargs):
         if request.method in ['POST', 'PATCH'] and request.body:
-            request._body = json.loads(request.body)
+            try:
+                request._body = json.loads(request.body)
+            except:
+                pass
 
         return function(self, request, *args, **kwargs)
 

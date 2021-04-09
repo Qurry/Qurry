@@ -7,7 +7,7 @@
       />
 
       <v-text-field
-        v-model.trim="search.text"
+        v-model.trim="search.words"
         label="Search text"
         append-icon="mdi-magnify"
         outlined
@@ -19,8 +19,8 @@
       <div class="filter-row">
         <div class="sort-select">
           <v-select
-            v-model="search.sort"
-            :items="sortByOptions"
+            v-model="search.orderBy"
+            :items="orderByOptions"
             label="Sorted by"
             item-text="text"
             item-value="value"
@@ -48,7 +48,7 @@ export default class QuestionSearchForm extends Vue {
   @Prop()
   search!: QuestionSearch
 
-  sortByOptions = [
+  orderByOptions = [
     // { text: 'Most Relevant', value: 'relevant' },
     { text: 'Most Votes', value: '-votes' },
     { text: 'Newest', value: '-created_at' },

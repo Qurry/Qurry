@@ -87,14 +87,14 @@ class Attach(models.Model):
 
 
 class ImageAttach(Attach):
-    file = ForeignKey(Image, on_delete=models.CASCADE)
+    file = ForeignKey('media.image', on_delete=models.CASCADE)
 
     def attaches_from(self, obj):
         return obj.images
 
 
 class DocumentAttach(Attach):
-    file = ForeignKey(Document, on_delete=models.CASCADE)
+    file = ForeignKey('media.document', on_delete=models.CASCADE)
 
     def attaches_from(self, obj):
         return obj.documents
