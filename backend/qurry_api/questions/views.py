@@ -139,15 +139,12 @@ class QuestionView(AbstractView):
             queries.append(~Q(answer_count=0))
 
         questions = Question.objects.filter(*queries).tag_filter(filter_tags).search(
-            search_vector).order_by(order_by)[offset: offset+limit]
+            search_vector).order_by(order_by)
 
-        # return JsonResponse({
-        #     'count': questions.count(),
-        #     'questions': list(question.as_preview(self.user) for question in questions)
-        # })
-
-        return JsonResponse(
-            list(question.as_preview(self.user) for question in questions), safe=False)
+        return JsonResponse({
+            'count': questions.count(),
+            'questions': list(question.as_preview(self.user) for question in questions[offset: offset+limit])
+        })
 
     def view_detailed(self, question):
         return JsonResponse(question.as_detailed(self.user))
