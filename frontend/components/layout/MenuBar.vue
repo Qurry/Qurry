@@ -1,6 +1,15 @@
 <template>
   <v-app-bar app color="primary" dark>
-    <v-btn to="/" text rounded>Qurry</v-btn>
+    <NuxtLink to="/">
+      <v-img
+        class="mx-2"
+        src="/static/icon-180x180.png"
+        max-height="35"
+        max-width="35"
+        contain
+      >
+      </v-img>
+    </NuxtLink>
     <v-spacer></v-spacer>
     <template v-if="$store.state.auth.loggedIn">
       <v-btn to="/questions" text rounded>Questions</v-btn>
