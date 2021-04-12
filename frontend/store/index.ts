@@ -1,8 +1,16 @@
 import { ActionTree, MutationTree } from 'vuex'
 import { Profile } from '~/pages/profile/profile.model'
 import { TreeTag, ObjectTag } from '~/pages/tags/tag.model'
+import {
+  PreviewQuestion,
+  QuestionSearch,
+} from '~/pages/questions/question.model'
 
 export const state = () => ({
+  isLoadingQuestions: false,
+  isLoadingNecessaryData: false,
+  questions: <PreviewQuestion[]>[],
+  numOfQuestions: 0,
   treeTags: <TreeTag[]>[],
   tags: <{ [key: string]: ObjectTag }>{},
   profile: <Profile>{},
@@ -11,9 +19,17 @@ export const state = () => ({
 export type RootState = ReturnType<typeof state>
 
 export const mutations: MutationTree<RootState> = {
-  SAVE_TAG_TREE: (state, treeTags: TreeTag[]) => (state.treeTags = treeTags),
-  SAVE_TAGS: (state, tags: { [key: string]: ObjectTag }) => (state.tags = tags),
-  SAVE_PROFILE: (state, profile: Profile) => (state.profile = profile),
+  SET_IS_LOADING_QUESTIONS: (state, isLoading: boolean) =>
+    (state.isLoadingQuestions = isLoading),
+  SET_IS_LOADING_NECESSARY_DATA: (state, isLoading: boolean) =>
+    (state.isLoadingNecessaryData = isLoading),
+  SET_QUESTIONS: (state, questions: PreviewQuestion[]) =>
+    (state.questions = questions),
+  SET_NUM_OF_QUESTIONS: (state, numOfQuestions: number) =>
+    (state.numOfQuestions = numOfQuestions),
+  SET_TAG_TREE: (state, treeTags: TreeTag[]) => (state.treeTags = treeTags),
+  SET_TAGS: (state, tags: { [key: string]: ObjectTag }) => (state.tags = tags),
+  SET_PROFILE: (state, profile: Profile) => (state.profile = profile),
 }
 
 const tagColors: { [key: string]: string } = {
@@ -56,6 +72,24 @@ function createObjectFromTree(
 }
 
 export const actions: ActionTree<RootState, RootState> = {
+  async getQuestions({ commit }, search: QuestionSearch) {
+    commit('SET_IS_LOADING_QUESTIONS', true)
+    const {
+      data,
+    }: {
+      data: { count: number; questions: PreviewQuestion[] }
+    } = await this.$axios.get(
+      `/questions/?limit=${search.limit}\
+&offset=${(search.page - 1) * search.limit}\
+&words=${search.words}\
+&order_by=${search.orderBy}\
+&tag_ids=${search.tagIds.join()}\
+&answered=${search.answered}`
+    )
+    commit('SET_QUESTIONS', data.questions)
+    commit('SET_NUM_OF_QUESTIONS', data.count)
+    commit('SET_IS_LOADING_QUESTIONS', false)
+  },
   async fetchTags({ commit }) {
     const rawTreeTags: TreeTag[] = await this.$axios.$get('/tags/')
     const treeTags: TreeTag[] = []
@@ -66,7 +100,7 @@ export const actions: ActionTree<RootState, RootState> = {
       treeTags.push(tag)
     }
 
-    commit('SAVE_TAG_TREE', treeTags)
+    commit('SET_TAG_TREE', treeTags)
 
     const tags: { [key: string]: ObjectTag } = {}
 
@@ -74,10 +108,10 @@ export const actions: ActionTree<RootState, RootState> = {
       createObjectFromTree(tag, '-1', tags)
     }
 
-    commit('SAVE_TAGS', tags)
+    commit('SET_TAGS', tags)
   },
   async fetchProfile({ commit }) {
     const profile: Profile = await this.$axios.$get('/profile/')
-    commit('SAVE_PROFILE', profile)
+    commit('SET_PROFILE', profile)
   },
 }

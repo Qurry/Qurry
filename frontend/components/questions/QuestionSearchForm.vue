@@ -17,11 +17,11 @@
       ></v-text-field>
 
       <div class="filter-row">
-        <div class="sort-select">
+        <div class="select">
           <v-select
             v-model="search.orderBy"
             :items="orderByOptions"
-            label="Sorted by"
+            label="Sort by"
             item-text="text"
             item-value="value"
             color="secondary"
@@ -29,7 +29,17 @@
           ></v-select>
         </div>
 
-        <v-checkbox v-model="search.answered" label="With answers"></v-checkbox>
+        <div class="select">
+          <v-select
+            v-model="search.answered"
+            :items="answeredOptions"
+            label="Filter by"
+            item-text="text"
+            item-value="value"
+            color="secondary"
+            hide-details="true"
+          ></v-select>
+        </div>
 
         <v-btn color="secondary" type="submit" class="search-btn">
           Search
@@ -55,6 +65,12 @@ export default class QuestionSearchForm extends Vue {
     { text: 'Oldest', value: 'created_at' },
   ]
 
+  answeredOptions = [
+    { text: 'All', value: 'all' },
+    { text: 'Answered', value: 'true' },
+    { text: 'Unanswered', value: 'false' },
+  ]
+
   updateSelectedTagIds(selectedTagIds: string[]) {
     this.search.tagIds = selectedTagIds
   }
@@ -70,8 +86,8 @@ export default class QuestionSearchForm extends Vue {
   margin-left: auto;
   margin-top: 7px;
 }
-.sort-select {
-  width: 150px;
+.select {
+  width: 120px;
   margin-right: 10px;
 }
 </style>

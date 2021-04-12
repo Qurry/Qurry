@@ -24,7 +24,6 @@ export default class UsernameInput extends Vue {
   @Prop()
   creationMode?: boolean
 
-  errors: string[] = []
   rules = {
     required: (value: string) => !!value || 'Required.',
     minLength: (value: string) => value.length >= 3 || 'At least 3 characters.',

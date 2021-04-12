@@ -16,7 +16,7 @@
         :search="search"
         @submit="onSubmitSearch"
       />
-      <div v-if="isFetchingQuestions">
+      <div v-if="$store.state.isLoadingQuestions">
         <LoadingSpinner />
       </div>
       <div v-else>
@@ -31,7 +31,7 @@
               <v-container class="max-width">
                 <v-pagination
                   v-model="search.page"
-                  :length="search.limit"
+                  :length="numOfpages"
                   :total-visible="7"
                   @input="onSubmitSearch"
                 ></v-pagination>
@@ -50,33 +50,30 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 import { PreviewQuestion, QuestionSearch } from './question.model'
-import QuestionService from '~/services/QuestionService'
 
 @Component
 export default class QuestionList extends Vue {
   questions: PreviewQuestion[] = []
-  isFetchingQuestions = false
   search: QuestionSearch = {
     limit: 10,
     page: 1,
     words: '',
     tagIds: [],
     orderBy: '-votes',
-    answered: true,
+    answered: 'all',
   }
 
-  fetch() {
-    return Promise.all([this.getQuestions()])
+  created() {
+    this.getQuestions()
   }
 
-  getQuestions() {
-    this.isFetchingQuestions = true
-    QuestionService.getQuestions(this.$axios, this.search)
-      .then((questions) => {
-        this.questions = questions
-      })
-      .catch((error) => console.log(error))
-      .finally(() => (this.isFetchingQuestions = false))
+  get numOfpages() {
+    return Math.ceil(this.$store.state.numOfQuestions / this.search.limit)
+  }
+
+  async getQuestions() {
+    await this.$store.dispatch('getQuestions', this.search)
+    this.questions = this.$store.state.questions
   }
 
   onSubmitSearch() {
