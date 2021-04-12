@@ -33,7 +33,7 @@ class Notification(models.Model):
     def as_detailed(self):
         return {
             'id': str(self.id),
-            'isRead': str(self.is_read).lower(),
+            'isRead': self.is_read,
             'message': self.message(),
             'uri': '',
             'type': str(self.content_type),
