@@ -2,8 +2,19 @@ from django import forms
 
 from qurry_api.decorators import call_methods_starting_with
 
+BOOL_CHOICES = (
+    ('true', True),
+    ('false', False),
+)
+
 
 class BaseActionForm(forms.Form):
+    # TODO make user kwarg
+    def __init__(self, data, instance, user, *args, **kwargs):
+        super().__init__(data, *args, **kwargs)
+        self.instance = instance
+        self.user = user
+
     @call_methods_starting_with('_validate_')
     def clean(self):
         return super().clean()

@@ -1,14 +1,9 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from media.models import Document, Image
-from qurry_api.forms import BaseActionForm, BaseModelForm
+from qurry_api.forms import BOOL_CHOICES, BaseActionForm, BaseModelForm
 
 from .models import Answer, Comment, Question
-
-BOOL_CHOICES = (
-    ('true', True),
-    ('false', False),
-)
 
 
 class VotingFormMixin(forms.Form):
@@ -95,11 +90,6 @@ class QuestionActionForm(VotingFormMixin, BaseActionForm):
 
     subscribe = forms.ChoiceField(choices=BOOL_CHOICES, required=False)
 
-    def __init__(self, data, question, user, *args, **kwargs):
-        super().__init__(data, *args, **kwargs)
-        self.instance = question
-        self.user = user
-
     def _validate_subscribe(self):
         subscribe = self.cleaned_data.get('subscribe')
         did_subscribe = self.instance.subscribtions.filter(
@@ -123,7 +113,4 @@ class QuestionActionForm(VotingFormMixin, BaseActionForm):
 
 
 class AnswerActionForm(VotingFormMixin, BaseActionForm):
-    def __init__(self, data, answer, user, *args, **kwargs):
-        super().__init__(data, *args, **kwargs)
-        self.instance = answer
-        self.user = user
+    pass

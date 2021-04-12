@@ -32,26 +32,7 @@ class AbstractView(BaseView):
     Form = None
     ActionForm = None
 
-    # different HTTP requests
-    @object_existence_required
-    def get(self, request, *args, **kwargs):
-        # return one object
-        if 'id' in kwargs:
-            obj = self.Model.objects.get(id=kwargs['id'])
-            if request.GET and self.ActionForm:
-                form = self.ActionForm(request.GET.dict(), obj, self.user)
-                if form.is_valid():
-                    form.save()
-                else:
-                    return JsonResponse({'errors': error_list_from(form.errors)}, status=400)
-            return self.view_detailed(obj)
-
-        # return all objects
-        try:
-            return self.view_list(**({**request.GET.dict(), **kwargs}))
-        except Exception:
-            return JsonResponse({'errors': ['get arguments are invalid']}, status=400)
-
+    # new HTTP requests
     def post(self, request, *args, **kwargs):
         form = self.Form(self.form_data({**request.body, **kwargs}))
         if form.is_valid():
@@ -92,14 +73,6 @@ class AbstractView(BaseView):
             return JsonResponse({'%sId' % self.Model.__name__.lower(): str(kwargs['id'])}, status=200)
         except Exception as exc:
             return JsonResponse({'errors': [str(exc)]}, status=500)
-
-    @ abstractmethod
-    def view_list(self, **kwargs):  # in preview format
-        pass
-
-    @ abstractmethod
-    def view_detailed(self, obj):
-        pass
 
     @ abstractmethod
     def form_data(self, raw_data):

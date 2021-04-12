@@ -1,28 +1,40 @@
-from django.http import Http404
-from django.http.response import JsonResponse
-from django.views import View
-from qurry_api.decorators import authenticate_user
+from django.http.response import Http404, JsonResponse
+from qurry_api.views import BaseView
+
+from notifications.forms import NotificationActionForm
+from notifications.models import Notification
 
 
-class NotificationView(View):
+class NotificationView(BaseView):
+    Model = Notification
+    ActionForm = NotificationActionForm
 
-    @authenticate_user
-    def all(self, request, *args, **kwargs):
+    def status(self):
+        notifications = self.user.notifications.filter(is_read=False)
+        return {'count': notifications.count()}
+
+    def unread(self):
+        notifications = self.user.notifications.filter(is_read=False)
+        return {
+            'count': notifications.count(),
+            'notifications': list(notification.as_detailed() for notification in notifications)
+        }
+
+    def all(self):
         notifications = self.user.notifications.all()
-        return JsonResponse({
+        return {
             'count': notifications.count(),
             'notifications': list(notification.as_detailed() for notification in notifications)
-        })
+        }
 
-    @authenticate_user
-    def status(self, request, *args, **kwargs):
-        notifications = self.user.notifications.filter(is_read=False)
-        return JsonResponse({'count': notifications.count()})
+    QUERIES_MAPPING = {
+        'all': all,
+        'status': status,
+        'unread': unread,
+    }
 
-    @authenticate_user
-    def unread(self, request, *args, **kwargs):
-        notifications = self.user.notifications.filter(is_read=False)
-        return JsonResponse({
-            'count': notifications.count(),
-            'notifications': list(notification.as_detailed() for notification in notifications)
-        })
+    def view_detailed(self, obj):
+        return JsonResponse(obj.as_detailed())
+
+    def view_list(self, **kwargs):
+        return JsonResponse(self.QUERIES_MAPPING.get(kwargs.get('query', 'all'), Http404)(self))
