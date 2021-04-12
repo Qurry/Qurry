@@ -35,7 +35,8 @@ class Notification(models.Model):
             'id': str(self.id),
             'isRead': self.is_read,
             'message': self.message(),
-            'uri': '',
-            'type': str(self.content_type),
+            'questionId': str(self.content_object.question.id),
+            'objectId': str(self.object_id),
+            'type': str(self.content_type.model),
             'createdAt': str(self.created_at)
         }

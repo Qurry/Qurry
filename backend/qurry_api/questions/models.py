@@ -135,6 +135,12 @@ class Comment(Post):
         if isinstance(self.commented_object, Question):
             self.commented_object.notify_subscribers(self)
 
+    @property
+    def question(self):
+        if self.content_type.model != 'question':
+            raise ValueError('This comment does not have a question')
+        return self.commented_object
+
     def as_preview(self):
         return {**self.time_info(), **{
             'id': str(self.id),
