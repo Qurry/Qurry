@@ -27,13 +27,6 @@ def extract_errors(validation_exception):
     return error_list
 
 
-def reference_files(files, attach_model, obj):
-    attach_model().attaches_from(obj).clear()
-
-    for file in files:
-        attach_model().attaches_from(obj).add(attach_model(file=file), bulk=False)
-
-
 class AbstractView(BaseView):
     Model = None
     Form = None
@@ -42,17 +35,20 @@ class AbstractView(BaseView):
     # different HTTP requests
     @object_existence_required
     def get(self, request, *args, **kwargs):
+        # return one object
         if 'id' in kwargs:
             obj = self.Model.objects.get(id=kwargs['id'])
             if request.GET and self.ActionForm:
                 form = self.ActionForm(request.GET.dict(), obj, self.user)
-                if not form.is_valid():
+                if form.is_valid():
+                    form.save()
+                else:
                     return JsonResponse({'errors': error_list_from(form.errors)}, status=400)
-
             return self.view_detailed(obj)
+
+        # return all objects
         try:
             return self.view_list(**({**request.GET.dict(), **kwargs}))
-
         except Exception:
             return JsonResponse({'errors': ['get arguments are invalid']}, status=400)
 

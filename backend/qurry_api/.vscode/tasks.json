@@ -54,6 +54,12 @@
       "type": "shell",
       "command": "${config:python.pythonPath} manage.py loaddata -v 3 fixtures/testing.json",
       "problemMatcher": []
+    },
+    {
+      "label": "Syncronize Time",
+      "type": "shell",
+      "command": "service ntp restart",
+      "problemMatcher": []
     }
   ]
 }

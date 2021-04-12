@@ -87,10 +87,12 @@ class AttachableMixin(models.Model):
         abstract = True
 
     def add_images(self, images):
+        self.images.clear()
         for image in images:
             self.images.add(ImageAttach(file=image), bulk=False)
 
     def add_documents(self, documents):
+        self.documents.clear()
         for document in documents:
             self.documents.add(DocumentAttach(file=document), bulk=False)
 
