@@ -6,8 +6,8 @@ from qurry_api.forms import BaseActionForm, BaseModelForm
 from .models import Answer, Comment, Question
 
 BOOL_CHOICES = (
-    (True, 'true'),
-    (False, 'false'),
+    ('true', True),
+    ('false', False),
 )
 
 
@@ -102,18 +102,24 @@ class QuestionActionForm(VotingFormMixin, BaseActionForm):
 
     def _validate_subscribe(self):
         subscribe = self.cleaned_data.get('subscribe')
-        if subscribe == 'false':
-            if not self.instance.subscribtion_set.filter(user=self.user).exists():
-                self.add_error('subscribe', ValidationError(
-                    'There is no subscribtion to cancel', code='no_subscribtion'))
+        did_subscribe = self.instance.subscribtions.filter(
+            user=self.user).exists()
+
+        if subscribe == 'true' and did_subscribe:
+            self.add_error('subscribe', ValidationError(
+                'You already subscribed this item', code='subscribed_already'))
+
+        if subscribe == 'false' and not did_subscribe:
+            self.add_error('subscribe', ValidationError(
+                'There is no subscribtion to cancel', code='no_subscribtion'))
 
     def _save_subscribe(self):
         subscribe = self.cleaned_data.get('subscribe')
 
         if subscribe == 'true':
-            self.insatnce.get_subscribed_by(self.user)
+            self.instance.get_subscribed_by(self.user)
         elif subscribe == 'false':
-            self.instance.subscribtion_set.get(user=self.user).delete()
+            self.instance.subscribtions.get(user=self.user).delete()
 
 
 class AnswerActionForm(VotingFormMixin, BaseActionForm):

@@ -202,6 +202,10 @@ class Question(Post, VotableMixin, AttachableMixin):
         for subscription in self.subscription_set.all():
             subscription.notifiy_subscriber(obj)
 
+    @property
+    def subscribtions(self):
+        return Subscription.objects.filter(question=self)
+
     def as_preview(self, user):
         return {**self.time_info(), **self.voting_info(user), **{
             'id': str(self.id),
