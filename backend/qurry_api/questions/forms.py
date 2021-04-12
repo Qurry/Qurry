@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from media.models import Document, Image
-from qurry_api.forms import BaseForm, BaseModelForm
+from qurry_api.forms import BaseActionForm, BaseModelForm
 
 from .models import Answer, Comment, Question
 
@@ -91,7 +91,7 @@ class CommentForm(BaseModelForm):
         uneditable = ('user', 'object_id', 'content_type')
 
 
-class QuestionActionForm(VotingFormMixin, BaseForm):
+class QuestionActionForm(VotingFormMixin, BaseActionForm):
 
     subscribe = forms.ChoiceField(choices=BOOL_CHOICES, required=False)
 
@@ -116,7 +116,7 @@ class QuestionActionForm(VotingFormMixin, BaseForm):
             self.instance.subscribtion_set.get(user=self.user).delete()
 
 
-class AnswerActionForm(VotingFormMixin, BaseForm):
+class AnswerActionForm(VotingFormMixin, BaseActionForm):
     def __init__(self, data, answer, user, *args, **kwargs):
         super().__init__(data, *args, **kwargs)
         self.instance = answer

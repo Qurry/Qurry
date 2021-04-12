@@ -3,7 +3,7 @@ from django import forms
 from qurry_api.decorators import call_methods_starting_with
 
 
-class BaseForm(forms.Form):
+class BaseActionForm(forms.Form):
     @call_methods_starting_with('_validate_')
     def clean(self):
         return super().clean()
