@@ -1,5 +1,17 @@
 from django import forms
 
+from qurry_api.decorators import call_methods_starting_with
+
+
+class BaseForm(forms.Form):
+    @call_methods_starting_with('_validate_')
+    def clean(self):
+        return super().clean()
+
+    @call_methods_starting_with('_save_')
+    def save(self, commit=True):
+        pass
+
 
 class BaseModelForm(forms.ModelForm):
     def __init__(self, data, *args, instance=None, **kwargs):

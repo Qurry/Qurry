@@ -123,3 +123,18 @@ def with_request_body_decoded(function):
         return function(self, request, *args, **kwargs)
 
     return decode_body
+
+
+def call_methods_starting_with(prefix):
+    def wrapper(function):
+        def call_methods(self, *args, **kwargs):
+            methods = [getattr(self, name) for name in dir(
+                self) if name.startswith(prefix)]
+
+            for method in methods:
+                method()
+
+            return function(self, *args, **kwargs)
+
+        return call_methods
+    return wrapper
