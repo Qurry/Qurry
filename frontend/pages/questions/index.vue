@@ -60,7 +60,7 @@ export default class QuestionList extends Vue {
     words: '',
     tagIds: [],
     orderBy: '-votes',
-    answered: true,
+    answered: 'all',
   }
 
   created() {

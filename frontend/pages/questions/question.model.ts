@@ -48,7 +48,7 @@ export interface QuestionSearch {
   words: string
   tagIds: string[]
   orderBy: string
-  answered: boolean
+  answered: 'true' | 'false' | 'all'
 }
 
 export interface Answer {
