@@ -4,8 +4,6 @@ import {
   CreateEditComment,
   CreateEditQuestion,
   DetailQuestion,
-  PreviewQuestion,
-  QuestionSearch,
 } from '~/pages/questions/question.model'
 
 // improve this
@@ -29,17 +27,6 @@ function imagesAndDocumentsToIds(post: CreateEditQuestion | CreateEditAnswer) {
 }
 
 export default {
-  async getQuestions($axios: NuxtAxiosInstance, search: QuestionSearch) {
-    const { data }: { data: PreviewQuestion[] } = await $axios.get(
-      `/questions/?limit=${search.limit}\
-&offset=${(search.page - 1) * search.limit}\
-&words=${search.words}\
-&order_by=${search.orderBy}\
-&tag_ids=${search.tagIds.join()}\
-&answered=${search.answered}`
-    )
-    return data
-  },
   async getQuestion($axios: NuxtAxiosInstance, questionId: string) {
     const { data }: { data: DetailQuestion } = await $axios.get(
       '/questions/' + questionId + '/'
