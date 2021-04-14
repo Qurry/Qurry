@@ -17,6 +17,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 JWT_VALIDITY_PERIOD = 60*60*24*7
 ACTIVATION_TOKEN_VALIDITY_TIME = 60*60*3
 REST_TOKEN_VALIDITY_TIME = 60*30
@@ -43,8 +45,8 @@ INSTALLED_APPS = [
 
     'corsheaders',
     'mptt',
-
     'storages',
+
     'users',
     'questions',
     'notifications',
