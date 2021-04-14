@@ -4,6 +4,7 @@ import { TreeTag, ObjectTag } from '~/pages/tags/tag.model'
 import {
   PreviewQuestion,
   QuestionSearch,
+  Notification,
 } from '~/pages/questions/question.model'
 
 export const state = () => ({
@@ -11,6 +12,8 @@ export const state = () => ({
   isLoadingNecessaryData: false,
   questions: <PreviewQuestion[]>[],
   numOfQuestions: 0,
+  numOfUnreadNotifications: 0,
+  unreadNotifications: <Notification[]>[],
   treeTags: <TreeTag[]>[],
   tags: <{ [key: string]: ObjectTag }>{},
   profile: <Profile>{},
@@ -27,10 +30,16 @@ export const mutations: MutationTree<RootState> = {
     (state.questions = questions),
   SET_NUM_OF_QUESTIONS: (state, numOfQuestions: number) =>
     (state.numOfQuestions = numOfQuestions),
+  SET_NUM_OF_UNREAD_NOTIFICATIONS: (state, numOfUnreadNotifications: number) =>
+    (state.numOfUnreadNotifications = numOfUnreadNotifications),
+  SET_UNREAD_NOTIFICATIONS: (state, unreadNotifications: Notification[]) =>
+    (state.unreadNotifications = unreadNotifications),
   SET_TAG_TREE: (state, treeTags: TreeTag[]) => (state.treeTags = treeTags),
   SET_TAGS: (state, tags: { [key: string]: ObjectTag }) => (state.tags = tags),
   SET_PROFILE: (state, profile: Profile) => (state.profile = profile),
 }
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const tagColors: { [key: string]: string } = {
   1: '#006909',
@@ -113,5 +122,22 @@ export const actions: ActionTree<RootState, RootState> = {
   async fetchProfile({ commit }) {
     const profile: Profile = await this.$axios.$get('/profile/')
     commit('SET_PROFILE', profile)
+  },
+  async getNotifications({ commit }) {
+    const data: {
+      count: number
+      notifications: Notification[]
+    } = await this.$axios.$get('/notifications/unread/')
+    commit('SET_NUM_OF_UNREAD_NOTIFICATIONS', data.count)
+    commit('SET_UNREAD_NOTIFICATIONS', data.notifications)
+  },
+  async updateNotificationStatus({ commit }) {
+    while (true) {
+      const data: {
+        count: number
+      } = await this.$axios.$get('/notifications/status/')
+      commit('SET_NUM_OF_UNREAD_NOTIFICATIONS', data.count)
+      await delay(10000)
+    }
   },
 }

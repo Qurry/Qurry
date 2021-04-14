@@ -81,3 +81,13 @@ export interface Comment {
 export interface CreateEditComment {
   body: string
 }
+
+export interface Notification {
+  id: string
+  isRead: boolean
+  message: string
+  questionId: string
+  objectId: string
+  type: 'comment' | 'answer'
+  createdAt: string
+}

@@ -39,6 +39,7 @@ export default class DefaultLayout extends Vue {
       this.isLoading = true
       await this.$store.dispatch('fetchTags')
       await this.$store.dispatch('fetchProfile')
+      this.$store.dispatch('updateNotificationStatus')
       this.userScore = this.$store.state.profile.score.toString()
       this.isLoading = false
     } catch (e) {
