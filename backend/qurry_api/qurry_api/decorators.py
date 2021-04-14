@@ -7,7 +7,6 @@ from django.conf import settings
 from django.contrib.admin.options import BaseModelAdmin
 from django.contrib.auth.models import update_last_login
 from django.core.exceptions import PermissionDenied
-from django.core.handlers.wsgi import WSGIHandler
 from django.db.models import ImageField
 from django.http import JsonResponse
 from django.utils.safestring import mark_safe
