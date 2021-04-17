@@ -92,8 +92,7 @@ class QuestionActionForm(VotingFormMixin, BaseActionForm):
 
     def _validate_subscribe(self):
         subscribe = self.cleaned_data.get('subscribe')
-        did_subscribe = self.instance.subscribtions.filter(
-            user=self.user).exists()
+        did_subscribe = self.instance.is_subscriber(self.user)
 
         if subscribe == 'true' and did_subscribe:
             self.add_error('subscribe', ValidationError(

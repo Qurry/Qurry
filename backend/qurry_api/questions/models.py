@@ -212,6 +212,9 @@ class Question(Post, VotableMixin, AttachableMixin):
     def subscribtions(self):
         return Subscription.objects.filter(question=self)
 
+    def is_subscriber(self, user):
+        return Subscription.objects.filter(question=self, user=user).exists()
+
     def as_preview(self, user):
         return {**self.time_info(), **self.voting_info(user), **{
             'id': str(self.id),
@@ -226,6 +229,7 @@ class Question(Post, VotableMixin, AttachableMixin):
             'body': self.body,
             'answers': list(answer.as_detailed(user) for answer in self.answer_set.all()),
             'comments': list(comment.as_preview() for comment in self.comments.all()),
+            'subscribed': self.is_subscriber(user),
         }}
 
 
