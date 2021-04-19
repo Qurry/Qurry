@@ -12,7 +12,8 @@
         <v-icon v-else> mdi-email </v-icon>
       </v-btn>
     </template>
-    <div>
+    <div class="notifications-container">
+      <h2>Notifications</h2>
       <v-list v-if="$store.state.numOfUnreadNotifications" two-line>
         <v-list-item
           v-for="unreadNotification of $store.state.unreadNotifications"
@@ -31,7 +32,7 @@
         </v-list-item>
       </v-list>
       <div v-else>
-        <span>Nothing new here</span>
+        <span>You are up to date!</span>
       </div>
     </div>
   </v-menu>
@@ -56,3 +57,11 @@ export default class NotificationMenu extends Vue {
   }
 }
 </script>
+
+<style scoped>
+.notifications-container {
+  background-color: white;
+  width: 250px;
+  padding: 10px;
+}
+</style>
