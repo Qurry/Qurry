@@ -14,6 +14,7 @@ export interface DetailQuestion {
   createdAt: string
   editedAt: string
   user: User
+  subscribed: boolean
   tagIds: string[]
   images: Image[]
   documents: any[]

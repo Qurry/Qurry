@@ -35,6 +35,24 @@
               @delete="onDelete"
               @edit="onEdit"
             />
+            <v-btn
+              v-if="question.subscribed"
+              small
+              color="secondary"
+              outlined
+              @click="changeSubscriptionTo(false)"
+            >
+              Unsubscribe <v-icon right dark> mdi-eye-off </v-icon>
+            </v-btn>
+            <v-btn
+              v-else
+              small
+              color="secondary"
+              outlined
+              @click="changeSubscriptionTo(true)"
+            >
+              Subscribe <v-icon right dark> mdi-eye </v-icon>
+            </v-btn>
           </div>
           <CommentContainer
             :comments="question.comments"
@@ -70,6 +88,7 @@ export default class QuestionDetail extends Vue {
       id: '',
       username: '',
     },
+    subscribed: false,
     tagIds: [],
     answers: [],
     comments: [],
@@ -121,6 +140,17 @@ export default class QuestionDetail extends Vue {
         this.sortAnswers()
       })
       .catch((error) => console.log(error))
+  }
+
+  async changeSubscriptionTo(subscribe: boolean) {
+    try {
+      const { data }: { data: DetailQuestion } = await this.$axios.get(
+        `/questions/${this.question.id}/?subscribe=${subscribe}`
+      )
+      this.question = data
+    } catch (error) {
+      console.log(error)
+    }
   }
 }
 </script>
