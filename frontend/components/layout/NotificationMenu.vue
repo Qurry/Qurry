@@ -19,6 +19,7 @@
     </template>
     <div class="notifications-container">
       <h2>Notifications</h2>
+      <hr color="#bbb" />
       <v-list v-if="$store.state.numOfUnreadNotifications" two-line>
         <v-list-item
           v-for="unreadNotification of $store.state.unreadNotifications"
@@ -27,11 +28,11 @@
           <v-list-item-content>
             <v-list-item-title>
               <a @click="readNotification(unreadNotification)">
-                {{ messageText(unreadNotification) }}
+                {{ unreadNotification.question.title }}
               </a>
             </v-list-item-title>
             <v-list-item-subtitle>
-              {{ unreadNotification.question.title }}
+              {{ messageText(unreadNotification) }}
             </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
