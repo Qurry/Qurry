@@ -193,7 +193,7 @@ class Question(Post, VotableMixin, AttachableMixin):
     downvote_penalty = 0
 
     class Meta:
-        ordering = ['votes']
+        ordering = ['-votes']
 
     def __str__(self):
         return '%d: %s' % (self.id, self.title)
@@ -250,7 +250,7 @@ class Answer(Post, VotableMixin, AttachableMixin):
     downvote_penalty = 0
 
     class Meta:
-        ordering = ['votes']
+        ordering = ['-votes']
 
     def __str__(self):
         return "Answer from %s" % self.user
