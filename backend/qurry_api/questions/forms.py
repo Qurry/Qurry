@@ -79,6 +79,7 @@ class AnswerForm(BaseModelForm):
             if 'documents' in self.fields:
                 instance.add_documents(self.cleaned_data.get('documents'))
 
+            instance.question.notify_subscribers(instance)
         return instance
 
 
@@ -88,6 +89,15 @@ class CommentForm(BaseModelForm):
         model = Comment
         fields = ('body', 'user', 'object_id', 'content_type')
         uneditable = ('user', 'object_id', 'content_type')
+
+    def save(self, commit=True):
+        instance = super().save(commit=commit)
+
+        if commit:
+            if isinstance(instance.commented_object, Question):
+                instance.commented_object.notify_subscribers(instance)
+
+        return instance
 
 
 class QuestionActionForm(VotingFormMixin, BaseActionForm):

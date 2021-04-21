@@ -130,16 +130,14 @@ class Comment(Post):
     def __str__(self):
         return 'comment from %s' % self.user
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        if isinstance(self.commented_object, Question):
-            self.commented_object.notify_subscribers(self)
-
     @property
     def question(self):
         if self.content_type.model != 'question':
             raise ValueError('This comment does not have a question')
         return self.commented_object
+
+    def add_to_notification(self, notification):
+        notification.comments += 1
 
     def as_preview(self):
         return {**self.time_info(), **{
@@ -232,6 +230,12 @@ class Question(Post, VotableMixin, AttachableMixin):
             'subscribed': self.is_subscriber(user),
         }}
 
+    def as_notification_preview(self):
+        return {
+            'id': str(self.id),
+            'title': self.title
+        }
+
 
 class Answer(Post, VotableMixin, AttachableMixin):
     question = models.ForeignKey(
@@ -245,9 +249,8 @@ class Answer(Post, VotableMixin, AttachableMixin):
     def __str__(self):
         return "Answer from %s" % self.user
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.question.notify_subscribers(self)
+    def add_to_notification(self, notification):
+        notification.answers += 1
 
     def as_preview(self, user):
         return {**self.time_info(), **self.voting_info(user), **{

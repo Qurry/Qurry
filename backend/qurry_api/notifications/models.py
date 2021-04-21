@@ -1,5 +1,4 @@
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
+
 from django.db import models
 
 
@@ -10,33 +9,36 @@ class Subscription(models.Model):
         'users.user', verbose_name='Subscriber', on_delete=models.CASCADE)
 
     def notifiy_subscriber(self, obj):
-        Notification.objects.create(user=self.user, content_object=obj)
+        Notification.objects.get_or_create(
+            user=self.user, question=self.question)[0].add(obj)
 
 
 class Notification(models.Model):
-    created_at = models.DateTimeField('Time of Creation', auto_now_add=True)
+    question = models.ForeignKey(
+        'questions.question', verbose_name='Subscribed Question', on_delete=models.CASCADE)
+    answers = models.IntegerField(default=0)
+    comments = models.IntegerField(default=0)
+
+    updated_at = models.DateTimeField('Last Update', auto_now=True)
 
     user = models.ForeignKey(
         'users.user', verbose_name='Notified User', on_delete=models.CASCADE)
     is_read = models.BooleanField('Has it been read', default=False)
 
     class Meta:
-        ordering = ('created_at',)
+        ordering = ('updated_at',)
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
+    def add(self, obj):
+        obj.add_to_notification(self)
 
-    def message(self):
-        return f'{self.content_object.user} {self.content_type.model}ed your question.'
+        self.save()
 
     def as_detailed(self):
         return {
             'id': str(self.id),
             'isRead': self.is_read,
-            'message': self.message(),
-            'questionId': str(self.content_object.question.id),
-            'objectId': str(self.object_id),
-            'type': str(self.content_type.model),
-            'createdAt': str(self.created_at)
+            'question': self.question.as_notification_preview(),
+            'answers': self.answers,
+            'comments': self.comments,
+            'updated_at': str(self.updated_at)
         }
