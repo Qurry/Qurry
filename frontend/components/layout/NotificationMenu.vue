@@ -80,4 +80,9 @@ export default class NotificationMenu extends Vue {
   width: 250px;
   padding: 10px;
 }
+
+.v-list-item,
+.v-list {
+  padding: 0;
+}
 </style>
