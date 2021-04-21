@@ -9,8 +9,4 @@ class NotificationActionForm(BaseActionForm):
         read = self.cleaned_data.get('read')
         if read:
             if read == 'true':
-                self.instance.is_read = True
-            if read == 'false':
-                self.instance.is_read = False
-
-            self.instance.save()
+                self.instance.delete()

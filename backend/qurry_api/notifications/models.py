@@ -40,5 +40,5 @@ class Notification(models.Model):
             'question': self.question.as_notification_preview(),
             'answers': self.answers,
             'comments': self.comments,
-            'updated_at': str(self.updated_at)
+            'updatedAt': str(self.updated_at)
         }
