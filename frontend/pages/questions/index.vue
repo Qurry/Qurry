@@ -78,6 +78,7 @@ export default class QuestionList extends Vue {
 
   onSubmitSearch() {
     this.getQuestions()
+    this.search.page = 1
   }
 }
 </script>
