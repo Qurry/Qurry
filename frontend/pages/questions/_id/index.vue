@@ -70,7 +70,7 @@
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
 import QuestionService from './../../../services/QuestionService'
-import { Answer, DetailQuestion } from './../question.model'
+import { DetailQuestion } from './../question.model'
 
 @Component
 export default class QuestionDetail extends Vue {
@@ -96,18 +96,11 @@ export default class QuestionDetail extends Vue {
     documents: [],
   }
 
-  sortAnswers() {
-    this.question.answers.sort((a: Answer, b: Answer) =>
-      a.votes! < b.votes! ? 1 : b.votes! < a.votes! ? -1 : 0
-    )
-  }
-
   fetch() {
     return Promise.all([
       QuestionService.getQuestion(this.$axios, this.$route.params.id)
         .then((question) => {
           this.question = question
-          this.sortAnswers()
         })
         .catch((error) => console.log(error)),
     ])
@@ -137,7 +130,6 @@ export default class QuestionDetail extends Vue {
     QuestionService.getQuestion(this.$axios, this.question.id)
       .then((question) => {
         this.question = question
-        this.sortAnswers()
       })
       .catch((error) => console.log(error))
   }
