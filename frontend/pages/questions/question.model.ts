@@ -35,6 +35,11 @@ export interface PreviewQuestion {
   tagIds: string[]
 }
 
+export interface NotificationPreviewQuestion {
+  id: string
+  title: string
+}
+
 export interface CreateEditQuestion {
   title: string
   body: string
@@ -86,9 +91,8 @@ export interface CreateEditComment {
 export interface Notification {
   id: string
   isRead: boolean
-  message: string
-  questionId: string
-  objectId: string
-  type: 'comment' | 'answer'
-  createdAt: string
+  question: NotificationPreviewQuestion
+  answers: number
+  comments: number
+  updatedAt: string
 }

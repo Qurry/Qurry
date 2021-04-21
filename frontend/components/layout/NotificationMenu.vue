@@ -1,7 +1,12 @@
 <template>
   <v-menu offset-y>
     <template v-slot:activator="{ on, attrs }">
-      <v-btn icon v-bind="attrs" v-on="on">
+      <v-btn
+        icon
+        v-bind="attrs"
+        v-on="on"
+        @click="$store.dispatch('getNotifications')"
+      >
         <v-badge
           v-if="$store.state.numOfUnreadNotifications"
           color="secondary"
@@ -22,11 +27,11 @@
           <v-list-item-content>
             <v-list-item-title>
               <a @click="readNotification(unreadNotification)">
-                New {{ unreadNotification.type }}
+                {{ messageText(unreadNotification) }}
               </a>
             </v-list-item-title>
             <v-list-item-subtitle>
-              {{ unreadNotification.message }}
+              {{ unreadNotification.question.title }}
             </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
@@ -49,7 +54,18 @@ export default class NotificationMenu extends Vue {
       '/notifications/' + unreadNotification.id + '/?read=true'
     )
     this.$store.dispatch('getNotifications')
-    this.$router.push('/questions/' + unreadNotification.questionId)
+    this.$router.push('/questions/' + unreadNotification.question.id)
+  }
+
+  messageText(notification: Notification): string {
+    let message = ''
+    message += notification.answers > 0 ? `${notification.answers} answer` : ''
+    message += notification.answers > 1 ? 's' : ''
+    message += notification.answers && notification.comments ? ' and ' : ''
+    message +=
+      notification.comments > 0 ? `${notification.comments} comment` : ''
+    message += notification.comments > 1 ? 's' : ''
+    return message
   }
 
   created() {
