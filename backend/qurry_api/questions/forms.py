@@ -51,10 +51,6 @@ class QuestionForm(BaseModelForm):
             # add images and documents
             instance.add_images(self.cleaned_data.get('images'))
             instance.add_documents(self.cleaned_data.get('documents'))
-
-            # auto subscribe question
-            instance.get_subscribed_by(self.cleaned_data.get('user'))
-
         return instance
 
 
