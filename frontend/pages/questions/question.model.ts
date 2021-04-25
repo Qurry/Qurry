@@ -5,6 +5,11 @@ export interface Image {
   url?: string
 }
 
+export interface Document {
+  id: string
+  url?: string
+}
+
 export interface DetailQuestion {
   id: string
   title: string
@@ -17,7 +22,7 @@ export interface DetailQuestion {
   subscribed: boolean
   tagIds: string[]
   images: Image[]
-  documents: any[]
+  documents: Document[]
   answers: Answer[]
   comments: Comment[]
 }
@@ -44,7 +49,7 @@ export interface CreateEditQuestion {
   title: string
   body: string
   images: Image[]
-  documents: any[]
+  documents: Document[]
   tagIds: string[]
 }
 
@@ -66,14 +71,14 @@ export interface Answer {
   user: User
   userVote: number
   images: Image[]
-  documents: any[]
+  documents: Document[]
   comments: Comment[]
 }
 
 export interface CreateEditAnswer {
   body: string
   images: Image[]
-  documents: any[]
+  documents: Document[]
 }
 
 export interface Comment {

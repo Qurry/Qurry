@@ -4,6 +4,9 @@
 
     <ImagePreviewList :images="answer.images" />
 
+    <DocumentInput @document="addDocument" />
+    <DocumentsList :documents="answer.documents" in-form-mode="true" />
+
     <v-btn color="secondary" :disabled="!isFormValid" @click="onSubmit">
       Submit
     </v-btn>
@@ -13,7 +16,11 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { CreateEditAnswer, Image } from '~/pages/questions/question.model'
+import {
+  CreateEditAnswer,
+  Image,
+  Document,
+} from '~/pages/questions/question.model'
 
 @Component
 export default class AnswerForm extends Vue {
@@ -32,6 +39,10 @@ export default class AnswerForm extends Vue {
 
   addImage(image: Image) {
     this.answer.images.push(image)
+  }
+
+  addDocument(document: Document) {
+    this.answer.documents.push(document)
   }
 }
 </script>

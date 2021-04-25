@@ -1,28 +1,31 @@
 <template>
-  <div class="image-preview-container">
-    <template v-if="images.length > 0" class="mx-auto">
-      <div
-        v-for="image in images"
-        :key="image.id"
-        class="image-preview-outer-box"
-      >
-        <div class="image-preview-inner-box">
-          <img
-            :src="image.url"
-            alt="Couldn't load image"
-            class="image-preview"
-          />
-        </div>
-        <v-btn
-          icon
-          color="secondary"
-          @click.stop.prevent="copyImageUrl(image.url)"
+  <div v-if="images.length > 0">
+    <h2 class="mt-3">Images</h2>
+    <div class="image-preview-container">
+      <template class="mx-auto">
+        <div
+          v-for="image in images"
+          :key="image.id"
+          class="image-preview-outer-box"
         >
-          <v-icon>mdi-content-copy</v-icon>
-        </v-btn>
-        <DeleteDialog object-name="image" @delete="onDelete(image.id)" />
-      </div>
-    </template>
+          <div class="image-preview-inner-box">
+            <img
+              :src="image.url"
+              alt="Couldn't load image"
+              class="image-preview"
+            />
+          </div>
+          <v-btn
+            icon
+            color="secondary"
+            @click.stop.prevent="copyImageUrl(image.url)"
+          >
+            <v-icon>mdi-content-copy</v-icon>
+          </v-btn>
+          <DeleteDialog object-name="image" @delete="onDelete(image.id)" />
+        </div>
+      </template>
+    </div>
   </div>
 </template>
 

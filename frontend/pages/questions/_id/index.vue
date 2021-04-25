@@ -27,6 +27,8 @@
 
           <v-md-preview :text="question.body" class="pa-0"></v-md-preview>
 
+          <DocumentsList :documents="question.documents" />
+
           <div>
             <TagList :tag-ids="question.tagIds" />
             <PostToolbar

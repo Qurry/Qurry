@@ -15,6 +15,9 @@
 
     <ImagePreviewList :images="question.images" />
 
+    <DocumentInput @document="addDocument" />
+    <DocumentsList :documents="question.documents" in-form-mode="true" />
+
     <h2 class="mt-3">Tags</h2>
     <TagSelection
       v-if="loaded || inCreateMode"
@@ -36,7 +39,11 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'nuxt-property-decorator'
-import { CreateEditQuestion, Image } from '~/pages/questions/question.model'
+import {
+  CreateEditQuestion,
+  Image,
+  Document,
+} from '~/pages/questions/question.model'
 
 @Component
 export default class QuestionForm extends Vue {
@@ -73,6 +80,10 @@ export default class QuestionForm extends Vue {
 
   addImage(image: Image) {
     this.question.images.push(image)
+  }
+
+  addDocument(document: Document) {
+    this.question.documents.push(document)
   }
 }
 </script>

@@ -20,6 +20,8 @@
         <div v-else>
           <v-md-preview :text="answer.body" class="pa-0"></v-md-preview>
 
+          <DocumentsList :documents="answer.documents" />
+
           <PostToolbar
             :post="answer"
             post-type="answer"
