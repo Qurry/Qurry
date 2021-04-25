@@ -4,8 +4,8 @@
       <v-img
         class="mx-2"
         src="/static/icon-180x180.png"
-        max-height="35"
-        max-width="35"
+        max-height="45"
+        max-width="45"
         contain
       >
       </v-img>
