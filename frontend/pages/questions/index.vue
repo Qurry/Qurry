@@ -14,7 +14,7 @@
       <QuestionSearchForm
         class="mb-4"
         :search="search"
-        @submit="onSubmitSearch"
+        @submit="onSubmitFormSearch"
       />
       <div v-if="$store.state.isLoadingQuestions">
         <LoadingSpinner />
@@ -76,9 +76,13 @@ export default class QuestionList extends Vue {
     this.questions = this.$store.state.questions
   }
 
-  onSubmitSearch() {
+  onSubmitFormSearch() {
     this.getQuestions()
     this.search.page = 1
+  }
+
+  onSubmitSearch() {
+    this.getQuestions()
   }
 }
 </script>
